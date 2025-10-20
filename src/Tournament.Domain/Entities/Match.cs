@@ -94,4 +94,14 @@ public sealed class Match
 
         ScheduledKickoff = kickoff;
     }
+
+    /// <summary>
+    /// Resets the match back to scheduled state with no score.
+    /// </summary>
+    public void Reset()
+    {
+        HomeScore = null;
+        AwayScore = null;
+        Status = MatchStatus.Scheduled;
+    }
 }

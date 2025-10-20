@@ -81,6 +81,20 @@ public sealed class SimulationJobRepository : ISimulationJobRepository
     }
 
     /// <inheritdoc />
+    public async Task DeleteByGroupIdAsync(Guid groupId, CancellationToken cancellationToken)
+    {
+        var entities = await dbContext.SimulationJobs
+            .Where(job => job.GroupId == groupId)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        if (entities.Count > 0)
+        {
+            dbContext.SimulationJobs.RemoveRange(entities);
+        }
+    }
+
+    /// <inheritdoc />
     public Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         return dbContext.SaveChangesAsync(cancellationToken);

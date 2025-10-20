@@ -38,6 +38,13 @@ public interface ISimulationJobRepository
     Task UpdateAsync(SimulationJob job, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Deletes all simulation jobs associated with the specified group.
+    /// </summary>
+    /// <param name="groupId">Group identifier.</param>
+    /// <param name="cancellationToken">Termination token.</param>
+    Task DeleteByGroupIdAsync(Guid groupId, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Persists pending changes.
     /// </summary>
     /// <param name="cancellationToken">Termination token.</param>

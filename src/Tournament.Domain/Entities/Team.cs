@@ -23,9 +23,9 @@ public sealed class Team
             throw new ArgumentException("Team name cannot be empty.", nameof(name));
         }
 
-        if (strength <= 0)
+        if (strength is <= 0 or > 5)
         {
-            throw new ArgumentOutOfRangeException(nameof(strength), strength, "Strength must be greater than zero.");
+            throw new ArgumentOutOfRangeException(nameof(strength), strength, "Strength must be between 0.1 and 5.0.");
         }
 
         Id = id;

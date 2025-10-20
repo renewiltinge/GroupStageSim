@@ -149,6 +149,28 @@ public sealed class GroupsController : ControllerBase
     }
 
     /// <summary>
+    /// Resets all matches in a group back to unplayed state and clears simulation history.
+    /// </summary>
+    /// <param name="id">Group identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Success response.</returns>
+    [HttpPost("{id:guid}/reset")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ResetGroupAsync(Guid id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await groupService.ResetGroupAsync(id, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation("Reset group {GroupId}", id);
+            return Ok(new { message = "Group reset successfully" });
+        }
+        catch (GroupNotFoundException ex)
+        {
+            return NotFound(CreateProblem(ex.Message, ex.GroupId));
+        }
+    }
+
+    /// <summary>
     /// Creates a ProblemDetails payload for missing group scenarios.
     /// </summary>
     /// <param name="detail">Error detail.</param>

@@ -22,6 +22,7 @@ namespace Simulator.Worker.Messaging;
 public sealed class MatchSimulationWorker : BackgroundService
 {
     private const string QueueName = "groupsim.match-scheduled";
+    private const int MaxRetryAttempts = 3;
 
     private readonly IServiceScopeFactory scopeFactory;
     private readonly RabbitMqOptions rabbitOptions;
@@ -99,7 +100,7 @@ public sealed class MatchSimulationWorker : BackgroundService
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 attempts++;
-                var shouldRequeue = attempts < 3 && !eventArgs.Redelivered;
+                var shouldRequeue = attempts < MaxRetryAttempts && !eventArgs.Redelivered;
                 logger.LogError(ex, "Failed to process delivery tag {Tag} on attempt {Attempt}. Requeue={Requeue}", eventArgs.DeliveryTag, attempts, shouldRequeue);
 
                 if (!shouldRequeue)
@@ -151,13 +152,14 @@ public sealed class MatchSimulationWorker : BackgroundService
         for (var iteration = 1; iteration <= iterations; iteration++)
         {
             shutdownToken.ThrowIfCancellationRequested();
-            var (homeScore, awayScore) = await simulationEngine.SimulateAsync(match, homeTeam, awayTeam, shutdownToken).ConfigureAwait(false);
+            var (homeScore, awayScore) = await simulationEngine.SimulateAsync(match, homeTeam, awayTeam, iteration, shutdownToken).ConfigureAwait(false);
 
             var playedEvent = new GroupMatchPlayed(
                 scheduled.MatchId,
                 scheduled.GroupId,
                 homeScore,
                 awayScore,
+                match.Round,
                 iteration,
                 DateTimeOffset.UtcNow,
                 scheduled.CorrelationId);
@@ -173,7 +175,7 @@ public sealed class MatchSimulationWorker : BackgroundService
             {
                 try
                 {
-                    await groupService.ApplyMatchResultAsync(scheduled.GroupId, scheduled.MatchId, homeScore, awayScore, shutdownToken).ConfigureAwait(false);
+                    await groupService.ApplyMatchResultAsync(scheduled.GroupId, scheduled.MatchId, homeScore, awayScore, scheduled.CorrelationId, shutdownToken).ConfigureAwait(false);
                 }
                 catch (GroupNotFoundException)
                 {

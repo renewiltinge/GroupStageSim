@@ -8,6 +8,8 @@ namespace Tournament.Application.Services;
 /// </summary>
 public sealed class RankingService : IRankingService
 {
+    private const int PointsPerWin = 3;
+    private const int PointsPerDraw = 1;
     /// <inheritdoc />
     public IReadOnlyCollection<StandingRow> CalculateStandings(Group group, IEnumerable<Match> matches)
     {
@@ -183,7 +185,7 @@ public sealed class RankingService : IRankingService
 
         internal int GoalDifference => goalsFor - goalsAgainst;
 
-        internal int Points => wins * 3 + draws;
+        internal int Points => wins * PointsPerWin + draws * PointsPerDraw;
 
         internal void RegisterMatch(int scored, int conceded)
         {

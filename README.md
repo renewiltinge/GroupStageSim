@@ -1,24 +1,48 @@
-# File: README.md
+635.# File: README.md
 
 Project: GroupStageSim · Database: SQL Server · Broker: RabbitMQ · Namespace: groupsim · API Port: 5180 · SQL Port: 7272 · RabbitMQ Port: 5672 · Base Rate: 1.3 · Home Adv: 1.05 · Away Mod: 0.95 · Default Seed: 42
 
 ## Overview
 GroupStageSim is an event-driven .NET 8 backend that schedules a four-team group stage, simulates match outcomes with a Poisson engine, and ranks teams using deterministic tie-breakers.
 
+## Config & Secrets
+
+This project uses secure-by-default configuration:
+- **No secrets in committed files** - All credentials must be provided via environment variables
+- **`.env` file** - Copy `.env.example` to `.env` and configure your secrets locally (DO NOT COMMIT)
+- **Environment precedence**: Environment variables override appsettings.{Environment}.json which overrides appsettings.json
+
+### Required Environment Variables
+```bash
+SA_PASSWORD=YourStrongDatabasePassword!
+RABBITMQ_USER=guest
+RABBITMQ_PASSWORD=guest
+```
+
+### Optional Overrides
+```bash
+CONNECTIONSTRINGS__DEFAULT=Server=localhost,7272;Database=GroupStageSim;...
+BROKER__HOSTNAME=localhost
+BROKER__PORT=5672
+BROKER__USERNAME=guest  
+BROKER__PASSWORD=guest
+```
+
 ## Quickstart (Docker Compose)
 | Component | Host Port | Notes |
 | --- | --- | --- |
 | API | `http://localhost:5180` | Swagger at `/swagger`, health at `/healthz` + `/healthz/ready` |
-| SQL Server | `localhost,7272` | SA login from `.env` (default `P@ssw0rd1234!`) |
-| RabbitMQ | `localhost:5672` (`AMQP`), `localhost:15672` (management UI) | Default user `guest`/`guest` |
+| SQL Server | `localhost,7272` | SA login from `.env` |
+| RabbitMQ | `localhost:5672` (`AMQP`), `localhost:15672` (management UI) | Credentials from `.env` |
 
 ```powershell
 # Clone & enter repo
 git clone https://github.com/your-org/GroupStageSim.git
 cd GroupStageSim
 
-# Provide secrets for compose (overwrites default values if needed)
-Set-Content .env "SA_PASSWORD=P@ssw0rd1234!`nRABBITMQ_USER=guest`nRABBITMQ_PASSWORD=guest"
+# Copy example env file and configure your secrets
+copy .env.example .env
+# Edit .env with your preferred passwords
 
 # Build images and start services (API runs on http://localhost:5180)
 docker compose up --build -d

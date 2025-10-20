@@ -2,7 +2,9 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Options;
 using Tournament.Api.Pages.Models;
+using Tournament.Api.Options;
 
 namespace Tournament.Api.Pages.Groups;
 
@@ -15,16 +17,19 @@ public sealed class DetailsModel : PageModel
 
     private readonly IHttpClientFactory httpClientFactory;
     private readonly ILogger<DetailsModel> logger;
+    private readonly ApiSettings apiSettings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DetailsModel"/> class.
     /// </summary>
     /// <param name="httpClientFactory">Factory used to create HTTP clients.</param>
     /// <param name="logger">Logger instance.</param>
-    public DetailsModel(IHttpClientFactory httpClientFactory, ILogger<DetailsModel> logger)
+    /// <param name="apiSettings">API configuration settings.</param>
+    public DetailsModel(IHttpClientFactory httpClientFactory, ILogger<DetailsModel> logger, IOptions<ApiSettings> apiSettings)
     {
         this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.apiSettings = apiSettings?.Value ?? throw new ArgumentNullException(nameof(apiSettings));
     }
 
     /// <summary>
@@ -53,11 +58,6 @@ public sealed class DetailsModel : PageModel
     public IReadOnlyDictionary<Guid, string> TeamNames { get; private set; } = new Dictionary<Guid, string>();
 
     /// <summary>
-    /// Gets the latest simulation status payload for client-side hydration.
-    /// </summary>
-    public SimulationStatusDto? SimulationStatus { get; private set; }
-
-    /// <summary>
     /// Gets a JSON payload containing the initial state required by the client-side script.
     /// </summary>
     public string InitialStateJson { get; private set; } = "{}";
@@ -83,15 +83,13 @@ public sealed class DetailsModel : PageModel
         try
         {
             var client = httpClientFactory.CreateClient();
-            client.BaseAddress = new Uri($"{Request.Scheme}://{Request.Host}");
+            client.BaseAddress = new Uri(apiSettings.BaseUrl);
 
             using var standingsResponse = await client.GetAsync($"/groups/{id}/standings", cancellationToken).ConfigureAwait(false);
             using var matchesResponse = await client.GetAsync($"/groups/{id}/matches", cancellationToken).ConfigureAwait(false);
-            using var statusResponse = await client.GetAsync($"/groups/{id}/simulation-status", cancellationToken).ConfigureAwait(false);
 
             var standingsResult = await ProcessStandingsAsync(standingsResponse, cancellationToken).ConfigureAwait(false);
             var matchesResult = await ProcessMatchesAsync(matchesResponse, cancellationToken).ConfigureAwait(false);
-            await ProcessSimulationStatusAsync(statusResponse, cancellationToken).ConfigureAwait(false);
 
             if (!standingsResult && !matchesResult)
             {
@@ -229,8 +227,7 @@ public sealed class DetailsModel : PageModel
             groupName = GroupName,
             standings = Standings,
             matches = Matches,
-            teamNames = TeamNames,
-            simulationStatus = SimulationStatus
+            teamNames = TeamNames
         };
 
         var options = new JsonSerializerOptions
@@ -240,22 +237,6 @@ public sealed class DetailsModel : PageModel
         };
 
         InitialStateJson = JsonSerializer.Serialize(payload, options);
-    }
-
-    /// <summary>
-    /// Processes the simulation status response from the API.
-    /// </summary>
-    /// <param name="response">HTTP response returned by the API.</param>
-    /// <param name="cancellationToken">Propagation token.</param>
-    private async Task ProcessSimulationStatusAsync(HttpResponseMessage response, CancellationToken cancellationToken)
-    {
-        if (response.IsSuccessStatusCode)
-        {
-            SimulationStatus = await response.Content.ReadFromJsonAsync<SimulationStatusDto>(cancellationToken: cancellationToken).ConfigureAwait(false);
-            return;
-        }
-
-        await HandleProblemDetailsAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

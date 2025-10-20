@@ -1,0 +1,46 @@
+# secrets & local overrides
+.env
+*.env.local
+appsettings.*.local.json
+appsettings.secrets.json
+docker-compose.override.yml
+
+# build artifacts
+bin/
+obj/
+out/
+
+# user/tool junk
+.vscode/
+.idea/
+*.user
+*.swp
+*.suo
+.vs/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# NuGet packages
+*.nupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+
+# Test results
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+
+# Logs
+logs/
+*.log

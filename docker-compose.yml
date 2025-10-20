@@ -2,10 +2,11 @@ services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: groupsim-sql
+    env_file: .env
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_PID=Express
-      - SA_PASSWORD=${SA_PASSWORD:-P@ssw0rd1234!}
+      - SA_PASSWORD=${SA_PASSWORD}
     ports:
       - "7272:1433"
     healthcheck:
@@ -19,9 +20,10 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: groupsim-rabbit
+    env_file: .env
     environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-guest}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-guest}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -36,6 +38,7 @@ services:
       context: .
       dockerfile: ./src/Tournament.Api/Dockerfile
     container_name: groupsim-api
+    env_file: .env
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -43,11 +46,11 @@ services:
         condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
-      - ConnectionStrings__Default=Server=sqlserver,1433;Database=GroupStageSim;User Id=sa;Password=${SA_PASSWORD:-P@ssw0rd1234!};Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True
-      - Broker__HostName=rabbitmq
-      - Broker__Port=5672
-      - Broker__UserName=${RABBITMQ_USER:-guest}
-      - Broker__Password=${RABBITMQ_PASSWORD:-guest}
+      - ConnectionStrings__Default=${CONNECTIONSTRINGS__DEFAULT:-Server=sqlserver,1433;Database=GroupStageSim;User Id=sa;Password=${SA_PASSWORD};Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True}
+      - Broker__HostName=${BROKER__HOSTNAME:-rabbitmq}
+      - Broker__Port=${BROKER__PORT:-5672}
+      - Broker__UserName=${BROKER__USERNAME:-${RABBITMQ_USER}}
+      - Broker__Password=${BROKER__PASSWORD:-${RABBITMQ_PASSWORD}}
     ports:
       - "5180:8080"
     healthcheck:
@@ -62,6 +65,7 @@ services:
       context: .
       dockerfile: ./src/Simulator.Worker/Dockerfile
     container_name: groupsim-worker
+    env_file: .env
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -69,11 +73,11 @@ services:
         condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
-      - ConnectionStrings__Default=Server=sqlserver,1433;Database=GroupStageSim;User Id=sa;Password=${SA_PASSWORD:-P@ssw0rd1234!};Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True
-      - Broker__HostName=rabbitmq
-      - Broker__Port=5672
-      - Broker__UserName=${RABBITMQ_USER:-guest}
-      - Broker__Password=${RABBITMQ_PASSWORD:-guest}
+      - ConnectionStrings__Default=${CONNECTIONSTRINGS__DEFAULT:-Server=sqlserver,1433;Database=GroupStageSim;User Id=sa;Password=${SA_PASSWORD};Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True}
+      - Broker__HostName=${BROKER__HOSTNAME:-rabbitmq}
+      - Broker__Port=${BROKER__PORT:-5672}
+      - Broker__UserName=${BROKER__USERNAME:-${RABBITMQ_USER}}
+      - Broker__Password=${BROKER__PASSWORD:-${RABBITMQ_PASSWORD}}
     restart: unless-stopped
 
 volumes:

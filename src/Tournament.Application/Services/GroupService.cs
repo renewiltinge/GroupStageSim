@@ -12,6 +12,8 @@ namespace Tournament.Application.Services;
 /// </summary>
 public sealed class GroupService
 {
+    private const double BaselineSecondsPerIteration = 0.02;
+    
     private readonly IGroupRepository groupRepository;
     private readonly IMessageBus messageBus;
     private readonly Scheduler scheduler;
@@ -30,8 +32,8 @@ public sealed class GroupService
     public GroupService(
         IGroupRepository groupRepository,
         IMessageBus messageBus,
-    Scheduler scheduler,
-    IRankingService rankingService,
+        Scheduler scheduler,
+        IRankingService rankingService,
         MatchResultApplier matchResultApplier,
         ISimulationJobRepository simulationJobRepository)
     {
@@ -273,8 +275,6 @@ public sealed class GroupService
         }
     }
 
-    private const double BaselineSecondsPerIteration = 0.02;
-
     private static TimeSpan? CalculateEstimatedRemaining(SimulationJob job)
     {
         if (job.MatchesTotal == 0)
@@ -339,6 +339,33 @@ public sealed class GroupService
             : $" Estimated time remaining: ~{FormatDuration(estimate.Value)}.";
 
         return $"{statusText} request ({workloadText}). {progressText}{estimateText} Each match is processed sequentially, so larger iteration counts increase total runtime.";
+    }
+
+    /// <summary>
+    /// Resets all match results in a group back to unplayed state and clears simulation jobs.
+    /// </summary>
+    /// <param name="groupId">Group identifier.</param>
+    /// <param name="cancellationToken">Termination token.</param>
+    public async Task ResetGroupAsync(Guid groupId, CancellationToken cancellationToken)
+    {
+        var group = await groupRepository.GetAsync(groupId, includeMatches: true, cancellationToken).ConfigureAwait(false);
+        if (group is null)
+        {
+            throw new GroupNotFoundException(groupId);
+        }
+
+        // Reset all match scores to null (unplayed state)
+        foreach (var match in group.Matches)
+        {
+            match.Reset();
+        }
+
+        await groupRepository.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+        await groupRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        // Clear any existing simulation jobs for this group
+        await simulationJobRepository.DeleteByGroupIdAsync(groupId, cancellationToken).ConfigureAwait(false);
+        await simulationJobRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private static string FormatDuration(TimeSpan duration)

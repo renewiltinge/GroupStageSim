@@ -3,7 +3,9 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Options;
 using Tournament.Api.Pages.Models;
+using Tournament.Api.Options;
 
 namespace Tournament.Api.Pages.Groups;
 
@@ -14,16 +16,19 @@ public sealed class CreateModel : PageModel
 {
     private readonly IHttpClientFactory httpClientFactory;
     private readonly ILogger<CreateModel> logger;
+    private readonly ApiSettings apiSettings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateModel"/> class.
     /// </summary>
     /// <param name="httpClientFactory">Factory for configuring HTTP clients.</param>
     /// <param name="logger">Logger instance.</param>
-    public CreateModel(IHttpClientFactory httpClientFactory, ILogger<CreateModel> logger)
+    /// <param name="apiSettings">API configuration settings.</param>
+    public CreateModel(IHttpClientFactory httpClientFactory, ILogger<CreateModel> logger, IOptions<ApiSettings> apiSettings)
     {
         this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.apiSettings = apiSettings?.Value ?? throw new ArgumentNullException(nameof(apiSettings));
     }
 
     /// <summary>
@@ -70,7 +75,7 @@ public sealed class CreateModel : PageModel
         try
         {
             var client = httpClientFactory.CreateClient();
-            client.BaseAddress = new Uri($"{Request.Scheme}://{Request.Host}");
+            client.BaseAddress = new Uri(apiSettings.BaseUrl);
 
             var payload = new
             {

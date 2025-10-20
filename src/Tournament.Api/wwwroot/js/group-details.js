@@ -10,90 +10,20 @@
     const standingsContainer = document.getElementById("standings-container");
     const matchesContainer = document.getElementById("matches-container");
     const loadingIndicator = document.getElementById("loading-indicator");
-    const statusPanel = document.getElementById("simulation-status-panel");
-    const statusTextElement = document.getElementById("simulation-status-text");
-    const statusFootnoteElement = document.getElementById("simulation-status-footnote");
     const simulateOnceButton = document.getElementById("simulate-once");
-    const simulateManyButton = document.getElementById("simulate-many");
+    const resetButton = document.getElementById("reset");
     const refreshButton = document.getElementById("refresh");
-    const iterationsInput = document.getElementById("iterations-input");
     const alertElement = document.getElementById("global-alert");
     const alertTextElement = document.getElementById("global-alert-text");
     const alertRetryButton = document.getElementById("global-alert-retry");
 
     const teamNames = new Map(Object.entries(state.teamNames ?? {}));
-    let latestStatus = state.simulationStatus ?? null;
     let retryHandler = null;
 
-    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const createHandledError = (message) => {
         const error = new Error(message);
         error.handled = true;
         return error;
-    };
-
-    const formatDuration = (seconds) => {
-        if (!Number.isFinite(seconds) || seconds <= 0) {
-            return null;
-        }
-
-        if (seconds < 1) {
-            return "<1s";
-        }
-
-        if (seconds < 60) {
-            return `${Math.round(seconds)}s`;
-        }
-
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = Math.round(seconds % 60);
-
-        if (minutes < 60) {
-            return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
-        }
-
-        const hours = Math.floor(minutes / 60);
-        const remainingMinutes = minutes % 60;
-
-        if (hours < 24) {
-            const parts = [`${hours}h`];
-            if (remainingMinutes > 0) {
-                parts.push(`${remainingMinutes}m`);
-            }
-
-            if (remainingSeconds > 0) {
-                parts.push(`${remainingSeconds}s`);
-            }
-
-            return parts.join(" ");
-        }
-
-        const days = Math.floor(hours / 24);
-        const remainingHours = hours % 24;
-        const parts = [`${days}d`];
-
-        if (remainingHours > 0) {
-            parts.push(`${remainingHours}h`);
-        }
-
-        if (remainingMinutes > 0) {
-            parts.push(`${remainingMinutes}m`);
-        }
-
-        return parts.join(" ");
-    };
-
-    const formatTimestamp = (timestamp) => {
-        if (!timestamp) {
-            return null;
-        }
-
-        const date = new Date(timestamp);
-        if (Number.isNaN(date.getTime())) {
-            return null;
-        }
-
-        return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     };
 
     const hideAlert = () => {
@@ -135,7 +65,7 @@
             loadingIndicator.classList.add("d-none");
         }
 
-        [simulateOnceButton, simulateManyButton, refreshButton, iterationsInput].forEach((element) => {
+        [simulateOnceButton, resetButton, refreshButton].forEach((element) => {
             if (!element) {
                 return;
             }
@@ -155,50 +85,7 @@
         });
     };
 
-    const renderSimulationStatus = (status) => {
-        latestStatus = status ?? null;
 
-        if (!statusPanel || !statusTextElement || !statusFootnoteElement) {
-            return;
-        }
-
-        if (!status || status.state === "idle") {
-            statusPanel.classList.add("d-none");
-            statusTextElement.textContent = "";
-            statusFootnoteElement.textContent = "";
-            return;
-        }
-
-        statusPanel.classList.remove("alert-info", "alert-success", "alert-warning", "alert-danger", "d-none");
-
-        const tone = status.state === "completed" ? "alert-success" : status.state === "queued" ? "alert-warning" : "alert-info";
-        statusPanel.classList.add(tone);
-
-        const message = status.explanation || `Simulation ${status.state}.`;
-        statusTextElement.textContent = message;
-
-        const parts = [];
-
-        if (Number.isFinite(status.matchesCompleted) && Number.isFinite(status.matchesTotal)) {
-            parts.push(`${status.matchesCompleted}/${status.matchesTotal} matches processed`);
-        }
-
-        if (Number.isFinite(status.estimatedSecondsRemaining) && status.state !== "completed") {
-            const formatted = formatDuration(status.estimatedSecondsRemaining);
-            if (formatted) {
-                parts.push(`~${formatted} remaining`);
-            }
-        }
-
-        if (status.lastUpdatedAt) {
-            const formattedTime = formatTimestamp(status.lastUpdatedAt);
-            if (formattedTime) {
-                parts.push(`updated ${formattedTime}`);
-            }
-        }
-
-        statusFootnoteElement.textContent = parts.join(" · ");
-    };
 
     const ensureTeamNames = (rows) => {
         rows.forEach((row) => {
@@ -259,10 +146,24 @@
                     <tbody>${body}</tbody>
                 </table>
             </div>
-            <div class="small text-muted mt-2">
-                <button class="btn btn-link btn-sm p-0 align-baseline" type="button" data-bs-toggle="tooltip" data-bs-title="Points → GD → GF → GA → Head-to-Head">
-                    Tie-breaker rules
+            <div class="small text-muted mt-2 d-flex align-items-center gap-2">
+                <button class="btn btn-link btn-sm p-0 align-baseline" type="button" data-bs-toggle="collapse" data-bs-target="#tie-breaker-rules" aria-expanded="false" aria-controls="tie-breaker-rules">
+                    <i class="bi bi-info-circle me-1"></i>Tie-breaker rules
                 </button>
+            </div>
+            <div class="collapse mt-2" id="tie-breaker-rules">
+                <div class="card card-body bg-light border-0 small">
+                    <h6 class="mb-2">Tournament Tie-Breaking Rules</h6>
+                    <p class="mb-2">When teams have equal points, ranking is determined by the following criteria in order:</p>
+                    <ol class="mb-2 ps-3">
+                        <li><strong>Points</strong> - Total points earned (3 for win, 1 for draw, 0 for loss)</li>
+                        <li><strong>Goal Difference (GD)</strong> - Goals scored minus goals conceded</li>
+                        <li><strong>Goals For (GF)</strong> - Total goals scored</li>
+                        <li><strong>Goals Against (GA)</strong> - Total goals conceded (lower is better)</li>
+                        <li><strong>Head-to-Head Record</strong> - Direct comparison between tied teams</li>
+                    </ol>
+                    <p class="mb-0 text-muted">These rules follow standard tournament regulations used in major football competitions.</p>
+                </div>
             </div>`;
 
         activateTooltips();
@@ -376,18 +277,6 @@
         return data.matches ?? [];
     };
 
-    const fetchSimulationStatus = async (correlationId) => {
-        const response = await fetch(`/groups/${groupId}/simulation-status`, { headers: buildHeaders(correlationId) });
-        if (!response.ok) {
-            await handleHttpError(response, () => fetchSimulationStatus(correlationId));
-            throw createHandledError("Simulation status request failed.");
-        }
-
-        const data = await response.json();
-        renderSimulationStatus(data);
-        return data;
-    };
-
     const refresh = async (correlationId) => {
         hideAlert();
         setLoading(true);
@@ -398,7 +287,6 @@
             ]);
             ensureTeamNames(rows);
             renderMatches(matches);
-            await fetchSimulationStatus(correlationId);
         } catch (error) {
             if (error && error.handled) {
                 return;
@@ -410,36 +298,7 @@
         }
     };
 
-    const pollMatches = async (correlationId, iterations) => {
-        const normalizedIterations = Number.isFinite(iterations) && iterations > 0 ? iterations : 1;
-        const baseTimeout = 10000;
-        const perIterationBuffer = 40;
-        const timeoutAt = Date.now() + Math.min(60000, baseTimeout + (normalizedIterations - 1) * perIterationBuffer);
-        while (Date.now() < timeoutAt) {
-            try {
-                const [matches, status] = await Promise.all([
-                    fetchMatches(correlationId),
-                    fetchSimulationStatus(correlationId)
-                ]);
-                const finished = matches.length >= 6 && matches.every((match) => match.homeScore != null && match.awayScore != null);
-                const statusCompleted = !status || status.state === "completed" || status.state === "idle";
-                if (finished && statusCompleted) {
-                    return true;
-                }
-            } catch (error) {
-                if (error && error.handled) {
-                    return false;
-                }
 
-                handleNetworkError(error, () => pollMatches(correlationId, iterations));
-                return false;
-            }
-
-            await delay(normalizedIterations >= 50 ? 600 : 400);
-        }
-
-        return false;
-    };
 
     const generateCorrelationId = () => {
         if (window.crypto && window.crypto.randomUUID) {
@@ -454,41 +313,53 @@
         });
     };
 
-    const simulate = async (iterations) => {
+    const simulate = async () => {
         hideAlert();
-        const parsedIterations = Number.parseInt(iterations, 10);
-        if (Number.isNaN(parsedIterations) || parsedIterations < 1 || parsedIterations > 1000) {
-            showAlert("Iterations must be between 1 and 1000.", "warning");
-            return;
-        }
-
         const correlationId = generateCorrelationId();
 
         setLoading(true);
         try {
-            const response = await fetch(`/groups/${groupId}/simulate?iterations=${parsedIterations}`, {
+            const response = await fetch(`/groups/${groupId}/simulate?iterations=1`, {
                 method: "POST",
                 headers: buildHeaders(correlationId)
             });
 
             if (!response.ok) {
-                await handleHttpError(response, () => simulate(parsedIterations));
+                await handleHttpError(response, () => simulate());
                 return;
             }
 
             await response.json();
-            await fetchSimulationStatus(correlationId);
+            showAlert("Simulation completed successfully!", "success");
+            await refresh(correlationId);
+        } catch (error) {
+            handleNetworkError(error, () => simulate());
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            const completed = await pollMatches(correlationId, parsedIterations);
-            if (!completed) {
-                showAlert("Simulation is still running. Try refreshing shortly.", "info", () => refresh(correlationId));
-                await refresh(correlationId);
+    const reset = async () => {
+        hideAlert();
+        const correlationId = generateCorrelationId();
+
+        setLoading(true);
+        try {
+            const response = await fetch(`/groups/${groupId}/reset`, {
+                method: "POST",
+                headers: buildHeaders(correlationId)
+            });
+
+            if (!response.ok) {
+                await handleHttpError(response, () => reset());
                 return;
             }
 
+            await response.json();
+            showAlert("Group reset successfully!", "success");
             await refresh(correlationId);
         } catch (error) {
-            handleNetworkError(error, () => simulate(parsedIterations));
+            handleNetworkError(error, () => reset());
         } finally {
             setLoading(false);
         }
@@ -507,14 +378,16 @@
     if (simulateOnceButton) {
         simulateOnceButton.addEventListener("click", (event) => {
             event.preventDefault();
-            simulate(1);
+            simulate();
         });
     }
 
-    if (simulateManyButton) {
-        simulateManyButton.addEventListener("click", (event) => {
+    if (resetButton) {
+        resetButton.addEventListener("click", (event) => {
             event.preventDefault();
-            simulate(iterationsInput?.value ?? "1");
+            if (confirm("Are you sure you want to reset all matches? This will clear all results.")) {
+                reset();
+            }
         });
     }
 
@@ -527,6 +400,5 @@
 
     renderStandings(state.standings ?? []);
     renderMatches(state.matches ?? []);
-    renderSimulationStatus(latestStatus);
     activateTooltips();
 })();
