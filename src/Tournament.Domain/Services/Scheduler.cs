@@ -22,15 +22,13 @@ public sealed class Scheduler
 
         var teams = group.Teams.ToList();
         var fixtures = new List<Match>(6);
-        var rounds = BuildRoundRobinPairs(teams);
         var kickoff = firstKickoff;
 
-        foreach (var (roundIndex, pairings) in rounds)
+        foreach (var (round, pairings) in BuildFixedRounds(teams))
         {
             foreach (var (home, away) in pairings)
             {
-                var match = new Match(Guid.NewGuid(), group.Id, home.Id, away.Id, roundIndex + 1, kickoff);
-                fixtures.Add(match);
+                fixtures.Add(new Match(Guid.NewGuid(), group.Id, home.Id, away.Id, round, kickoff));
                 kickoff = kickoff.AddDays(1);
             }
         }
@@ -39,37 +37,40 @@ public sealed class Scheduler
     }
 
     /// <summary>
-    /// Creates round-robin pairings using the circle method for four teams.
+    /// Creates the fixed pairing plan defined in the requirements.
     /// </summary>
     /// <param name="teams">Team roster.</param>
-    /// <returns>Tuple of round index and pairings.</returns>
-    private static IReadOnlyCollection<(int RoundIndex, IReadOnlyCollection<(Team Home, Team Away)> Pairings)> BuildRoundRobinPairs(IReadOnlyList<Team> teams)
+    /// <returns>Collection of rounds with pairings.</returns>
+    private static IReadOnlyCollection<(int Round, IReadOnlyCollection<(Team Home, Team Away)> Pairings)> BuildFixedRounds(IReadOnlyList<Team> teams)
     {
         if (teams.Count != 4)
         {
             throw new ArgumentException("Scheduler expects exactly four teams.", nameof(teams));
         }
 
-        var pairings = new List<(int, IReadOnlyCollection<(Team, Team)>)>(3);
-        var rotation = teams.Skip(1).ToList();
-
-        for (var round = 0; round < 3; round++)
+        var round1 = new List<(Team, Team)>
         {
-            var current = new List<(Team, Team)>
-            {
-                (teams[0], rotation[round % rotation.Count])
-            };
+            (teams[0], teams[1]),
+            (teams[2], teams[3])
+        };
 
-            var remaining = rotation.Where((_, index) => index != round % rotation.Count).ToList();
-            if (remaining.Count != 2)
-            {
-                throw new InvalidOperationException("Unable to derive remaining pairings.");
-            }
+        var round2 = new List<(Team, Team)>
+        {
+            (teams[0], teams[2]),
+            (teams[1], teams[3])
+        };
 
-            current.Add((remaining[0], remaining[1]));
-            pairings.Add((round, current));
-        }
+        var round3 = new List<(Team, Team)>
+        {
+            (teams[0], teams[3]),
+            (teams[1], teams[2])
+        };
 
-        return pairings;
+        return new List<(int, IReadOnlyCollection<(Team, Team)>)>
+        {
+            (1, round1),
+            (2, round2),
+            (3, round3)
+        };
     }
 }

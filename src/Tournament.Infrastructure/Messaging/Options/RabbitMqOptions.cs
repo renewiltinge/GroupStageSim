@@ -16,4 +16,12 @@ public sealed class RabbitMqOptions
     public string Password { get; set; } = "guest";
 
     public string ExchangeName { get; set; } = "groupsim.events";
+
+    public string ScheduledQueueName { get; set; } = "groupsim.match-scheduled";
+
+    public string PlayedQueueName { get; set; } = "groupsim.match-played";
+
+    public string ScheduledRoutingKey { get; set; } = "match.scheduled";
+
+    public string PlayedRoutingKey { get; set; } = "match.played";
 }

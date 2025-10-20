@@ -55,6 +55,28 @@ public sealed class GroupRepository : IGroupRepository
     }
 
     /// <inheritdoc />
+    public async Task UpdateAsync(Group group, CancellationToken cancellationToken)
+    {
+        if (group is null)
+        {
+            throw new ArgumentNullException(nameof(group));
+        }
+
+        var entity = await dbContext.Groups
+            .Include(data => data.Teams)
+            .Include(data => data.Matches)
+            .SingleOrDefaultAsync(data => data.Id == group.Id, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (entity is null)
+        {
+            throw new InvalidOperationException($"Group {group.Id} could not be found for update.");
+        }
+
+        GroupMapper.Apply(group, entity);
+    }
+
+    /// <inheritdoc />
     public Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         return dbContext.SaveChangesAsync(cancellationToken);

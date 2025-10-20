@@ -1,94 +1,121 @@
 # File: docs/Deployment-DockerCompose.md
 
-<PROJECT_NAME>=GroupStageSim · <DB_ENGINE>=SQL Server · <BROKER>=RabbitMQ · <NAMESPACE>=groupsim · <API_PORT>=5180 · <DB_PORT>=1433 · <RABBITMQ_PORT>=5672 · <BASE_RATE>=1.3 · <HOME_ADV>=1.05 · <AWAY_MOD>=0.95 · <DEFAULT_SEED>=42
+Project: GroupStageSim · Database: SQL Server · Broker: RabbitMQ · Namespace: groupsim · API Port: 5180 · SQL Port: 7272 · RabbitMQ Port: 5672 · Base Rate: 1.3 · Home Adv: 1.05 · Away Mod: 0.95 · Default Seed: 42
 
 ## Service Matrix
 | Service | Image | Ports | Depends On |
 | --- | --- | --- | --- |
-| `<DB_ENGINE>` | `mcr.microsoft.com/mssql/server:2022-latest` | `<DB_PORT>:1433` | - |
-| `<BROKER>` | `rabbitmq:3.12-management` | `<RABBITMQ_PORT>:5672`, `15672:15672` | - |
-| Tournament.Api | `groupstagesim/api:latest` | `<API_PORT>:5180` | db, broker |
-| Simulator.Worker | `groupstagesim/worker:latest` | n/a | broker, api |
+| `sqlserver` | `mcr.microsoft.com/mssql/server:2022-latest` | `7272:1433` | - |
+| `rabbitmq` | `rabbitmq:3-management` | `5672:5672`, `15672:15672` | - |
+| `tournament-api` | `src/Tournament.Api` (Dockerfile) | `5180:8080` | sqlserver ✅, rabbitmq ✅ |
+| `simulator-worker` | `src/Simulator.Worker` (Dockerfile) | n/a | sqlserver ✅, rabbitmq ✅ |
 
 ## Environment Variables
-| Component | Variable | Value |
-| --- | --- | --- |
-| API | `ConnectionStrings__Default` | `Server=db;Database=GroupStageSim;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=true;` |
-| API | `RabbitMq__Host` | `broker` |
-| Worker | `Simulation__BaseRate` | `<BASE_RATE>` |
-| Worker | `RabbitMq__Host` | `broker` |
-| SQL | `ACCEPT_EULA` | `Y` |
-| SQL | `SA_PASSWORD` | `ChangeM3Now!` (override in `.env`) |
+| Component | Variable | Default | Notes |
+| --- | --- | --- | --- |
+| SQL Server | `SA_PASSWORD` | `P@ssw0rd1234!` | Set in `.env`; change for any shared instance |
+| RabbitMQ | `RABBITMQ_USER` | `guest` | Mirrors RabbitMQ defaults |
+| RabbitMQ | `RABBITMQ_PASSWORD` | `guest` | Mirrors RabbitMQ defaults |
+| API / Worker | `ConnectionStrings__Default` | `Server=sqlserver,1433;Database=GroupStageSim;User Id=sa;Password=${SA_PASSWORD};Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True` | Provided via environment variables when running in Docker |
+| API / Worker | `Broker__HostName` | `rabbitmq` | Fallback for `RabbitMq` section |
+| API / Worker | `Broker__Port` | `5672` | Consumed by infrastructure DI |
+| API / Worker | `Broker__UserName` | `${RABBITMQ_USER}` | Used when `Broker` section present |
+| API / Worker | `Broker__Password` | `${RABBITMQ_PASSWORD}` | Used when `Broker` section present |
 
 ## docker-compose.yml (Excerpt)
 ```yaml
-version: "3.9"
 services:
-  db:
+  sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: ${SA_PASSWORD}
+      - ACCEPT_EULA=Y
+      - MSSQL_PID=Express
+      - SA_PASSWORD=${SA_PASSWORD:-P@ssw0rd1234!}
     ports:
-      - "<DB_PORT>:1433"
+      - "7272:1433"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $$SA_PASSWORD -Q 'SELECT 1' || exit 1"]
     volumes:
-      - mssql-data:/var/opt/mssql
-  broker:
-    image: rabbitmq:3.12-management
+      - mssql_data:/var/opt/mssql
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-guest}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-guest}
     ports:
-      - "<RABBITMQ_PORT>:5672"
+      - "5672:5672"
       - "15672:15672"
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
-  api:
-    build: ./src/Tournament.Api
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+
+  tournament-api:
+    build:
+      context: .
+      dockerfile: ./src/Tournament.Api/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ConnectionStrings__Default=Server=sqlserver,1433;Database=GroupStageSim;User Id=sa;Password=${SA_PASSWORD:-P@ssw0rd1234!};Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True
+      - Broker__HostName=rabbitmq
+      - Broker__Port=5672
+      - Broker__UserName=${RABBITMQ_USER:-guest}
+      - Broker__Password=${RABBITMQ_PASSWORD:-guest}
     ports:
-      - "<API_PORT>:5180"
-    environment:
-      ConnectionStrings__Default: "Server=db;Database=GroupStageSim;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=true;"
-      RabbitMq__Host: broker
-      RabbitMq__Port: "<RABBITMQ_PORT>"
+      - "5180:8080"
     depends_on:
-      - db
-      - broker
-  worker:
-    build: ./src/Simulator.Worker
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+
+  simulator-worker:
+    build:
+      context: .
+      dockerfile: ./src/Simulator.Worker/Dockerfile
     environment:
-      RabbitMq__Host: broker
-      RabbitMq__Port: "<RABBITMQ_PORT>"
-      Simulation__BaseRate: "<BASE_RATE>"
-      Simulation__Seed: "<DEFAULT_SEED>"
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ConnectionStrings__Default=Server=sqlserver,1433;Database=GroupStageSim;User Id=sa;Password=${SA_PASSWORD:-P@ssw0rd1234!};Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True
+      - Broker__HostName=rabbitmq
+      - Broker__Port=5672
+      - Broker__UserName=${RABBITMQ_USER:-guest}
+      - Broker__Password=${RABBITMQ_PASSWORD:-guest}
     depends_on:
-      - api
-      - broker
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
 volumes:
-  mssql-data:
-  rabbitmq-data:
+  mssql_data:
 ```
 
 ## Workflow
 ```powershell
-# 1. Provide secrets
-Copy-Item .env.sample .env
-# Edit SA_PASSWORD and optional overrides
+# 1. Provide secrets (overwrite defaults as needed)
+Set-Content .env "SA_PASSWORD=P@ssw0rd1234!`nRABBITMQ_USER=guest`nRABBITMQ_PASSWORD=guest"
 
-# 2. Build & start
+# 2. Build and start the full stack
 docker compose up --build -d
 
-# 3. Apply migrations (first run)
-docker compose exec api dotnet ef database update --project src/Infrastructure --startup-project src/Tournament.Api
+# 3. Tail logs until services report healthy
+docker compose logs -f tournament-api simulator-worker
 
-# 4. Tail logs
-docker compose logs -f api worker
+# 4. Open the API surface
+Start-Process http://localhost:5180/swagger
 
-# 5. Tear down
+# 5. Stop the stack (add -v to clear volumes)
 docker compose down
+docker compose down -v
 ```
 
+> Migrations run automatically at startup for the API when `ASPNETCORE_ENVIRONMENT` is `Docker`, so no manual `dotnet ef database update` command is required for the compose story.
+
 ## Health Verification
-- Browse Swagger at `http://localhost:<API_PORT>/swagger` after services are healthy.
+- Browse Swagger at `http://localhost:5180/swagger` after services are healthy.
 - Check RabbitMQ at `http://localhost:15672` (default guest/guest) to confirm `groupsim.events` exchange and queues exist.
-- Verify database tables with `docker compose exec db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${SA_PASSWORD} -Q "SELECT COUNT(*) FROM Match"`.
+- Query SQL Server with `docker compose exec sqlserver /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${SA_PASSWORD} -Q "SELECT name FROM sys.tables"`.
 
 ## Why This Matters
 - Offers a repeatable local environment story—critical for demos and interviews.

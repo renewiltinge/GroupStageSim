@@ -5443,8 +5443,7 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\RenéWiltinge\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\root\\.nuget\\packages": {}
   },
   "project": {
     "version": "1.0.0",
@@ -5452,13 +5451,11 @@
       "projectUniqueName": "C:\\repos\\GroupStageSim\\tests\\Simulator.Worker.Tests\\Simulator.Worker.Tests.csproj",
       "projectName": "Simulator.Worker.Tests",
       "projectPath": "C:\\repos\\GroupStageSim\\tests\\Simulator.Worker.Tests\\Simulator.Worker.Tests.csproj",
-      "packagesPath": "C:\\Users\\RenéWiltinge\\.nuget\\packages\\",
+      "packagesPath": "C:\\root\\.nuget\\packages",
       "outputPath": "C:\\repos\\GroupStageSim\\tests\\Simulator.Worker.Tests\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
+        "C:\\repos\\GroupStageSim\\NuGet.Config",
         "C:\\Users\\RenéWiltinge\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -5467,7 +5464,6 @@
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {

@@ -1,0 +1,24 @@
+.team-name {
+    display: inline-block;
+    max-width: 12rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+tr.qualified {
+    border-left: 4px solid rgba(25, 135, 84, 0.6);
+    background-color: rgba(25, 135, 84, 0.08);
+}
+
+#loading-indicator {
+    display: flex;
+}
+
+#loading-indicator.d-none {
+    display: none !important;
+}
+
+.badge.bg-success {
+    font-size: 0.75rem;
+}

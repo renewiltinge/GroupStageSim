@@ -13,7 +13,6 @@ public sealed class PoissonSimulationEngine : ISimulationEngine
 {
     private readonly SimulationOptions options;
     private readonly ILogger<PoissonSimulationEngine> logger;
-    private readonly ThreadLocal<Random> random;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PoissonSimulationEngine"/> class.
@@ -24,7 +23,6 @@ public sealed class PoissonSimulationEngine : ISimulationEngine
     {
         this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        random = new ThreadLocal<Random>(() => new Random(this.options.DefaultSeed));
     }
 
     /// <inheritdoc />
@@ -32,6 +30,7 @@ public sealed class PoissonSimulationEngine : ISimulationEngine
         Match match,
         Team homeTeam,
         Team awayTeam,
+        int iteration,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -42,8 +41,9 @@ public sealed class PoissonSimulationEngine : ISimulationEngine
         var lambdaHome = options.BaseRate * ratio * options.HomeAdvantage;
         var lambdaAway = options.BaseRate * ratioOpp * options.AwayModifier;
 
-        var homeGoals = SamplePoisson(lambdaHome);
-        var awayGoals = SamplePoisson(lambdaAway);
+        var rng = CreateRandom(match.Id, iteration);
+        var homeGoals = SamplePoisson(lambdaHome, rng);
+        var awayGoals = SamplePoisson(lambdaAway, rng);
 
         logger.LogDebug("Simulated match {MatchId} with λ_home={HomeLambda}, λ_away={AwayLambda}, result={Home}-{Away}", match.Id, lambdaHome, lambdaAway, homeGoals, awayGoals);
         return Task.FromResult((homeGoals, awayGoals));
@@ -54,12 +54,11 @@ public sealed class PoissonSimulationEngine : ISimulationEngine
     /// </summary>
     /// <param name="lambda">Distribution parameter.</param>
     /// <returns>Sampled integer.</returns>
-    private int SamplePoisson(double lambda)
+    private int SamplePoisson(double lambda, Random rng)
     {
         var limit = Math.Exp(-lambda);
         var value = 0;
         var product = 1d;
-        var rng = random.Value!;
 
         do
         {
@@ -80,5 +79,18 @@ public sealed class PoissonSimulationEngine : ISimulationEngine
     private static double ClampStrength(double ratio)
     {
         return Math.Clamp(ratio, 0.5d, 1.5d);
+    }
+
+    private int CreateSeed(Guid matchId, int iteration)
+    {
+        var normalizedIteration = iteration <= 0 ? 1 : iteration;
+        var hash = HashCode.Combine(options.DefaultSeed, matchId, normalizedIteration);
+        return hash & int.MaxValue;
+    }
+
+    private Random CreateRandom(Guid matchId, int iteration)
+    {
+        var seed = CreateSeed(matchId, iteration);
+        return new Random(seed);
     }
 }

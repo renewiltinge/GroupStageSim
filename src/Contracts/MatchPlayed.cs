@@ -7,14 +7,16 @@ namespace GroupStageSim.Contracts;
 /// <param name="GroupId">Group containing the match.</param>
 /// <param name="HomeScore">Goals scored by the home team.</param>
 /// <param name="AwayScore">Goals scored by the away team.</param>
+/// <param name="Round">Match round number.</param>
 /// <param name="Iteration">Simulation iteration that produced this result.</param>
-/// <param name="CompletedAt">Timestamp when simulation finished.</param>
+/// <param name="PlayedAt">Timestamp when simulation finished.</param>
 /// <param name="CorrelationId">Correlation identifier for trace alignment.</param>
 public sealed record MatchPlayed(
     Guid MatchId,
     Guid GroupId,
     int HomeScore,
     int AwayScore,
+    int Round,
     int Iteration,
-    DateTimeOffset CompletedAt,
+    DateTimeOffset PlayedAt,
     Guid CorrelationId);

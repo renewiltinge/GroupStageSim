@@ -19,6 +19,8 @@ public sealed class GroupStageSimDbContext : DbContext
 
     public DbSet<MatchData> Matches => Set<MatchData>();
 
+    public DbSet<SimulationJobData> SimulationJobs => Set<SimulationJobData>();
+
     /// <summary>
     /// Configures persistence metadata for group entities.
     /// </summary>

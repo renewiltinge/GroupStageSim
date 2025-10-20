@@ -10,13 +10,11 @@
         "projectUniqueName": "C:\\repos\\GroupStageSim\\src\\Contracts\\Contracts.csproj",
         "projectName": "Contracts",
         "projectPath": "C:\\repos\\GroupStageSim\\src\\Contracts\\Contracts.csproj",
-        "packagesPath": "C:\\Users\\RenéWiltinge\\.nuget\\packages\\",
+        "packagesPath": "C:\\root\\.nuget\\packages",
         "outputPath": "C:\\repos\\GroupStageSim\\src\\Contracts\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
+          "C:\\repos\\GroupStageSim\\NuGet.Config",
           "C:\\Users\\RenéWiltinge\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -25,7 +23,6 @@
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -75,13 +72,11 @@
         "projectUniqueName": "C:\\repos\\GroupStageSim\\src\\Tournament.Application\\Tournament.Application.csproj",
         "projectName": "Tournament.Application",
         "projectPath": "C:\\repos\\GroupStageSim\\src\\Tournament.Application\\Tournament.Application.csproj",
-        "packagesPath": "C:\\Users\\RenéWiltinge\\.nuget\\packages\\",
+        "packagesPath": "C:\\root\\.nuget\\packages",
         "outputPath": "C:\\repos\\GroupStageSim\\src\\Tournament.Application\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
+          "C:\\repos\\GroupStageSim\\NuGet.Config",
           "C:\\Users\\RenéWiltinge\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -90,7 +85,6 @@
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -153,13 +147,11 @@
         "projectUniqueName": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Tournament.Domain.csproj",
         "projectName": "Tournament.Domain",
         "projectPath": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Tournament.Domain.csproj",
-        "packagesPath": "C:\\Users\\RenéWiltinge\\.nuget\\packages\\",
+        "packagesPath": "C:\\root\\.nuget\\packages",
         "outputPath": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
+          "C:\\repos\\GroupStageSim\\NuGet.Config",
           "C:\\Users\\RenéWiltinge\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -168,7 +160,6 @@
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {

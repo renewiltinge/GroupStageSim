@@ -47,7 +47,7 @@ public sealed class GroupsController : ControllerBase
         var correlationId = Guid.NewGuid();
         var response = GroupApiMapper.ToGroupResponse(group, correlationId);
         logger.LogInformation("Created group {GroupId} with correlationId {CorrelationId}", group.Id, correlationId);
-        return CreatedAtAction(nameof(GetMatchesAsync), new { id = group.Id }, response);
+    return CreatedAtRoute("GetGroupMatches", new { id = group.Id }, response);
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ public sealed class GroupsController : ControllerBase
     /// <param name="id">Group identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Matches response.</returns>
-    [HttpGet("{id:guid}/matches")]
+    [HttpGet("{id:guid}/matches", Name = "GetGroupMatches")]
     [ProducesResponseType(typeof(MatchesResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMatchesAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -118,6 +118,28 @@ public sealed class GroupsController : ControllerBase
             var matches = await groupService.GetMatchesAsync(id, cancellationToken).ConfigureAwait(false);
             var correlationId = Guid.NewGuid();
             var response = GroupApiMapper.ToMatchesResponse(id, matches, correlationId);
+            return Ok(response);
+        }
+        catch (GroupNotFoundException ex)
+        {
+            return NotFound(CreateProblem(ex.Message, ex.GroupId));
+        }
+    }
+
+    /// <summary>
+    /// Retrieves the latest simulation status snapshot for a group.
+    /// </summary>
+    /// <param name="id">Group identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Simulation status response.</returns>
+    [HttpGet("{id:guid}/simulation-status")]
+    [ProducesResponseType(typeof(SimulationStatusResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSimulationStatusAsync(Guid id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var status = await groupService.GetSimulationStatusAsync(id, cancellationToken).ConfigureAwait(false);
+            var response = GroupApiMapper.ToSimulationStatusResponse(id, status);
             return Ok(response);
         }
         catch (GroupNotFoundException ex)

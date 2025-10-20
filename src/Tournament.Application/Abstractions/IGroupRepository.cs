@@ -24,6 +24,13 @@ public interface IGroupRepository
     Task<Group?> GetAsync(Guid groupId, bool includeMatches, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Applies domain changes for the specified group to the persistence store.
+    /// </summary>
+    /// <param name="group">Updated group aggregate.</param>
+    /// <param name="cancellationToken">Termination token.</param>
+    Task UpdateAsync(Group group, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Persists pending changes to the underlying store.
     /// </summary>
     /// <param name="cancellationToken">Termination token.</param>

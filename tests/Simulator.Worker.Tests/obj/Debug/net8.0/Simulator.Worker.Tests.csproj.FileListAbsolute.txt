@@ -194,3 +194,5 @@ C:\repos\GroupStageSim\tests\Simulator.Worker.Tests\obj\Debug\net8.0\refint\Simu
 C:\repos\GroupStageSim\tests\Simulator.Worker.Tests\obj\Debug\net8.0\Simulator.Worker.Tests.pdb
 C:\repos\GroupStageSim\tests\Simulator.Worker.Tests\obj\Debug\net8.0\Simulator.Worker.Tests.genruntimeconfig.cache
 C:\repos\GroupStageSim\tests\Simulator.Worker.Tests\obj\Debug\net8.0\ref\Simulator.Worker.Tests.dll
+C:\repos\GroupStageSim\tests\Simulator.Worker.Tests\obj\Debug\net8.0\Simulator.Worker.Tests.sourcelink.json
+C:\repos\GroupStageSim\tests\Simulator.Worker.Tests\bin\Debug\net8.0\appsettings.Docker.json

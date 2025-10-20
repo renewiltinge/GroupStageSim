@@ -1,0 +1,57 @@
+@model IReadOnlyList<Tournament.Api.Pages.Models.StandingRowDto>
+
+@if (Model.Count == 0)
+{
+    <p class="text-muted">Standings will appear after simulations run.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th scope="col">Pos</th>
+                    <th scope="col">Team</th>
+                    <th scope="col">P</th>
+                    <th scope="col">W</th>
+                    <th scope="col">D</th>
+                    <th scope="col">L</th>
+                    <th scope="col">GF</th>
+                    <th scope="col">GA</th>
+                    <th scope="col">GD</th>
+                    <th scope="col">Pts</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var index = 0; index < Model.Count; index++)
+                {
+                    var row = Model[index];
+                    var qualifiedClass = index < 2 ? "qualified" : string.Empty;
+                    <tr class="@qualifiedClass">
+                        <th scope="row">@(index + 1)</th>
+                        <td>
+                            <span class="team-name" title="@row.TeamName">@row.TeamName</span>
+                            @if (index < 2)
+                            {
+                                <span class="badge bg-success ms-2">Qualified</span>
+                            }
+                        </td>
+                        <td>@row.Played</td>
+                        <td>@row.Wins</td>
+                        <td>@row.Draws</td>
+                        <td>@row.Losses</td>
+                        <td>@row.GoalsFor</td>
+                        <td>@row.GoalsAgainst</td>
+                        <td>@row.GoalDifference</td>
+                        <td>@row.Points</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="small text-muted mt-2">
+        <button class="btn btn-link btn-sm p-0 align-baseline" type="button" data-bs-toggle="tooltip" data-bs-title="Points → GD → GF → GA → Head-to-Head">
+            Tie-breaker rules
+        </button>
+    </div>
+}

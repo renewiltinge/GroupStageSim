@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Tournament.Application.Abstractions;
 using Tournament.Application.Services;
 using Tournament.Domain.Services;
 
@@ -18,7 +19,7 @@ public static class DependencyInjection
     {
         services.AddScoped<GroupService>();
         services.AddSingleton<Scheduler>();
-        services.AddSingleton<RankingService>();
+        services.AddSingleton<IRankingService, RankingService>();
         services.AddSingleton<MatchResultApplier>();
         return services;
     }

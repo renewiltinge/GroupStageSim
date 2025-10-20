@@ -8,6 +8,7 @@ using Simulator.Worker.Simulation;
 using Tournament.Application;
 using Tournament.Application.Abstractions;
 using Tournament.Infrastructure;
+using Tournament.Infrastructure.Messaging.Options;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -22,6 +23,7 @@ builder.Logging.AddSerilog();
 
 builder.Services.AddOptions();
 builder.Services.Configure<SimulationOptions>(builder.Configuration.GetSection("Simulation"));
+builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection("RabbitMq"));
 builder.Services.AddSingleton<ISimulationEngine, PoissonSimulationEngine>();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructure(builder.Configuration);

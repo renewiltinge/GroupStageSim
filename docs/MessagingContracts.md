@@ -12,8 +12,11 @@
   "awayTeamId": "22222222-2222-2222-2222-222222222222",
   "round": 1,
   "scheduledKickoff": "2025-10-17T13:00:00Z",
+  "iteration": 1,
   "iterations": 250,
-  "correlationId": "706d8b92-2a91-4cb7-8b44-fd8c45e570ab"
+  "correlationId": "706d8b92-2a91-4cb7-8b44-fd8c45e570ab",
+  "strengthHome": 1.1,
+  "strengthAway": 0.9
 }
 ```
 ```csharp
@@ -27,8 +30,11 @@ public sealed record MatchScheduled(
     Guid AwayTeamId,
     int Round,
     DateTimeOffset ScheduledKickoff,
+    int Iteration,
     int Iterations,
-    Guid CorrelationId);
+    Guid CorrelationId,
+    double StrengthHome,
+    double StrengthAway);
 ```
 
 ### MatchPlayed
@@ -38,8 +44,9 @@ public sealed record MatchScheduled(
   "groupId": "6d0d85c9-a4d3-4a6c-94d4-6a0d07e34567",
   "homeScore": 2,
   "awayScore": 1,
+  "round": 1,
   "iteration": 1,
-  "completedAt": "2025-10-17T13:05:10Z",
+  "playedAt": "2025-10-17T13:05:10Z",
   "correlationId": "706d8b92-2a91-4cb7-8b44-fd8c45e570ab"
 }
 ```
@@ -52,8 +59,9 @@ public sealed record MatchPlayed(
     Guid GroupId,
     int HomeScore,
     int AwayScore,
+    int Round,
     int Iteration,
-    DateTimeOffset CompletedAt,
+    DateTimeOffset PlayedAt,
     Guid CorrelationId);
 ```
 

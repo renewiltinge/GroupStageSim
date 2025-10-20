@@ -1,26 +1,56 @@
 # File: README.md
 
-<PROJECT_NAME>=GroupStageSim · <DB_ENGINE>=SQL Server · <BROKER>=RabbitMQ · <NAMESPACE>=groupsim · <API_PORT>=5180 · <DB_PORT>=1433 · <RABBITMQ_PORT>=5672 · <BASE_RATE>=1.3 · <HOME_ADV>=1.05 · <AWAY_MOD>=0.95 · <DEFAULT_SEED>=42
+Project: GroupStageSim · Database: SQL Server · Broker: RabbitMQ · Namespace: groupsim · API Port: 5180 · SQL Port: 7272 · RabbitMQ Port: 5672 · Base Rate: 1.3 · Home Adv: 1.05 · Away Mod: 0.95 · Default Seed: 42
 
 ## Overview
-<PROJECT_NAME> is an event-driven .NET 8 backend that schedules a four-team group stage, simulates match outcomes with a Poisson engine, and ranks teams using deterministic tie-breakers.
+GroupStageSim is an event-driven .NET 8 backend that schedules a four-team group stage, simulates match outcomes with a Poisson engine, and ranks teams using deterministic tie-breakers.
 
 ## Quickstart (Docker Compose)
+| Component | Host Port | Notes |
+| --- | --- | --- |
+| API | `http://localhost:5180` | Swagger at `/swagger`, health at `/healthz` + `/healthz/ready` |
+| SQL Server | `localhost,7272` | SA login from `.env` (default `P@ssw0rd1234!`) |
+| RabbitMQ | `localhost:5672` (`AMQP`), `localhost:15672` (management UI) | Default user `guest`/`guest` |
+
 ```powershell
 # Clone & enter repo
 git clone https://github.com/your-org/GroupStageSim.git
 cd GroupStageSim
 
-# Configure secrets
-type NUL > .env # or copy provided sample and fill SA_PASSWORD
+# Provide secrets for compose (overwrites default values if needed)
+Set-Content .env "SA_PASSWORD=P@ssw0rd1234!`nRABBITMQ_USER=guest`nRABBITMQ_PASSWORD=guest"
 
-# Run stack
+# Build images and start services (API runs on http://localhost:5180)
 docker compose up --build -d
 
-# Smoke test
-dotnet tool install --global HttpRepl # optional
-curl http://localhost:<API_PORT>/swagger
+# Verify readiness
+docker compose ps
+curl http://localhost:5180/healthz/ready
+Start-Process http://localhost:15672
 ```
+
+Once the containers report `running (healthy)`, open [http://localhost:5180/ui](http://localhost:5180/ui) for the web surface or inspect the OpenAPI definition at [http://localhost:5180/swagger](http://localhost:5180/swagger).
+
+> 🪄 Migrations are applied automatically on startup for the API when running with the `Docker` or `Development` environment profiles.
+
+Stop the stack with `docker compose down` (add `-v` to clear persisted SQL data).
+
+## Local Development (dotnet run)
+- Ensure Docker Desktop is running so the infrastructure containers can start.
+- Start shared services: `docker compose up -d sqlserver rabbitmq`
+- Run the API locally: `dotnet run --project src/Tournament.Api`
+- In a second terminal, run the simulator worker: `dotnet run --project src/Simulator.Worker`
+
+The API listens on `https://localhost:7180` and `http://localhost:5180` by default when using Kestrel with certificates enabled. Connection strings still point at `localhost,7272`, so the compose-hosted SQL instance is reused.
+
+## Web UI
+- Start the stack with `dotnet run --project src/Tournament.Api` or `docker compose up` so the API and simulator worker are available.
+- Open [http://localhost:5180/ui](http://localhost:5180/ui) to launch the reviewer UI.
+- Use **Create Group** to accept the default four teams (Alpha, Bravo, Charlie, Delta) or adjust strengths, then submit the form.
+- On the details screen, press **Simulate Once** to enqueue a single Monte Carlo run (or specify more iterations) and wait a moment while the page polls the REST API.
+- Review the updated standings and match results, or jump to the OpenAPI surface at [http://localhost:5180/swagger](http://localhost:5180/swagger).
+
+![Screenshot of the GroupStageSim web UI](docs/images/ui-screenshot.png)
 
 ## Prerequisites
 - .NET 8 SDK

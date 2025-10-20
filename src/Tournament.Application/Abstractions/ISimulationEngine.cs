@@ -13,11 +13,13 @@ public interface ISimulationEngine
     /// <param name="match">Match metadata.</param>
     /// <param name="homeTeam">Home team profile.</param>
     /// <param name="awayTeam">Away team profile.</param>
+    /// <param name="iteration">Current simulation iteration.</param>
     /// <param name="cancellationToken">Termination token.</param>
     /// <returns>Simulated scoreline.</returns>
     Task<(int HomeScore, int AwayScore)> SimulateAsync(
         Match match,
         Team homeTeam,
         Team awayTeam,
+        int iteration,
         CancellationToken cancellationToken);
 }

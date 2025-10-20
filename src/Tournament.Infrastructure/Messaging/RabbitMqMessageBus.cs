@@ -53,7 +53,7 @@ public sealed class RabbitMqMessageBus : IMessageBus, IDisposable
         cancellationToken.ThrowIfCancellationRequested();
 
         using var channel = connection.CreateModel();
-        channel.ExchangeDeclare(options.ExchangeName, ExchangeType.Topic, durable: true, autoDelete: false);
+        channel.ExchangeDeclare(options.ExchangeName, ExchangeType.Direct, durable: true, autoDelete: false);
 
         var payload = JsonSerializer.SerializeToUtf8Bytes(message);
         var properties = channel.CreateBasicProperties();
@@ -72,13 +72,13 @@ public sealed class RabbitMqMessageBus : IMessageBus, IDisposable
     /// </summary>
     /// <param name="message">Payload instance.</param>
     /// <returns>Routing key.</returns>
-    private static string ResolveRoutingKey<TMessage>(TMessage message)
+    private string ResolveRoutingKey<TMessage>(TMessage message)
         where TMessage : class
     {
         return message switch
         {
-            MatchScheduledEvent => "match.scheduled",
-            MatchPlayedEvent => "match.played",
+            MatchScheduledEvent => options.ScheduledRoutingKey,
+            MatchPlayedEvent => options.PlayedRoutingKey,
             _ => typeof(TMessage).Name.ToLowerInvariant()
         };
     }

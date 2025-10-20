@@ -1,4 +1,5 @@
 using Tournament.Api.Models.Responses;
+using Tournament.Application.Models;
 using Tournament.Domain.Entities;
 
 namespace Tournament.Api.Mappers;
@@ -97,6 +98,48 @@ public static class GroupApiMapper
             }).ToList(),
             CorrelationId = correlationId,
             UpdatedAt = DateTimeOffset.UtcNow
+        };
+    }
+
+    /// <summary>
+    /// Projects simulation status into an API response.
+    /// </summary>
+    /// <param name="groupId">Group identifier.</param>
+    /// <param name="status">Simulation status snapshot.</param>
+    /// <returns>Simulation status response.</returns>
+    public static SimulationStatusResponse ToSimulationStatusResponse(Guid groupId, SimulationStatus? status)
+    {
+        if (status is null)
+        {
+            return new SimulationStatusResponse
+            {
+                GroupId = groupId,
+                State = "idle",
+                Explanation = "No simulations have been queued for this group yet."
+            };
+        }
+
+        var state = status.Status switch
+        {
+            SimulationJobStatus.Completed => "completed",
+            SimulationJobStatus.Running => "running",
+            _ => "queued"
+        };
+
+        return new SimulationStatusResponse
+        {
+            GroupId = status.GroupId,
+            CorrelationId = status.CorrelationId,
+            State = state,
+            Iterations = status.Iterations,
+            MatchesTotal = status.MatchesTotal,
+            MatchesCompleted = status.MatchesCompleted,
+            QueuedAt = status.QueuedAt,
+            StartedAt = status.StartedAt,
+            CompletedAt = status.CompletedAt,
+            LastUpdatedAt = status.LastUpdatedAt,
+            EstimatedSecondsRemaining = status.EstimatedRemaining?.TotalSeconds,
+            Explanation = status.Explanation
         };
     }
 }

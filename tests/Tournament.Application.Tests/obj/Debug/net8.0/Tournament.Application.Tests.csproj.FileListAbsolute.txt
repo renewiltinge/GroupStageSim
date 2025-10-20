@@ -114,3 +114,4 @@ C:\repos\GroupStageSim\tests\Tournament.Application.Tests\obj\Debug\net8.0\refin
 C:\repos\GroupStageSim\tests\Tournament.Application.Tests\obj\Debug\net8.0\Tournament.Application.Tests.pdb
 C:\repos\GroupStageSim\tests\Tournament.Application.Tests\obj\Debug\net8.0\Tournament.Application.Tests.genruntimeconfig.cache
 C:\repos\GroupStageSim\tests\Tournament.Application.Tests\obj\Debug\net8.0\ref\Tournament.Application.Tests.dll
+C:\repos\GroupStageSim\tests\Tournament.Application.Tests\obj\Debug\net8.0\Tournament.Application.Tests.sourcelink.json

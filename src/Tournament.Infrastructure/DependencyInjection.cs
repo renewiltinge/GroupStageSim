@@ -23,6 +23,25 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMq"));
+        services.PostConfigure<RabbitMqOptions>(options =>
+        {
+            var brokerSection = configuration.GetSection("Broker");
+            if (brokerSection.Exists())
+            {
+                options.Host = brokerSection.GetValue<string>("Host")
+                    ?? brokerSection.GetValue<string>("HostName")
+                    ?? options.Host;
+
+                var port = brokerSection.GetValue<int?>("Port");
+                if (port.HasValue)
+                {
+                    options.Port = port.Value;
+                }
+
+                options.UserName = brokerSection.GetValue<string>("UserName") ?? options.UserName;
+                options.Password = brokerSection.GetValue<string>("Password") ?? options.Password;
+            }
+        });
 
         services.AddDbContext<GroupStageSimDbContext>((sp, options) =>
         {
@@ -31,7 +50,8 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(typeof(DependencyInjection).Assembly.FullName));
         });
 
-        services.AddScoped<IGroupRepository, GroupRepository>();
+    services.AddScoped<IGroupRepository, GroupRepository>();
+    services.AddScoped<ISimulationJobRepository, SimulationJobRepository>();
         services.AddSingleton<IMessageBus, RabbitMqMessageBus>();
 
         return services;
