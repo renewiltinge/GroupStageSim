@@ -16,9 +16,9 @@ public sealed class GroupService
     
     private readonly IGroupRepository groupRepository;
     private readonly IMessageBus messageBus;
-    private readonly Scheduler scheduler;
+    private readonly SchedulerService schedulerService;
     private readonly IRankingService rankingService;
-    private readonly MatchResultApplier matchResultApplier;
+    private readonly MatchResultService matchResultService;
     private readonly ISimulationJobRepository simulationJobRepository;
 
     /// <summary>
@@ -32,17 +32,17 @@ public sealed class GroupService
     public GroupService(
         IGroupRepository groupRepository,
         IMessageBus messageBus,
-        Scheduler scheduler,
+        SchedulerService schedulerService,
         IRankingService rankingService,
-        MatchResultApplier matchResultApplier,
+        MatchResultService matchService,
         ISimulationJobRepository simulationJobRepository)
     {
-        this.groupRepository = groupRepository ?? throw new ArgumentNullException(nameof(groupRepository));
-        this.messageBus = messageBus ?? throw new ArgumentNullException(nameof(messageBus));
-        this.scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
-        this.rankingService = rankingService ?? throw new ArgumentNullException(nameof(rankingService));
-        this.matchResultApplier = matchResultApplier ?? throw new ArgumentNullException(nameof(matchResultApplier));
-        this.simulationJobRepository = simulationJobRepository ?? throw new ArgumentNullException(nameof(simulationJobRepository));
+        this.groupRepository = groupRepository;
+        this.messageBus = messageBus;
+        this.schedulerService = schedulerService;
+        this.rankingService = rankingService ;
+        this.matchResultService = matchService;
+        this.simulationJobRepository = simulationJobRepository ;
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public sealed class GroupService
 
         var teams = command.Teams.Select(team => new Team(team.Id, team.Name, team.Strength)).ToList();
         var group = new Group(Guid.NewGuid(), command.Name, teams);
-        var matches = scheduler.CreateSchedule(group, DateTimeOffset.UtcNow);
+        var matches = schedulerService.CreateSchedule(group, DateTimeOffset.UtcNow);
         group.AddMatches(matches);
 
         await groupRepository.AddAsync(group, cancellationToken).ConfigureAwait(false);
@@ -262,7 +262,7 @@ public sealed class GroupService
             throw new GroupNotFoundException(groupId);
         }
 
-        matchResultApplier.Apply(group, matchId, homeScore, awayScore);
+        matchResultService.Apply(group, matchId, homeScore, awayScore);
         await groupRepository.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
         await groupRepository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 

@@ -3,6 +3,30 @@
   "WorkspaceRootPath": "C:\\repos\\GroupStageSim\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{5F62FBC7-23E7-4E8B-98FC-8B8D1561E97F}|src\\Tournament.Application\\Tournament.Application.csproj|c:\\repos\\groupstagesim\\src\\tournament.application\\services\\groupservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5F62FBC7-23E7-4E8B-98FC-8B8D1561E97F}|src\\Tournament.Application\\Tournament.Application.csproj|solutionrelative:src\\tournament.application\\services\\groupservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C8E99D85-62EB-4351-97F5-DFF8E807019D}|tests\\Tournament.Application.Tests\\Tournament.Application.Tests.csproj|c:\\repos\\groupstagesim\\tests\\tournament.application.tests\\schedulertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C8E99D85-62EB-4351-97F5-DFF8E807019D}|tests\\Tournament.Application.Tests\\Tournament.Application.Tests.csproj|solutionrelative:tests\\tournament.application.tests\\schedulertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C8E99D85-62EB-4351-97F5-DFF8E807019D}|tests\\Tournament.Application.Tests\\Tournament.Application.Tests.csproj|c:\\repos\\groupstagesim\\tests\\tournament.application.tests\\groupservicetests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C8E99D85-62EB-4351-97F5-DFF8E807019D}|tests\\Tournament.Application.Tests\\Tournament.Application.Tests.csproj|solutionrelative:tests\\tournament.application.tests\\groupservicetests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CBEC1C4D-B82B-4435-8CF3-C7A3D2BCE828}|src\\Contracts\\Contracts.csproj|c:\\repos\\groupstagesim\\src\\contracts\\matchplayed.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CBEC1C4D-B82B-4435-8CF3-C7A3D2BCE828}|src\\Contracts\\Contracts.csproj|solutionrelative:src\\contracts\\matchplayed.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CBEC1C4D-B82B-4435-8CF3-C7A3D2BCE828}|src\\Contracts\\Contracts.csproj|c:\\repos\\groupstagesim\\src\\contracts\\matchscheduled.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CBEC1C4D-B82B-4435-8CF3-C7A3D2BCE828}|src\\Contracts\\Contracts.csproj|solutionrelative:src\\contracts\\matchscheduled.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FE37AE78-807B-407B-8D60-935395149909}|src\\Tournament.Domain\\Tournament.Domain.csproj|c:\\repos\\groupstagesim\\src\\tournament.domain\\entities\\simulationjob.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FE37AE78-807B-407B-8D60-935395149909}|src\\Tournament.Domain\\Tournament.Domain.csproj|solutionrelative:src\\tournament.domain\\entities\\simulationjob.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{FE37AE78-807B-407B-8D60-935395149909}|src\\Tournament.Domain\\Tournament.Domain.csproj|c:\\repos\\groupstagesim\\src\\tournament.domain\\services\\schedulerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FE37AE78-807B-407B-8D60-935395149909}|src\\Tournament.Domain\\Tournament.Domain.csproj|solutionrelative:src\\tournament.domain\\services\\schedulerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -19,10 +43,6 @@
       "RelativeMoniker": "D:0:0:{CBEC1C4D-B82B-4435-8CF3-C7A3D2BCE828}|src\\Contracts\\Contracts.csproj|solutionrelative:src\\contracts\\contracts.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{CBEC1C4D-B82B-4435-8CF3-C7A3D2BCE828}|src\\Contracts\\Contracts.csproj|c:\\repos\\groupstagesim\\src\\contracts\\matchplayed.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CBEC1C4D-B82B-4435-8CF3-C7A3D2BCE828}|src\\Contracts\\Contracts.csproj|solutionrelative:src\\contracts\\matchplayed.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{57C6997E-B11D-4B90-A18F-19079C73DF90}|src\\Tournament.Api\\Tournament.Api.csproj|c:\\repos\\groupstagesim\\src\\tournament.api\\models\\requests\\creategrouprequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{57C6997E-B11D-4B90-A18F-19079C73DF90}|src\\Tournament.Api\\Tournament.Api.csproj|solutionrelative:src\\tournament.api\\models\\requests\\creategrouprequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -33,10 +53,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{C8E99D85-62EB-4351-97F5-DFF8E807019D}|tests\\Tournament.Application.Tests\\Tournament.Application.Tests.csproj|c:\\repos\\groupstagesim\\tests\\tournament.application.tests\\simulationjobtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C8E99D85-62EB-4351-97F5-DFF8E807019D}|tests\\Tournament.Application.Tests\\Tournament.Application.Tests.csproj|solutionrelative:tests\\tournament.application.tests\\simulationjobtests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C8E99D85-62EB-4351-97F5-DFF8E807019D}|tests\\Tournament.Application.Tests\\Tournament.Application.Tests.csproj|c:\\repos\\groupstagesim\\tests\\tournament.application.tests\\groupservicetests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C8E99D85-62EB-4351-97F5-DFF8E807019D}|tests\\Tournament.Application.Tests\\Tournament.Application.Tests.csproj|solutionrelative:tests\\tournament.application.tests\\groupservicetests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FE37AE78-807B-407B-8D60-935395149909}|src\\Tournament.Domain\\Tournament.Domain.csproj|c:\\repos\\groupstagesim\\src\\tournament.domain\\entities\\match.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -66,164 +82,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 316,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 13,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Group.cs",
-              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Entities\\Group.cs",
-              "RelativeDocumentMoniker": "src\\Tournament.Domain\\Entities\\Group.cs",
-              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Entities\\Group.cs",
-              "RelativeToolTip": "src\\Tournament.Domain\\Entities\\Group.cs",
-              "ViewState": "AgIAAEYAAAAAAAAAAAAQwFkAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T19:53:42.703Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "SchedulerService.cs",
-              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Services\\SchedulerService.cs",
-              "RelativeDocumentMoniker": "src\\Tournament.Domain\\Services\\SchedulerService.cs",
-              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Services\\SchedulerService.cs",
-              "RelativeToolTip": "src\\Tournament.Domain\\Services\\SchedulerService.cs",
-              "ViewState": "AgIAADkAAAAAAAAAAAAAwEwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T19:53:14.85Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Contracts",
-              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Contracts\\Contracts.csproj",
-              "RelativeDocumentMoniker": "src\\Contracts\\Contracts.csproj",
-              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Contracts\\Contracts.csproj",
-              "RelativeToolTip": "src\\Contracts\\Contracts.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-10-20T20:38:23.109Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "MatchResultService.cs",
-              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Services\\MatchResultService.cs",
-              "RelativeDocumentMoniker": "src\\Tournament.Domain\\Services\\MatchResultService.cs",
-              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Services\\MatchResultService.cs",
-              "RelativeToolTip": "src\\Tournament.Domain\\Services\\MatchResultService.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAAwAcAAAAmAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T19:52:52.998Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "CreateGroupRequest.cs",
-              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Api\\Models\\Requests\\CreateGroupRequest.cs",
-              "RelativeDocumentMoniker": "src\\Tournament.Api\\Models\\Requests\\CreateGroupRequest.cs",
-              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Api\\Models\\Requests\\CreateGroupRequest.cs",
-              "RelativeToolTip": "src\\Tournament.Api\\Models\\Requests\\CreateGroupRequest.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T20:37:40.248Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "GroupApiMapper.cs",
-              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Api\\Mappers\\GroupApiMapper.cs",
-              "RelativeDocumentMoniker": "src\\Tournament.Api\\Mappers\\GroupApiMapper.cs",
-              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Api\\Mappers\\GroupApiMapper.cs",
-              "RelativeToolTip": "src\\Tournament.Api\\Mappers\\GroupApiMapper.cs",
-              "ViewState": "AgIAAHkAAAAAAAAAAAAkwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T20:37:16.18Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "SimulationJobTests.cs",
-              "DocumentMoniker": "C:\\repos\\GroupStageSim\\tests\\Tournament.Application.Tests\\SimulationJobTests.cs",
-              "RelativeDocumentMoniker": "tests\\Tournament.Application.Tests\\SimulationJobTests.cs",
-              "ToolTip": "C:\\repos\\GroupStageSim\\tests\\Tournament.Application.Tests\\SimulationJobTests.cs",
-              "RelativeToolTip": "tests\\Tournament.Application.Tests\\SimulationJobTests.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T20:35:02.058Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "GroupServiceTests.cs",
-              "DocumentMoniker": "C:\\repos\\GroupStageSim\\tests\\Tournament.Application.Tests\\GroupServiceTests.cs",
-              "RelativeDocumentMoniker": "tests\\Tournament.Application.Tests\\GroupServiceTests.cs",
-              "ToolTip": "C:\\repos\\GroupStageSim\\tests\\Tournament.Application.Tests\\GroupServiceTests.cs",
-              "RelativeToolTip": "tests\\Tournament.Application.Tests\\GroupServiceTests.cs",
-              "ViewState": "AgIAAAQAAAAAAAAAAAAAAAsAAAAeAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T20:34:18.311Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "MatchPlayed.cs",
-              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Contracts\\MatchPlayed.cs",
-              "RelativeDocumentMoniker": "src\\Contracts\\MatchPlayed.cs",
-              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Contracts\\MatchPlayed.cs",
-              "RelativeToolTip": "src\\Contracts\\MatchPlayed.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T19:50:59.043Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "Match.cs",
-              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Entities\\Match.cs",
-              "RelativeDocumentMoniker": "src\\Tournament.Domain\\Entities\\Match.cs",
-              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Entities\\Match.cs",
-              "RelativeToolTip": "src\\Tournament.Domain\\Entities\\Match.cs",
-              "ViewState": "AgIAAFcAAAAAAAAAAAA9wGsAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T19:54:32.392Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "GroupNotFoundException.cs",
-              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Application\\Exceptions\\GroupNotFoundException.cs",
-              "RelativeDocumentMoniker": "src\\Tournament.Application\\Exceptions\\GroupNotFoundException.cs",
-              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Application\\Exceptions\\GroupNotFoundException.cs",
-              "RelativeToolTip": "src\\Tournament.Application\\Exceptions\\GroupNotFoundException.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T19:51:34.984Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "CreateGroupCommand.cs",
-              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Application\\Models\\CreateGroupCommand.cs",
-              "RelativeDocumentMoniker": "src\\Tournament.Application\\Models\\CreateGroupCommand.cs",
-              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Application\\Models\\CreateGroupCommand.cs",
-              "RelativeToolTip": "src\\Tournament.Application\\Models\\CreateGroupCommand.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T19:51:24.977Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{74946827-37a0-11d2-a273-00c04f8ef4ff}"
@@ -274,7 +134,206 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "SchedulerTests.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\tests\\Tournament.Application.Tests\\SchedulerTests.cs",
+              "RelativeDocumentMoniker": "tests\\Tournament.Application.Tests\\SchedulerTests.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\tests\\Tournament.Application.Tests\\SchedulerTests.cs",
+              "RelativeToolTip": "tests\\Tournament.Application.Tests\\SchedulerTests.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAAiwBkAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-21T15:47:43.582Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "GroupService.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Application\\Services\\GroupService.cs",
+              "RelativeDocumentMoniker": "src\\Tournament.Application\\Services\\GroupService.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Application\\Services\\GroupService.cs",
+              "RelativeToolTip": "src\\Tournament.Application\\Services\\GroupService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-21T15:44:48.554Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "MatchScheduled.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Contracts\\MatchScheduled.cs",
+              "RelativeDocumentMoniker": "src\\Contracts\\MatchScheduled.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Contracts\\MatchScheduled.cs",
+              "RelativeToolTip": "src\\Contracts\\MatchScheduled.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-21T15:32:48.097Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "SimulationJob.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Entities\\SimulationJob.cs",
+              "RelativeDocumentMoniker": "src\\Tournament.Domain\\Entities\\SimulationJob.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Entities\\SimulationJob.cs",
+              "RelativeToolTip": "src\\Tournament.Domain\\Entities\\SimulationJob.cs",
+              "ViewState": "AgIAAJ0AAAAAAAAAAAAqwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-21T15:25:08.588Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "SchedulerService.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Services\\SchedulerService.cs",
+              "RelativeDocumentMoniker": "src\\Tournament.Domain\\Services\\SchedulerService.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Services\\SchedulerService.cs",
+              "RelativeToolTip": "src\\Tournament.Domain\\Services\\SchedulerService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-20T19:53:14.85Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "CreateGroupRequest.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Api\\Models\\Requests\\CreateGroupRequest.cs",
+              "RelativeDocumentMoniker": "src\\Tournament.Api\\Models\\Requests\\CreateGroupRequest.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Api\\Models\\Requests\\CreateGroupRequest.cs",
+              "RelativeToolTip": "src\\Tournament.Api\\Models\\Requests\\CreateGroupRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-20T20:37:40.248Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "GroupServiceTests.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\tests\\Tournament.Application.Tests\\GroupServiceTests.cs",
+              "RelativeDocumentMoniker": "tests\\Tournament.Application.Tests\\GroupServiceTests.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\tests\\Tournament.Application.Tests\\GroupServiceTests.cs",
+              "RelativeToolTip": "tests\\Tournament.Application.Tests\\GroupServiceTests.cs",
+              "ViewState": "AgIAAE4AAAAAAAAAAAAmwFkAAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-20T20:34:18.311Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "MatchResultService.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Services\\MatchResultService.cs",
+              "RelativeDocumentMoniker": "src\\Tournament.Domain\\Services\\MatchResultService.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Services\\MatchResultService.cs",
+              "RelativeToolTip": "src\\Tournament.Domain\\Services\\MatchResultService.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAAwAcAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-20T19:52:52.998Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Contracts.csproj",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Contracts\\Contracts.csproj",
+              "RelativeDocumentMoniker": "src\\Contracts\\Contracts.csproj",
+              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Contracts\\Contracts.csproj",
+              "RelativeToolTip": "src\\Contracts\\Contracts.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-10-20T20:38:23.109Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "MatchPlayed.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Contracts\\MatchPlayed.cs",
+              "RelativeDocumentMoniker": "src\\Contracts\\MatchPlayed.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Contracts\\MatchPlayed.cs",
+              "RelativeToolTip": "src\\Contracts\\MatchPlayed.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-20T19:50:59.043Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Group.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Entities\\Group.cs",
+              "RelativeDocumentMoniker": "src\\Tournament.Domain\\Entities\\Group.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Entities\\Group.cs",
+              "RelativeToolTip": "src\\Tournament.Domain\\Entities\\Group.cs",
+              "ViewState": "AgIAAEYAAAAAAAAAAAAQwFkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-20T19:53:42.703Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "GroupApiMapper.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Api\\Mappers\\GroupApiMapper.cs",
+              "RelativeDocumentMoniker": "src\\Tournament.Api\\Mappers\\GroupApiMapper.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Api\\Mappers\\GroupApiMapper.cs",
+              "RelativeToolTip": "src\\Tournament.Api\\Mappers\\GroupApiMapper.cs",
+              "ViewState": "AgIAAHkAAAAAAAAAAAAkwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-20T20:37:16.18Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 12,
+              "Title": "SimulationJobTests.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\tests\\Tournament.Application.Tests\\SimulationJobTests.cs",
+              "RelativeDocumentMoniker": "tests\\Tournament.Application.Tests\\SimulationJobTests.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\tests\\Tournament.Application.Tests\\SimulationJobTests.cs",
+              "RelativeToolTip": "tests\\Tournament.Application.Tests\\SimulationJobTests.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-20T20:35:02.058Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Match.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Entities\\Match.cs",
+              "RelativeDocumentMoniker": "src\\Tournament.Domain\\Entities\\Match.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Domain\\Entities\\Match.cs",
+              "RelativeToolTip": "src\\Tournament.Domain\\Entities\\Match.cs",
+              "ViewState": "AgIAAFcAAAAAAAAAAAA9wGsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-20T19:54:32.392Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "GroupNotFoundException.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Application\\Exceptions\\GroupNotFoundException.cs",
+              "RelativeDocumentMoniker": "src\\Tournament.Application\\Exceptions\\GroupNotFoundException.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Application\\Exceptions\\GroupNotFoundException.cs",
+              "RelativeToolTip": "src\\Tournament.Application\\Exceptions\\GroupNotFoundException.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-20T19:51:34.984Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "CreateGroupCommand.cs",
+              "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Application\\Models\\CreateGroupCommand.cs",
+              "RelativeDocumentMoniker": "src\\Tournament.Application\\Models\\CreateGroupCommand.cs",
+              "ToolTip": "C:\\repos\\GroupStageSim\\src\\Tournament.Application\\Models\\CreateGroupCommand.cs",
+              "RelativeToolTip": "src\\Tournament.Application\\Models\\CreateGroupCommand.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-20T19:51:24.977Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Api\\Program.cs",
               "RelativeDocumentMoniker": "src\\Tournament.Api\\Program.cs",
@@ -282,12 +341,11 @@
               "RelativeToolTip": "src\\Tournament.Api\\Program.cs",
               "ViewState": "AgIAADkAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-18T13:06:14.456Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-18T13:06:14.456Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 17,
               "Title": "Tournament.Api.http",
               "DocumentMoniker": "C:\\repos\\GroupStageSim\\src\\Tournament.Api\\Tournament.Api.http",
               "RelativeDocumentMoniker": "src\\Tournament.Api\\Tournament.Api.http",
@@ -303,10 +361,6 @@
           "DockedWidth": 140,
           "SelectedChildIndex": -1,
           "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{004be353-6879-467c-9d1e-9ac23cdf6d49}"
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"

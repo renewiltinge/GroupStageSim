@@ -18,9 +18,9 @@ public static class DependencyInjection
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddScoped<GroupService>();
-        services.AddSingleton<Scheduler>();
+        services.AddSingleton<SchedulerService>();
         services.AddSingleton<IRankingService, RankingService>();
-        services.AddSingleton<MatchResultApplier>();
+        services.AddSingleton<MatchResultService>();
         return services;
     }
 }

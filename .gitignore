@@ -1,46 +1,172 @@
-# secrets & local overrides
-.env
-*.env.local
-appsettings.*.local.json
-appsettings.secrets.json
-docker-compose.override.yml
+# =============================================================================
+# GroupStageSim .gitignore
+# .NET 8 / ASP.NET Core project met Docker, tests en moderne tooling
+# =============================================================================
 
-# build artifacts
+# 1️⃣ Build- en publish-artefacten
+# -----------------------------------------------------------------------------
 bin/
 obj/
 out/
+publish/
+dist/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
 
-# user/tool junk
-.vscode/
-.idea/
+# 2️⃣ User-specifieke instellingen
+# -----------------------------------------------------------------------------
 *.user
-*.swp
-*.suo
-.vs/
+*.userosscache
+*.sln.docstates
+*.userprefs
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# 3️⃣ IDE's (Visual Studio, VSCode, JetBrains Rider)
+# -----------------------------------------------------------------------------
+# Visual Studio
+.vs/
+*.suo
+*.sln.docstates
+*.vcxproj.filters
+*.vcxproj.user
+
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# 4️⃣ .NET-artefacten
+# -----------------------------------------------------------------------------
+*.dll
+*.exe
+*.pdb
+*.cache
+*.lib
+*.exp
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.tlog
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
 
 # NuGet packages
 *.nupkg
+*.snupkg
 **/packages/*
 !**/packages/build/
 *.nuget.props
 *.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
 
-# Test results
+# 5️⃣ Logs, coverage, temp bestanden
+# -----------------------------------------------------------------------------
+logs/
+*.log
+*.log.*
+*.txt
 TestResults/
 [Tt]est[Rr]esult*/
 *.trx
 *.coverage
 *.coveragexml
+*.cobertura.xml
+coverage/
+lcov.info
+BenchmarkDotNet.Artifacts/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+.~lock.*
 
-# Logs
-logs/
-*.log
+# 6️⃣ Docker en Testcontainers
+# -----------------------------------------------------------------------------
+.docker/
+.testcontainers/
+testcontainers-*.properties
+.dockerignore.bak
+
+# 7️⃣ Geheimen en lokale overrides
+# -----------------------------------------------------------------------------
+.env
+*.env.local
+*.env.production.local
+*.env.development.local
+appsettings.*.local.json
+appsettings.secrets.json
+docker-compose.override.yml
+*.pfx
+*.p12
+*.key
+*.crt
+secrets/
+.secrets/
+
+# Aanbevolen lokale overrides
+*.local.json
+*.override.json
+*.personal.json
+
+# 8️⃣ OS-specifieke bestanden
+# -----------------------------------------------------------------------------
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.nfs*
+
+# =============================================================================
+# ✅ WEL meegenomen: broncode, .csproj/.sln, appsettings.json (zonder secrets),
+#    docs/, deploy/, docker-compose.yml, .env.example, Dockerfiles
+# ❌ NIET meegenomen: build output, secrets, IDE settings, logs, temp files
+# =============================================================================

@@ -9,7 +9,7 @@ public class SchedulerTests
     [Fact]
     public void CreateSchedule_WithNullGroup_Throws()
     {
-        var scheduler = new Scheduler();
+        var scheduler = new SchedulerService();
 
         Action act = () => scheduler.CreateSchedule(null!, DateTimeOffset.UtcNow);
         act.Should().Throw<ArgumentNullException>();
@@ -23,7 +23,7 @@ public class SchedulerTests
             .ToList();
 
         var group = new Group(Guid.NewGuid(), "Group A", teams);
-    var scheduler = new Scheduler();
+            var scheduler = new SchedulerService();
         var firstKickoff = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
 
         var fixtures = scheduler.CreateSchedule(group, firstKickoff);

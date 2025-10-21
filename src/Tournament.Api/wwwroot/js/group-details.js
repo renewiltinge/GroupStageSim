@@ -19,6 +19,7 @@
 
     const teamNames = new Map(Object.entries(state.teamNames ?? {}));
     let retryHandler = null;
+    const tieBreakerCollapseId = state.tieBreakerCollapseId ?? "tie-breaker-rules";
 
     const createHandledError = (message) => {
         const error = new Error(message);
@@ -105,7 +106,12 @@
             return;
         }
 
-        ensureTeamNames(rows);
+    ensureTeamNames(rows);
+
+    const existingCollapse = standingsContainer.querySelector(`#${tieBreakerCollapseId}`);
+    const wasExpanded = existingCollapse?.classList.contains("show") ?? false;
+    const collapseButtonClass = `btn btn-link p-0 text-decoration-none d-flex align-items-center w-100${wasExpanded ? "" : " collapsed"}`;
+    const collapsePanelClass = `collapse${wasExpanded ? " show" : ""}`;
 
         let body = "";
         rows.forEach((row, index) => {
@@ -151,14 +157,14 @@
             <div class="mt-3">
                 <div class="card bg-light border-0">
                     <div class="card-header bg-transparent border-0 py-2 px-3">
-                        <button class="btn btn-link p-0 text-decoration-none d-flex align-items-center w-100" type="button" 
-                                data-bs-toggle="collapse" data-bs-target="#tie-breaker-rules" aria-expanded="false" aria-controls="tie-breaker-rules">
+                        <button class="${collapseButtonClass}" type="button" 
+                                data-bs-toggle="collapse" data-bs-target="#${tieBreakerCollapseId}" aria-expanded="${wasExpanded ? "true" : "false"}" aria-controls="${tieBreakerCollapseId}">
                             <i class="bi bi-info-circle text-primary me-2"></i>
                             <span class="fw-semibold">Tournament Tie-Breaking Rules</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
                         </button>
                     </div>
-                    <div class="collapse" id="tie-breaker-rules">
+                    <div class="${collapsePanelClass}" id="${tieBreakerCollapseId}">
                         <div class="card-body small pt-0">
                             <p class="mb-2 text-muted">When teams have equal points, ranking is determined by the following criteria in order:</p>
                             <ol class="mb-2 ps-3">
@@ -184,6 +190,13 @@
             </div>`;
 
         activateTooltips();
+
+        if (wasExpanded && window.bootstrap?.Collapse) {
+            const collapseElement = document.getElementById(tieBreakerCollapseId);
+            if (collapseElement) {
+                new window.bootstrap.Collapse(collapseElement, { toggle: false });
+            }
+        }
     };
 
     const renderMatches = (matches) => {

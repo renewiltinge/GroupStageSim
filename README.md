@@ -1,96 +1,77 @@
-635.# File: README.md
+# GroupStageSim
 
-Project: GroupStageSim · Database: SQL Server · Broker: RabbitMQ · Namespace: groupsim · API Port: 5180 · SQL Port: 7272 · RabbitMQ Port: 5672 · Base Rate: 1.3 · Home Adv: 1.05 · Away Mod: 0.95 · Default Seed: 42
+A tournament simulation system that creates 4-team group stages, simulates matches using Poisson distribution, and ranks teams with deterministic tie-breaker rules.
 
-## Overview
-GroupStageSim is an event-driven .NET 8 backend that schedules a four-team group stage, simulates match outcomes with a Poisson engine, and ranks teams using deterministic tie-breakers.
+## Quick Start
 
-## Config & Secrets
-
-This project uses secure-by-default configuration:
-- **No secrets in committed files** - All credentials must be provided via environment variables
-- **`.env` file** - Copy `.env.example` to `.env` and configure your secrets locally (DO NOT COMMIT)
-- **Environment precedence**: Environment variables override appsettings.{Environment}.json which overrides appsettings.json
-
-### Required Environment Variables
+### Environment variables
 ```bash
 SA_PASSWORD=YourStrongDatabasePassword!
 RABBITMQ_USER=guest
 RABBITMQ_PASSWORD=guest
 ```
 
-### Optional Overrides
-```bash
-CONNECTIONSTRINGS__DEFAULT=Server=localhost,7272;Database=GroupStageSim;...
-BROKER__HOSTNAME=localhost
-BROKER__PORT=5672
-BROKER__USERNAME=guest  
-BROKER__PASSWORD=guest
-```
 
-## Quickstart (Docker Compose)
-| Component | Host Port | Notes |
-| --- | --- | --- |
-| API | `http://localhost:5180` | Swagger at `/swagger`, health at `/healthz` + `/healthz/ready` |
-| SQL Server | `localhost,7272` | SA login from `.env` |
-| RabbitMQ | `localhost:5672` (`AMQP`), `localhost:15672` (management UI) | Credentials from `.env` |
 
 ```powershell
 git clone https://github.com/your-org/GroupStageSim.git
 cd GroupStageSim
 
-# Copy example env file and configure your secrets
+# Copy environment file and configure passwords
 copy .env.example .env
-# Edit .env with your preferred passwords
+# Edit .env with your database/RabbitMQ passwords
 
-# Build images and start services (API runs on http://localhost:5180)
+# Start with Docker
 docker compose up --build -d
 
-# Verify readiness
-docker compose ps
-curl http://localhost:5180/healthz/ready
-Start-Process http://localhost:15672
+# Access the application
+Web UI: http://localhost:5180/ui
+Swagger API: http://localhost:5180/swagger
 ```
 
-Once the containers report `running (healthy)`, open [http://localhost:5180/ui](http://localhost:5180/ui) for the web surface or inspect the OpenAPI definition at [http://localhost:5180/swagger](http://localhost:5180/swagger).
+## Tournament Rules
 
-> 🪄 Migrations are applied automatically on startup for the API when running with the `Docker` or `Development` environment profiles.
+### Group Stage Format
+- **4 teams** per group in round-robin format
+- **6 matches** total (3 rounds, each team plays once per round)
+- **Points**: 3 for win, 1 for draw, 0 for loss
 
-Stop the stack with `docker compose down` (add `-v` to clear persisted SQL data).
+### Tie-Breaking Rules
+When teams have equal points, ranking is determined by:
 
-## Local Development (dotnet run)
-- Ensure Docker Desktop is running so the infrastructure containers can start.
-- Start shared services: `docker compose up -d sqlserver rabbitmq`
-- Run the API locally: `dotnet run --project src/Tournament.Api`
-- In a second terminal, run the simulator worker: `dotnet run --project src/Simulator.Worker`
+1. **Points** - Total points earned
+2. **Goal Difference (GD)** - Goals scored minus goals conceded  
+3. **Goals For (GF)** - Total goals scored
+4. **Goals Against (GA)** - Total goals conceded (lower is better)
+5. **Head-to-Head Record** - Direct comparison between tied teams
 
-The API listens on `https://localhost:7180` and `http://localhost:5180` by default when using Kestrel with certificates enabled. Connection strings still point at `localhost,7272`, so the compose-hosted SQL instance is reused.
+#### Head-to-Head Process
+- Extract matches between tied teams only
+- Create mini-table with those results
+- Apply same ranking criteria (Points → GD → GF → GA)
+- If still tied, use alphabetical order (deterministic fallback)
 
-## Web UI
-- Start the stack with `dotnet run --project src/Tournament.Api` or `docker compose up` so the API and simulator worker are available.
-- Open [http://localhost:5180/ui](http://localhost:5180/ui) to launch the reviewer UI.
-- Use **Create Group** to accept the default four teams (Alpha, Bravo, Charlie, Delta) or adjust strengths, then submit the form.
-- On the details screen, press **Simulate Once** to enqueue a single Monte Carlo run (or specify more iterations) and wait a moment while the page polls the REST API.
-- Review the updated standings and match results, or jump to the OpenAPI surface at [http://localhost:5180/swagger](http://localhost:5180/swagger).
+### Match Simulation
+- **Poisson distribution** for goal generation
+- **Home advantage**: 1.05x multiplier
+- **Away disadvantage**: 0.95x multiplier  
+- **Base scoring rate**: 1.3 goals per team per match
+- **Deterministic**: Same seed produces identical results
 
-![Screenshot of the GroupStageSim web UI](docs/images/ui-screenshot.png)
+## Example Output
 
-## Prerequisites
-- .NET 8 SDK
-- Docker Desktop (with Compose v2)
-- kubectl + minikube or kind for Kubernetes walkthrough
-- Optional: RabbitMQ management plugin familiarity
-
-
-
-## Sample Standings Output
-```text
-Group: Group A (correlationId=706d8b92-2a91-4cb7-8b44-fd8c45e570ab)
------------------------------------------------
-Team       P  W  D  L  GF  GA  GD  Pts
-Charlie    3  2  1  0   6   2   4    7
-Alpha      3  1  1  1   4   3   1    4
-Bravo      3  1  0  2   3   5  -2    3
-Delta      3  0  1  2   2   5  -3    1
 ```
+Pos  Team     P  W  D  L  GF  GA  GD  Pts
+1    Charlie  3  2  1  0   6   2   4    7   [Qualified]
+2    Alpha    3  1  1  1   4   3   1    4   [Qualified]  
+3    Bravo    3  1  0  2   3   5  -2   3
+4    Delta    3  0  1  2   2   5  -3   1
+```
+
+## Technical Stack
+- **.NET 8** ASP.NET Core API
+- **SQL Server** for persistence
+- **RabbitMQ** for event messaging
+- **Docker Compose** for local development
+- **Bootstrap 5** for responsive UI
 

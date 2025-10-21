@@ -35,9 +35,9 @@ public class GroupServiceTests
         groupRepository.GetAsync(groupId, true, Arg.Any<CancellationToken>()).Returns(group);
 
         var messageBus = Substitute.For<IMessageBus>();
-        var scheduler = new Scheduler();
+        var scheduler = new SchedulerService();
         IRankingService rankingService = new RankingService();
-        var matchResultApplier = new MatchResultApplier();
+        var matchResultApplier = new MatchResultService();
 
         var simulationJobRepository = Substitute.For<ISimulationJobRepository>();
         simulationJobRepository.GetByCorrelationIdAsync(correlationId, Arg.Any<CancellationToken>()).Returns(simulationJob);
@@ -85,9 +85,9 @@ public class GroupServiceTests
         groupRepository.GetAsync(groupId, true, Arg.Any<CancellationToken>()).Returns(group);
 
         var messageBus = Substitute.For<IMessageBus>();
-        var scheduler = new Scheduler();
+        var scheduler = new SchedulerService();
         IRankingService rankingService = new RankingService();
-        var matchResultApplier = new MatchResultApplier();
+        var matchResultApplier = new MatchResultService();
         var simulationJobRepository = Substitute.For<ISimulationJobRepository>();
 
         var service = new GroupService(

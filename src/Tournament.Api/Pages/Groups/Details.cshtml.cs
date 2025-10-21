@@ -221,13 +221,16 @@ public sealed class DetailsModel : PageModel
     /// </summary>
     private void BuildInitialState()
     {
+        var tieBreakerCollapseId = $"tie-breaker-rules-{GroupId:N}";
+
         var payload = new
         {
             groupId = GroupId,
             groupName = GroupName,
             standings = Standings,
             matches = Matches,
-            teamNames = TeamNames
+            teamNames = TeamNames,
+            tieBreakerCollapseId
         };
 
         var options = new JsonSerializerOptions

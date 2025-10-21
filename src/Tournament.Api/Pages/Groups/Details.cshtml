@@ -25,7 +25,14 @@
         <h2 class="h4 mb-0">Standings</h2>
     </div>
     <div id="standings-container">
+        @{
+            var tieBreakerCollapseId = $"tie-breaker-rules-{Model.GroupId:N}";
+            ViewData["TieBreakerCollapseId"] = tieBreakerCollapseId;
+        }
         <partial name="_StandingsTable" model="Model.Standings" />
+        @{
+            ViewData.Remove("TieBreakerCollapseId");
+        }
     </div>
 </section>
 
