@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Simulator.Worker")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b713f0f7bb08d8fe05fc53de54dd44c55d0ca0f0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+25f2e9283604fbdd7f6c6a35b4d21eb743148cfb")]
 [assembly: System.Reflection.AssemblyProductAttribute("Simulator.Worker")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Simulator.Worker")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

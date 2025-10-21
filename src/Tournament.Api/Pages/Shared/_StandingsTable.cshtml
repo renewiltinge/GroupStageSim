@@ -49,9 +49,40 @@ else
             </tbody>
         </table>
     </div>
-    <div class="small text-muted mt-2">
-        <button class="btn btn-link btn-sm p-0 align-baseline" type="button" data-bs-toggle="tooltip" data-bs-title="Points → GD → GF → GA → Head-to-Head">
-            Tie-breaker rules
-        </button>
+    
+    <!-- Tie-Breaker Rules Collapsible Card -->
+    <div class="mt-3">
+        <div class="card bg-light border-0">
+            <div class="card-header bg-transparent border-0 py-2 px-3">
+                <button class="btn btn-link p-0 text-decoration-none d-flex align-items-center w-100" type="button" 
+                        data-bs-toggle="collapse" data-bs-target="#tie-breaker-rules" aria-expanded="false" aria-controls="tie-breaker-rules">
+                    <i class="bi bi-info-circle text-primary me-2"></i>
+                    <span class="fw-semibold">Tournament Tie-Breaking Rules</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </button>
+            </div>
+            <div class="collapse" id="tie-breaker-rules">
+                <div class="card-body small pt-0">
+                    <p class="mb-2 text-muted">When teams have equal points, ranking is determined by the following criteria in order:</p>
+                    <ol class="mb-2 ps-3">
+                        <li><strong>Points</strong> - Total points earned (3 for win, 1 for draw, 0 for loss)</li>
+                        <li><strong>Goal Difference (GD)</strong> - Goals scored minus goals conceded</li>
+                        <li><strong>Goals For (GF)</strong> - Total goals scored</li>
+                        <li><strong>Goals Against (GA)</strong> - Total goals conceded (lower is better)</li>
+                        <li><strong>Head-to-Head Record</strong> - Direct comparison between tied teams using mini-table</li>
+                    </ol>
+                    <div class="mt-2">
+                        <h6 class="mb-1 text-primary">Head-to-Head Mini-Table Process:</h6>
+                        <ul class="mb-2 ps-3">
+                            <li>Extract matches between tied teams only</li>
+                            <li>Recompute points, GD, GF, GA using only those results</li>
+                            <li>Apply the same ranking criteria to the mini-table</li>
+                            <li>If still tied, use deterministic fallback (alphabetical order)</li>
+                        </ul>
+                    </div>
+                    <p class="mb-0 text-muted"><small>These rules follow standard tournament regulations used in major football competitions and ensure deterministic, repeatable standings.</small></p>
+                </div>
+            </div>
+        </div>
     </div>
 }

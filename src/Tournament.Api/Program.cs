@@ -63,7 +63,17 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "Tournament API", Version = "v1" });
+    c.DocInclusionPredicate((name, api) =>
+    {
+        // Exclude minimal APIs and health checks from Swagger
+        return !api.RelativePath?.StartsWith("health") == true &&
+               !api.RelativePath?.StartsWith("healthz") == true &&
+               api.RelativePath != "";
+    });
+});
 builder.Services.AddProblemDetails();
 builder.Services.AddHttpClient();
 builder.Services.AddHealthChecks()
@@ -84,7 +94,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseSerilogRequestLogging();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || string.Equals(app.Environment.EnvironmentName, "Docker", StringComparison.OrdinalIgnoreCase))
 {
     app.UseSwagger();
     app.UseSwaggerUI();

@@ -5,7 +5,7 @@ namespace Tournament.Domain.Services;
 /// <summary>
 /// Generates round-robin schedules for a four-team group.
 /// </summary>
-public sealed class Scheduler
+public sealed class SchedulerService
 {
     /// <summary>
     /// Builds a three-round schedule that produces six unique fixtures.

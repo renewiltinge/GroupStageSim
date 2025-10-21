@@ -5,7 +5,7 @@ namespace Tournament.Domain.Services;
 /// <summary>
 /// Applies simulated results to matches while enforcing score validation.
 /// </summary>
-public sealed class MatchResultApplier
+public sealed class MatchResultService
 {
     /// <summary>
     /// Applies the provided scoreline to the specified match within a group.
