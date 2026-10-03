@@ -793,6 +793,113 @@
   });
 
   // =====================================================================
+  //  HEXVIEWER — hex-dump lezen (magic bytes, file carving)
+  // =====================================================================
+  CS.registerLab('hexviewer', function (container, cfg) {
+    let bytes = [];
+    if (cfg.hex) bytes = cfg.hex.trim().split(/\s+/).filter(Boolean).map((h) => parseInt(h, 16) & 0xff);
+    else if (cfg.base64) { const s = b64decode(cfg.base64); for (let i = 0; i < s.length; i++) bytes.push(s.charCodeAt(i) & 0xff); }
+    else if (cfg.text) { const u = unescape(encodeURIComponent(cfg.text)); for (let i = 0; i < u.length; i++) bytes.push(u.charCodeAt(i) & 0xff); }
+    const wrap = el('div', { class: 'lab-pad' });
+    if (cfg.filename) wrap.append(el('div', { html: '<strong>Bestand:</strong> <code>' + esc(cfg.filename) + '</code> &nbsp; (' + bytes.length + ' bytes)' }));
+    const dump = el('div', { class: 'logview', style: 'max-height:300px' });
+    for (let off = 0; off < bytes.length; off += 16) {
+      const row = bytes.slice(off, off + 16);
+      const hex = row.map((b) => b.toString(16).padStart(2, '0')).join(' ');
+      const hexPad = hex.padEnd(16 * 3 - 1, ' ');
+      const ascii = row.map((b) => (b >= 0x20 && b <= 0x7e) ? String.fromCharCode(b) : '.').join('');
+      const line = el('div', { class: 'ln' });
+      line.append(
+        el('span', { style: 'color:#7f8db5;flex:none', text: off.toString(16).padStart(8, '0') }),
+        el('span', { style: 'color:#9ef5c8;white-space:pre', text: ' ' + hexPad + ' ' }),
+        el('span', { style: 'color:#d6e2ff;white-space:pre', text: ascii }),
+      );
+      dump.append(line);
+    }
+    if (!bytes.length) dump.append(el('div', { text: '(leeg)' }));
+    wrap.append(dump);
+    wrap.append(el('details', { html: '<summary>📑 Spiekbrief: veelvoorkomende magic bytes (bestandssignaturen)</summary>' +
+      '<table style="width:100%;font-size:.82rem;margin-top:8px"><thead><tr><th>Bestandstype</th><th>Eerste bytes (hex)</th><th>ASCII</th></tr></thead><tbody>' +
+      '<tr><td>PNG-afbeelding</td><td><code>89 50 4E 47 0D 0A 1A 0A</code></td><td>.PNG….</td></tr>' +
+      '<tr><td>JPEG-afbeelding</td><td><code>FF D8 FF</code></td><td>ÿØÿ</td></tr>' +
+      '<tr><td>GIF-afbeelding</td><td><code>47 49 46 38</code></td><td>GIF8</td></tr>' +
+      '<tr><td>PDF-document</td><td><code>25 50 44 46</code></td><td>%PDF</td></tr>' +
+      '<tr><td>ZIP / DOCX / XLSX</td><td><code>50 4B 03 04</code></td><td>PK..</td></tr>' +
+      '<tr><td>RAR-archief</td><td><code>52 61 72 21</code></td><td>Rar!</td></tr>' +
+      '<tr><td>ELF (Linux-programma)</td><td><code>7F 45 4C 46</code></td><td>.ELF</td></tr>' +
+      '<tr><td>Windows EXE/DLL</td><td><code>4D 5A</code></td><td>MZ</td></tr>' +
+      '<tr><td>7-Zip-archief</td><td><code>37 7A BC AF 27 1C</code></td><td>7z…</td></tr>' +
+      '</tbody></table>' }));
+    container.append(shell('<b>Hex-viewer</b> — lees de rauwe bytes', wrap, false));
+  });
+
+  // =====================================================================
+  //  PCAP — netwerkverkeer lezen (Wireshark-light)
+  // =====================================================================
+  CS.registerLab('pcap', function (container, cfg) {
+    const packets = cfg.packets || [];
+    const wrap = el('div', { class: 'lab-pad' });
+    const ctrl = el('div', { class: 'ans-row' });
+    const filter = el('input', { type: 'text', placeholder: 'filter… (bv. http, 10.10.5.9, POST) of /regex/', style: 'flex:1' });
+    const cnt = el('span', { class: 'found-note' });
+    ctrl.append(filter, cnt);
+    wrap.append(ctrl);
+    const table = el('div', { class: 'logview', style: 'max-height:260px;padding:0' });
+    const detail = el('div', { class: 'lab-out', style: 'margin-top:10px;min-height:48px' });
+    detail.textContent = 'Klik op een pakket om de inhoud te zien.';
+    wrap.append(table, detail);
+
+    function matches(p, f) {
+      if (!f) return true;
+      const hay = [p.no, p.time, p.src, p.dst, p.proto, p.len, p.info, p.stream || ''].join(' ').toLowerCase();
+      if (f.startsWith('/') && f.lastIndexOf('/') > 0) { try { return new RegExp(f.slice(1, f.lastIndexOf('/')), 'i').test(hay); } catch (e) { return true; } }
+      return hay.includes(f.toLowerCase());
+    }
+    function render() {
+      const f = filter.value.trim();
+      table.innerHTML = '';
+      const head = el('div', { class: 'ln', style: 'position:sticky;top:0;background:#141c33;color:#9aa6c8;font-weight:700' });
+      head.append(
+        el('span', { style: 'flex:none;width:34px', text: '#' }),
+        el('span', { style: 'flex:none;width:58px', text: 'tijd' }),
+        el('span', { style: 'flex:none;width:112px', text: 'bron' }),
+        el('span', { style: 'flex:none;width:112px', text: 'bestemming' }),
+        el('span', { style: 'flex:none;width:52px', text: 'prot.' }),
+        el('span', { style: 'flex:1;min-width:0', text: 'info' }),
+      );
+      table.append(head);
+      let shown = 0;
+      packets.forEach((p) => {
+        if (!matches(p, f)) return;
+        shown++;
+        const row = el('div', { class: 'ln', style: 'cursor:pointer', onclick: () => showDetail(p) });
+        row.append(
+          el('span', { style: 'flex:none;width:34px;color:#7f8db5', text: String(p.no) }),
+          el('span', { style: 'flex:none;width:58px;color:#7f8db5', text: String(p.time) }),
+          el('span', { style: 'flex:none;width:112px', text: p.src }),
+          el('span', { style: 'flex:none;width:112px', text: p.dst }),
+          el('span', { style: 'flex:none;width:52px;color:#9ef5c8', text: p.proto }),
+          el('span', { style: 'flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis', text: p.info }),
+        );
+        table.append(row);
+      });
+      cnt.textContent = shown + ' / ' + packets.length + ' pakketten';
+    }
+    function showDetail(p) {
+      detail.innerHTML = '';
+      detail.append(el('div', { html: '<strong>Pakket ' + p.no + '</strong> · ' + esc(p.src) + ' → ' + esc(p.dst) + ' · ' + esc(p.proto) + ' · ' + (p.len || '?') + ' bytes' }));
+      detail.append(el('div', { style: 'margin-top:4px;color:var(--muted)', text: p.info }));
+      if (p.stream) {
+        detail.append(el('div', { style: 'margin-top:8px;font-size:.78rem;color:var(--faint)', text: '— Follow stream —' }));
+        detail.append(el('pre', { style: 'white-space:pre-wrap;margin:4px 0 0', text: p.stream }));
+      }
+    }
+    filter.addEventListener('input', render);
+    render();
+    container.append(shell('<b>Pakketanalyse</b> — ' + esc(cfg.title || 'capture.pcap'), wrap, false));
+  });
+
+  // =====================================================================
   //  Encoding & hash helpers
   // =====================================================================
   function b64encode(s) { return btoa(unescape(encodeURIComponent(s))); }

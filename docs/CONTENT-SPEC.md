@@ -214,6 +214,38 @@ lab: { type: 'subnet' }
 ```
 Een calculator en een generator die willekeurige oefenvragen maakt (netwerkadres, broadcast, aantal hosts).
 
+### `hexviewer`: rauwe bytes lezen (magic bytes, file carving)
+
+```js
+lab: {
+  type: 'hexviewer',
+  filename: 'onbekend.bin',           // optioneel, voor de kop
+  hex: '89 50 4E 47 0D 0A 1A 0A ...', // OF base64: '...' OF text: 'ASCII...'
+}
+```
+Toont een klassieke hex-dump (offset · hex · ASCII) plus een inklapbare spiekbrief met veelvoorkomende
+bestandssignaturen (PNG, JPEG, PDF, ZIP, ELF, MZ, …). Geef de bytes via `hex` (hex-paren, spaties/enters
+mogen), `base64` of `text`. Ideaal om de leerling een bestandstype te laten herkennen aan de eerste bytes,
+of een verstopte string/vlag in de ASCII-kolom te laten vinden (zet `encoded: true` op zo'n vlag-vraag).
+
+### `pcap`: netwerkverkeer lezen (Wireshark-light)
+
+```js
+lab: {
+  type: 'pcap',
+  title: 'zaak-042.pcap',
+  packets: [
+    { no: 1, time: '0.001', src: '10.0.0.5', dst: '93.184.216.34', proto: 'TCP',  len: 74,  info: '51000 → 80 [SYN]' },
+    { no: 2, time: '0.052', src: '10.0.0.5', dst: '93.184.216.34', proto: 'HTTP', len: 412, info: 'POST /upload',
+      stream: 'POST /upload HTTP/1.1\nHost: evil.jvt.lab\n\nsecret=JVT{...}' },  // stream optioneel
+  ],
+}
+```
+Een pakketlijst (nr · tijd · bron · bestemming · protocol · info) met een filter (tekst of `/regex/`). Klik een
+pakket aan voor details; geef je `stream` mee, dan verschijnt die als "Follow stream" (ideaal om een vlag in een
+HTTP-POST of gereconstrueerde conversatie te verstoppen — zet `encoded: true` op die vraag). Maak 15-40
+realistische pakketten met een duidelijk spoor (exfiltratie, C2-verbinding, DNS-tunnel, verdachte download).
+
 ## Schrijfstijl
 
 - Nederlands, informeel ("je"), helder en concreet. Leg vaktermen uit en gebruik de Engelse term tussen haakjes waar dat gangbaar is.

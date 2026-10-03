@@ -18,6 +18,7 @@
     { id: 'security-kern', title: 'Security-kern',          icon: '🔐', desc: 'Cryptografie, wachtwoorden & authenticatie en de menselijke factor — social engineering en phishing.' },
     { id: 'offensief',     title: 'Offensief (red team)',   icon: '⚔️', desc: 'Denken als een aanvaller: de OWASP Top 10, verkenning, en webkwetsbaarheden zelf uitbuiten in een veilig lab.' },
     { id: 'defensief',     title: 'Defensief (blue team)',  icon: '🛡️', desc: 'Aanvallen detecteren in logs, reageren op incidenten (NIST) en systemen thuis en op het werk weerbaar maken.' },
+    { id: 'forensie',      title: 'Digitale forensie & opsporing', icon: '🕵️', desc: 'De weg naar digitaal rechercheur: sporen veiligstellen, schijven, geheugen, netwerk en Windows-artefacten onderzoeken, OSINT en een echt forensisch onderzoek.' },
     { id: 'eindopdracht',  title: 'Eindopdracht',           icon: '🏁', desc: 'Breng alles samen in een afsluitende mini-CTF. Bewijs aan jezelf wat je kunt.' },
   ];
 
@@ -100,6 +101,8 @@
     { id: 'crypto',      icon: '🔐', name: 'Cryptograaf', desc: 'Alle Security-kern-rooms af', test: () => pathDone('security-kern') },
     { id: 'redteam',     icon: '⚔️', name: 'Red teamer', desc: 'Alle Offensief-rooms af', test: () => pathDone('offensief') },
     { id: 'blueteam',    icon: '🛡️', name: 'Blue teamer', desc: 'Alle Defensief-rooms af', test: () => pathDone('defensief') },
+    { id: 'forensics',   icon: '🕵️', name: 'Digitaal rechercheur', desc: 'Alle Forensie-rooms af', test: () => pathDone('forensie') },
+    { id: 'arena10',     icon: '🎯', name: 'Scherpschutter', desc: 'Reeks van 10 in de Oefenarena', test: () => (STATE.bestStreak || 0) >= 10 },
     { id: 'hacker10',    icon: '💡', name: 'Doorzetter', desc: '10 rooms afgerond', test: () => ROOMS.filter(roomDone).length >= 10 },
     { id: 'flaghunter',  icon: '🚩', name: 'Vlaggenjager', desc: '15 vlaggen gevonden', test: () => (STATE.flags || 0) >= 15 },
     { id: 'capstone',    icon: '🏆', name: 'Dojo-meester', desc: 'De eindopdracht voltooid', test: () => pathDone('eindopdracht') },
@@ -185,7 +188,9 @@
       el('p', { class: 'lead', text: 'Een doelgericht leerportaal: korte uitleg, veel oefenen in echte browser-labs, en vragen met vlaggen om te vinden. Helemaal in het Nederlands, van de basis tot je eerste hacks en verdedigingen.' }),
       el('div', { class: 'hero-actions' }, [
         el('button', { class: 'btn primary', text: continueTarget() ? '▶ Ga verder waar je was' : '▶ Begin bij het begin', onclick: () => go(continueTarget() || firstRoomHash()) }),
-        el('button', { class: 'btn ghost', text: '🏅 Bekijk badges', onclick: showBadges }),
+        el('button', { class: 'btn', text: '🎯 Oefenarena', onclick: () => go('#/arena') }),
+        el('button', { class: 'btn', text: '🃏 Begrippentrainer', onclick: () => go('#/flashcards') }),
+        el('button', { class: 'btn ghost', text: '🏅 Badges', onclick: showBadges }),
       ]),
       el('div', { class: 'stat-row' }, [
         stat(doneRooms + '/' + totalRooms, 'rooms voltooid'),
@@ -553,6 +558,176 @@
   }
 
   // =======================================================================
+  //  Oefenarena — willekeurige herhaalvragen uit alle rooms
+  // =======================================================================
+  function allQuestions(filterPath) {
+    const pool = [];
+    ROOMS.forEach((r) => {
+      if (filterPath && filterPath !== 'alles' && r.path !== filterPath) return;
+      (r.tasks || []).forEach((t, ti) => (t.questions || []).forEach((q, qi) => {
+        if (q.noAnswer) return; // alleen echte vragen
+        pool.push({ room: r, ti, qi, q });
+      }));
+    });
+    return pool;
+  }
+  function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+  function renderArena() {
+    const root = $('#app'); root.innerHTML = '';
+    const wrap = el('section', { class: 'roomview wrap' });
+    wrap.append(el('div', { class: 'crumbs' }, [el('a', { text: '🏠 Home', onclick: () => go('#/') }), document.createTextNode('  ›  '), el('strong', { text: '🎯 Oefenarena' })]));
+    wrap.append(el('h1', { text: '🎯 Oefenarena' }));
+    wrap.append(el('p', { class: 'sum', style: 'color:var(--muted);max-width:640px', text: 'Willekeurige vragen uit alle lessen, door elkaar. Puur om te herhalen — dit verandert je lesvoortgang niet. Hoe lang wordt je reeks?' }));
+
+    // filter op leerpad
+    const filterRow = el('div', { class: 'chip-row', style: 'margin:14px 0' });
+    let curFilter = 'alles';
+    const paths = [{ id: 'alles', title: 'Alles' }].concat(PATHS.filter((p) => ROOMS.some((r) => r.path === p.id)).map((p) => ({ id: p.id, title: p.icon + ' ' + p.title })));
+    const scoreBox = el('div', { class: 'stat-row', style: 'margin:0 0 16px' });
+    const qbox = el('div', {});
+    let pool = [], idx = 0, score = 0, streak = 0, answered = 0;
+
+    function start() {
+      pool = shuffle(allQuestions(curFilter)); idx = 0; score = 0; streak = 0; answered = 0;
+      next();
+      renderScore();
+    }
+    function renderScore() {
+      scoreBox.innerHTML = '';
+      scoreBox.append(
+        stat(answered ? score + '/' + answered : '0', 'goed'),
+        stat(streak + '', 'huidige reeks'),
+        stat((STATE.bestStreak || 0) + '', 'langste reeks ooit'),
+      );
+    }
+    paths.forEach((p) => {
+      const chip = el('span', { class: 'chip' + (p.id === curFilter ? ' on' : ''), text: p.title, onclick: () => { curFilter = p.id; $$('.chip', filterRow).forEach((c) => c.classList.remove('on')); chip.classList.add('on'); start(); } });
+      filterRow.append(chip);
+    });
+
+    function next() {
+      qbox.innerHTML = '';
+      if (!pool.length) { qbox.append(el('div', { class: 'callout warn', text: 'Geen vragen in deze categorie.' })); return; }
+      const item = pool[idx % pool.length];
+      const card = el('div', { class: 'task' });
+      card.append(el('div', { style: 'color:var(--muted);font-size:.82rem;margin-bottom:6px', text: item.room.icon + ' ' + item.room.title }));
+      card.append(el('div', { class: 'qtext', style: 'font-weight:600;margin-bottom:12px', html: esc(item.q.q) }));
+      const fb = el('div', { class: 'feedback' });
+      const nextBtn = el('button', { class: 'btn primary', text: 'Volgende →', onclick: () => { idx++; next(); } });
+      nextBtn.style.display = 'none';
+      const afterAnswer = (correct) => {
+        answered++;
+        if (correct) { score++; streak++; if (streak > (STATE.bestStreak || 0)) { STATE.bestStreak = streak; saveState(); checkBadges(); } }
+        else { streak = 0; }
+        renderScore();
+        nextBtn.style.display = '';
+        if (item.q.explain) { const ex = el('div', { class: 'explain show', html: esc(item.q.explain) }); card.append(ex); }
+      };
+      if (Array.isArray(item.q.options)) {
+        const mc = el('div', { class: 'mc' });
+        let done = false;
+        item.q.options.forEach((opt, oi) => {
+          const b = el('button', { html: esc(opt), onclick: () => {
+            if (done) return; done = true;
+            const ok = oi === item.q.answer;
+            b.classList.add('chosen', ok ? 'ok' : 'no');
+            $$('button', mc).forEach((x, xi) => { x.disabled = true; if (xi === item.q.answer) x.classList.add('reveal-ok'); });
+            fb.textContent = ok ? '✓ Goed!' : '✗ Mis'; fb.className = 'feedback show ' + (ok ? 'ok' : 'no');
+            afterAnswer(ok);
+          } });
+          mc.append(b);
+        });
+        card.append(mc);
+      } else {
+        const answers = (Array.isArray(item.q.answer) ? item.q.answer : [item.q.answer]).map(String);
+        const input = el('input', { type: 'text', class: '', placeholder: 'antwoord…', autocomplete: 'off', spellcheck: 'false' });
+        const submit = el('button', { class: 'btn small primary', text: 'Controleer' });
+        let done = false;
+        const check = () => {
+          if (done) return; const val = norm(input.value).toLowerCase(); if (!val) return;
+          const ok = answers.some((a) => norm(a).toLowerCase() === val);
+          if (ok) { done = true; input.classList.add('ok'); input.disabled = true; submit.disabled = true; fb.textContent = '✓ Correct!'; fb.className = 'feedback show ok'; afterAnswer(true); }
+          else { input.classList.add('no'); fb.textContent = '✗ Nog niet. Juiste antwoord: ' + answers[0]; fb.className = 'feedback show no'; done = true; input.disabled = true; submit.disabled = true; afterAnswer(false); }
+        };
+        submit.addEventListener('click', check);
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') check(); });
+        card.append(el('div', { class: 'ans-row' }, [input, submit]));
+      }
+      card.append(fb);
+      card.append(el('div', { style: 'margin-top:12px' }, nextBtn));
+      qbox.append(card);
+    }
+
+    wrap.append(filterRow, scoreBox, qbox);
+    root.append(wrap);
+    renderFooter(root);
+    start();
+    window.scrollTo(0, 0);
+  }
+
+  // =======================================================================
+  //  Begrippentrainer — flashcards uit alle rooms
+  // =======================================================================
+  function allTerms() {
+    const out = [];
+    ROOMS.forEach((r) => (r.terms || []).forEach((t) => out.push({ term: t.term, def: t.def, room: r.title })));
+    return out;
+  }
+  function renderFlashcards() {
+    const root = $('#app'); root.innerHTML = '';
+    const wrap = el('section', { class: 'roomview wrap' });
+    wrap.append(el('div', { class: 'crumbs' }, [el('a', { text: '🏠 Home', onclick: () => go('#/') }), document.createTextNode('  ›  '), el('strong', { text: '🃏 Begrippentrainer' })]));
+    wrap.append(el('h1', { text: '🃏 Begrippentrainer' }));
+    wrap.append(el('p', { class: 'sum', style: 'color:var(--muted);max-width:640px', text: 'Flashcards met alle vakbegrippen. Lees de term, denk aan de betekenis, draai de kaart om en beoordeel jezelf. Begrippen die je nog oefent komen vaker terug.' }));
+
+    STATE.cardsLearned = STATE.cardsLearned || {}; // term -> true als "kende ik"
+    let deck = shuffle(allTerms());
+    // zet nog-te-leren vooraan
+    deck.sort((a, b) => (STATE.cardsLearned[a.term] ? 1 : 0) - (STATE.cardsLearned[b.term] ? 1 : 0));
+    let pos = 0, flipped = false;
+
+    const counter = el('div', { class: 'found-note', style: 'margin:10px 0' });
+    const cardWrap = el('div', {});
+    function known() { return allTerms().filter((t) => STATE.cardsLearned[t.term]).length; }
+    function draw() {
+      cardWrap.innerHTML = '';
+      const total = deck.length;
+      counter.textContent = 'Kaart ' + (pos + 1) + ' / ' + total + ' · ' + known() + ' van ' + total + ' gemarkeerd als geleerd';
+      if (!total) { cardWrap.append(el('div', { class: 'callout warn', text: 'Nog geen begrippen beschikbaar.' })); return; }
+      const c = deck[pos % total];
+      const card = el('div', { class: 'task', style: 'text-align:center;cursor:pointer;min-height:150px;display:flex;flex-direction:column;justify-content:center;gap:10px', onclick: flip });
+      if (!flipped) {
+        card.append(el('div', { style: 'font-size:.78rem;color:var(--faint)', text: 'BEGRIP — klik om om te draaien' }));
+        card.append(el('div', { style: 'font-size:1.5rem;font-weight:800', text: c.term }));
+      } else {
+        card.append(el('div', { style: 'font-size:.78rem;color:var(--accent)', text: c.term }));
+        card.append(el('div', { style: 'font-size:1.05rem', text: c.def }));
+        card.append(el('div', { style: 'font-size:.75rem;color:var(--faint)', text: 'uit: ' + c.room }));
+      }
+      cardWrap.append(card);
+      const btns = el('div', { class: 'room-foot' });
+      if (!flipped) {
+        btns.append(el('span', {}), el('button', { class: 'btn primary', text: 'Draai om ↻', onclick: flip }));
+      } else {
+        btns.append(
+          el('button', { class: 'btn', text: '🔁 Nog oefenen', onclick: () => { STATE.cardsLearned[c.term] = false; saveState(); advance(); } }),
+          el('button', { class: 'btn primary', text: '✓ Kende ik', onclick: () => { STATE.cardsLearned[c.term] = true; saveState(); checkBadges(); advance(); } }),
+        );
+      }
+      cardWrap.append(btns);
+    }
+    function flip() { flipped = !flipped; draw(); }
+    function advance() { pos = (pos + 1) % deck.length; flipped = false; draw(); }
+
+    wrap.append(counter, cardWrap);
+    root.append(wrap);
+    renderFooter(root);
+    draw();
+    window.scrollTo(0, 0);
+  }
+
+  // =======================================================================
   //  Footer + router
   // =======================================================================
   function renderFooter(root) {
@@ -568,6 +743,8 @@
     const h = location.hash || '#/';
     const m = h.match(/^#\/room\/(.+)$/);
     if (m) renderRoom(decodeURIComponent(m[1]));
+    else if (h === '#/arena') renderArena();
+    else if (h === '#/flashcards') renderFlashcards();
     else renderHome();
   }
   window.addEventListener('hashchange', route);

@@ -18,7 +18,7 @@ const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
 const OUT = process.argv[2] || path.join(ROOT, 'dist', 'jvt-cyber-dojo.html');
-const ORDER = ['fundamenten', 'security-kern', 'offensief', 'defensief', 'eindopdracht'];
+const ORDER = ['fundamenten', 'security-kern', 'offensief', 'defensief', 'forensie', 'eindopdracht'];
 
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const safeJs = (s) => s.replace(/<\/(script)/gi, '<\\/$1'); // voorkom vroegtijdig sluiten van <script>
