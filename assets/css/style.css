@@ -29,8 +29,12 @@
   --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --maxw: 1180px;
+  color-scheme: dark;
 }
 
+/* Lichte tokens — als één set, hergebruikt door zowel de expliciete keuze
+   (data-theme="light") als de systeemvoorkeur (prefers-color-scheme: light,
+   zolang de gebruiker niet expliciet donker koos). */
 :root[data-theme="light"] {
   --bg: #eef1f8;
   --bg-2: #e6eaf4;
@@ -52,6 +56,33 @@
   --info: #1766c7;
   --danger: #d64545;
   --shadow: 0 10px 30px rgba(20, 30, 60, 0.12);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #eef1f8;
+    --bg-2: #e6eaf4;
+    --surface: #ffffff;
+    --surface-2: #f3f5fb;
+    --surface-3: #e7ebf5;
+    --border: #d4dae8;
+    --text: #16203a;
+    --muted: #566288;
+    --faint: #8591b2;
+    --accent: #10b06a;
+    --accent-2: #0b8f55;
+    --accent-soft: rgba(16, 176, 106, 0.12);
+    --accent-ink: #ffffff;
+    --link: #1766c7;
+    --good: #10b06a;
+    --bad: #d64545;
+    --warn: #b7791f;
+    --info: #1766c7;
+    --danger: #d64545;
+    --shadow: 0 10px 30px rgba(20, 30, 60, 0.12);
+    color-scheme: light;
+  }
 }
 
 * { box-sizing: border-box; }
@@ -109,7 +140,7 @@ kbd {
 
 /* ---------- Topbar ---------- */
 .topbar {
-  position: sticky; top: 0; z-index: 40;
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 40;
   backdrop-filter: blur(10px);
   background: color-mix(in srgb, var(--bg) 82%, transparent);
   border-bottom: 1px solid var(--border);
