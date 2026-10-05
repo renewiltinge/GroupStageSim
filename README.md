@@ -45,6 +45,7 @@ De bouwstenen van beveiliging.
 1. **Cryptografie** — coderen vs. versleutelen vs. hashen (met CyberChef).
 2. **Wachtwoorden en authenticatie** — sterke wachtwoorden, hashes kraken, MFA & passkeys.
 3. **Social engineering & phishing** — de menselijke factor, met een phishing-inbox om te oefenen.
+4. **Kwetsbaarheden & CVSS** — van CVE tot patch, met een interactieve CVSS-calculator, EPSS en de KEV-catalogus.
 
 ### ⚔️ Offensief (red team)
 Denken als een aanvaller — altijd in een veilig lab.
@@ -57,6 +58,23 @@ Denken als een verdediger.
 1. **Logs & detectie** — aanvallen terugvinden in logbestanden.
 2. **Incident response** — reageren volgens het NIST-framework (CSF 2.0).
 3. **Veilig thuis & op het werk** — updates, back-ups, hardening.
+4. **Threat intelligence & MITRE ATT&CK** — IOC's, de Pyramid of Pain, TLP en het ATT&CK-model.
+5. **Detectie-engineering** — detectieregels bouwen met regex, Sigma en YARA.
+
+### 🕵️ Digitale forensie & opsporing
+De weg naar digitaal rechercheur — sporen vinden, veiligstellen en duiden.
+1. **Digitaal rechercheur worden** — wat forensie is, de rollen en de wet.
+2. **Bewijs veiligstellen** — chain of custody, imaging en hashing.
+3. **Schijf- en bestandssysteemforensie** — verwijderde bestanden, file carving.
+4. **Geheugenforensie** — wat het RAM verraadt.
+5. **Netwerkforensie** — het verhaal in het verkeer (met pcap-lab).
+6. **Forensische Windows-artefacten** — prefetch, registry, event logs.
+7. **Mobiele en cloud-forensie** — telefoons en clouddiensten.
+8. **OSINT: opsporen met open bronnen** — veilig en gestructureerd zoeken.
+9. **Malware-analyse: de basis** — statisch en dynamisch, altijd in een lab.
+10. **Tijdlijnanalyse** — van tijdstempel tot super-timeline.
+11. **Forensie-CTF: Zaak Zilverlab** — een volledig onderzoek als oefening.
+12. **Verder leren** — boeken, tools en platforms.
 
 ### 🏁 Eindopdracht
 1. **Mini-CTF: Operatie KoffieKlap** — breng alles samen in een afsluitende Capture The Flag met zes vlaggen.
@@ -78,6 +96,19 @@ Alle labs draaien **volledig in je browser** — veilig, offline, zonder dat er 
 | 🌐 **HTTP-client** | Verzoeken sturen naar een nepserver en kwetsbaarheden vinden. |
 | 💉 **SQL-injectie** | Een kwetsbaar loginformulier echt uitbuiten — en de fix zien werken. |
 | 🧮 **Subnet-calculator** | Subnetten uitrekenen en oefenvragen genereren. |
+| 🔢 **Hex-viewer** | Rauwe bytes lezen: magic bytes herkennen en verstopte strings vinden. |
+| 📡 **Pakketanalyse** | Netwerkverkeer lezen (Wireshark-light) en een spoor volgen in de stream. |
+| 🎫 **JWT-inspecteur** | JSON Web Tokens decoderen, de claims lezen en een HS256-handtekening controleren. |
+| 🔤 **Regex-tester** | Reguliere expressies live testen met markering en capture-groepen. |
+| 🩹 **CVSS-calculator** | De basisscore (v3.1) van een kwetsbaarheid uitrekenen uit de vector. |
+| 🕰️ **Tijdstempel-omrekenaar** | Unix, FILETIME, WebKit en Cocoa-tijd omzetten naar een leesbare datum. |
+| 🧾 **IOC-extractor** | Indicatoren (IP's, domeinen, hashes, CVE's) uit vrije tekst halen en defangen. |
+| 🔗 **URL-ontleder** | Een link ontleden en phishing-rode-vlaggen zichtbaar maken. |
+| 🧬 **YARA-lab** | Detectieregels schrijven en op voorbeeldbestanden testen. |
+| ⏳ **Super-timeline** | Gebeurtenissen uit vele bronnen op één tijdlijn filteren en markeren. |
+| 🔐 **chmod & getallen** | Linux-rechten en getalstelsels (hex/binair/octaal) omrekenen. |
+
+Alle tools zijn ook los te gebruiken via de **🧰 Gereedschapskist** (knop op de startpagina, of `#/tools`) — handig voor je eigen, ethische oefeningen.
 
 Je verdient **XP** en **badges**, en je voortgang wordt per vraag bewaard (lokaal, in `localStorage`).
 

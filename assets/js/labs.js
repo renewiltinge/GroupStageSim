@@ -899,6 +899,779 @@
     container.append(shell('<b>Pakketanalyse</b> — ' + esc(cfg.title || 'capture.pcap'), wrap, false));
   });
 
+
+  // =====================================================================
+  //  JWT — JSON Web Tokens inspecteren
+  // =====================================================================
+  function b64urlDecode(s) {
+    s = String(s).replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    try { return decodeURIComponent(escape(atob(s))); } catch (e) { return null; }
+  }
+  function b64urlEncode(s) {
+    return b64encode(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function hmacSha256(keyStr, msg) {
+    // HMAC-SHA256 bovenop de interne sha256 (werkt op bytes via latin1-strings)
+    const toBytes = (str) => { const u = unescape(encodeURIComponent(str)); const a = []; for (let i = 0; i < u.length; i++) a.push(u.charCodeAt(i) & 0xff); return a; };
+    const fromBytes = (a) => a.map((b) => String.fromCharCode(b)).join('');
+    const sha256bytes = (bytes) => { const hex = sha256(fromBytes(bytes)); const out = []; for (let i = 0; i < hex.length; i += 2) out.push(parseInt(hex.substr(i, 2), 16)); return out; };
+    let key = toBytes(keyStr);
+    if (key.length > 64) key = sha256bytes(key);
+    while (key.length < 64) key.push(0);
+    const ipad = key.map((b) => b ^ 0x36);
+    const opad = key.map((b) => b ^ 0x5c);
+    const inner = sha256bytes(ipad.concat(toBytes(msg)));
+    const mac = sha256bytes(opad.concat(inner));
+    return mac.map((b) => String.fromCharCode(b)).join('');
+  }
+  function jwtSignHS256(secret, headerB64, payloadB64) {
+    return b64urlEncode(hmacSha256(secret, headerB64 + '.' + payloadB64));
+  }
+  CS.registerLab('jwt', function (container, cfg) {
+    const wrap = el('div', { class: 'lab-pad' });
+    wrap.append(el('label', { text: 'Token (plak hier een JWT)' }));
+    const input = el('textarea', { rows: '3', spellcheck: 'false' }); input.value = cfg.token || '';
+    wrap.append(input);
+    const out = el('div', {});
+    wrap.append(out);
+    wrap.append(el('label', { text: 'Handtekening controleren (HS256) — vul het vermoedelijke geheim in' }));
+    const secRow = el('div', { class: 'ans-row' });
+    const secInp = el('input', { type: 'text', placeholder: 'geheim…', style: 'flex:1' });
+    const secBtn = el('button', { class: 'btn small primary', text: 'Controleer' });
+    const secOut = el('div', { class: 'found-note' });
+    secRow.append(secInp, secBtn);
+    wrap.append(secRow, secOut);
+
+    function human(ts) {
+      const n = Number(ts); if (!isFinite(n)) return '';
+      const d = new Date(n * 1000);
+      if (isNaN(d.getTime())) return '';
+      return ' → ' + d.toISOString().replace('.000', '') + ' (UTC)';
+    }
+    function render() {
+      out.innerHTML = '';
+      const parts = input.value.trim().split('.');
+      if (parts.length < 2) { out.append(el('div', { class: 'callout warn', text: 'Dit lijkt geen JWT (verwacht header.payload.handtekening).' })); return; }
+      const headJson = b64urlDecode(parts[0]);
+      const payJson = b64urlDecode(parts[1]);
+      let head = null, pay = null;
+      try { head = JSON.parse(headJson); } catch (e) {}
+      try { pay = JSON.parse(payJson); } catch (e) {}
+      out.append(el('label', { text: 'Header' }));
+      out.append(el('div', { class: 'lab-out', text: head ? JSON.stringify(head, null, 2) : (headJson || '[kon header niet decoderen]') }));
+      out.append(el('label', { text: 'Payload (claims)' }));
+      out.append(el('div', { class: 'lab-out', text: pay ? JSON.stringify(pay, null, 2) : (payJson || '[kon payload niet decoderen]') }));
+      // claim-uitleg
+      if (pay) {
+        const notes = [];
+        ['exp', 'iat', 'nbf', 'auth_time'].forEach((k) => { if (pay[k] != null) notes.push(k + ': ' + pay[k] + human(pay[k])); });
+        if (pay.exp != null) { const expd = Number(pay.exp) * 1000; notes.push(Date.now() > expd ? '⏰ Dit token is VERLOPEN.' : '✓ Nog geldig (exp in de toekomst).'); }
+        if (notes.length) out.append(el('div', { class: 'found-note', html: notes.map(esc).join('<br>') }));
+      }
+      // waarschuwingen
+      const warns = [];
+      if (head) {
+        const alg = String(head.alg || '').toLowerCase();
+        if (alg === 'none') warns.push('⚠️ alg = "none": dit token heeft geen handtekening. Een server die dit accepteert is ernstig kwetsbaar — de inhoud is dan niet te vertrouwen.');
+        if (alg === 'hs256') warns.push('ℹ️ HS256 gebruikt één gedeeld geheim (symmetrisch). Is dat geheim zwak of gelekt, dan kan iedereen geldige tokens maken.');
+      }
+      if (pay && pay.exp == null) warns.push('⚠️ Geen exp-claim: dit token verloopt nooit. Dat vergroot de schade bij diefstal.');
+      if (parts.length === 2 || !parts[2]) warns.push('⚠️ Geen handtekening aanwezig.');
+      warns.forEach((w) => out.append(el('div', { class: 'callout ' + (w[0] === '⚠' ? 'warn' : 'info'), text: w })));
+    }
+    secBtn.addEventListener('click', () => {
+      const parts = input.value.trim().split('.');
+      if (parts.length < 3 || !parts[2]) { secOut.textContent = 'Geen handtekening om te controleren.'; secOut.style.color = 'var(--bad)'; return; }
+      let head = null; try { head = JSON.parse(b64urlDecode(parts[0])); } catch (e) {}
+      if (!head || String(head.alg).toLowerCase() !== 'hs256') { secOut.textContent = 'Controle werkt hier alleen voor alg=HS256.'; secOut.style.color = 'var(--warn)'; return; }
+      const calc = jwtSignHS256(secInp.value, parts[0], parts[1]);
+      const ok = calc === parts[2];
+      secOut.textContent = ok ? '✓ Handtekening klopt met dit geheim — het token is authentiek en onveranderd.' : '✗ Handtekening klopt NIET met dit geheim.';
+      secOut.style.color = ok ? 'var(--good)' : 'var(--bad)';
+    });
+    input.addEventListener('input', render);
+    render();
+    container.append(shell('<b>JWT-inspecteur</b> — lees en controleer een JSON Web Token', wrap, false));
+  });
+
+  // =====================================================================
+  //  REGEX — reguliere expressies testen
+  // =====================================================================
+  CS.registerLab('regex', function (container, cfg) {
+    const wrap = el('div', { class: 'lab-pad' });
+    wrap.append(el('label', { text: 'Patroon' }));
+    const pRow = el('div', { class: 'ans-row' });
+    const pat = el('input', { type: 'text', placeholder: 'bv. Failed password for (\\w+)', style: 'flex:1' }); pat.value = cfg.pattern || '';
+    const flags = el('input', { type: 'text', placeholder: 'flags', style: 'width:72px' }); flags.value = cfg.flags != null ? cfg.flags : 'gm';
+    pRow.append(el('span', { style: 'font-family:var(--mono)', text: '/' }), pat, el('span', { style: 'font-family:var(--mono)', text: '/' }), flags);
+    wrap.append(pRow);
+    const cnt = el('div', { class: 'found-note' });
+    wrap.append(cnt);
+    wrap.append(el('label', { text: 'Tekst' }));
+    const text = el('textarea', { rows: '8', spellcheck: 'false' }); text.value = cfg.text || '';
+    wrap.append(text);
+    wrap.append(el('label', { text: 'Resultaat (treffers gemarkeerd)' }));
+    const view = el('div', { class: 'logview', style: 'white-space:pre-wrap' });
+    wrap.append(view);
+    const groupsBox = el('div', {});
+    wrap.append(groupsBox);
+
+    function run() {
+      let flagStr = flags.value.replace(/[^gimsuy]/g, '');
+      if (!flagStr.includes('g')) flagStr += 'g';
+      let re;
+      try { re = new RegExp(pat.value, flagStr); } catch (e) { cnt.textContent = 'Ongeldig patroon: ' + e.message; cnt.style.color = 'var(--bad)'; view.textContent = text.value; groupsBox.innerHTML = ''; return; }
+      cnt.style.color = '';
+      if (!pat.value) { cnt.textContent = ''; view.textContent = text.value; groupsBox.innerHTML = ''; return; }
+      const src = text.value;
+      let count = 0, last = 0, html = '', m;
+      const groups = [];
+      re.lastIndex = 0;
+      while ((m = re.exec(src)) !== null) {
+        count++;
+        html += esc(src.slice(last, m.index)) + '<span class="hl">' + esc(m[0]) + '</span>';
+        last = m.index + m[0].length;
+        if (m.length > 1) groups.push(m.slice(1));
+        if (m.index === re.lastIndex) re.lastIndex++;
+        if (count > 5000) break;
+      }
+      html += esc(src.slice(last));
+      view.innerHTML = html;
+      cnt.textContent = count + ' treffer' + (count === 1 ? '' : 's');
+      groupsBox.innerHTML = '';
+      if (groups.length) {
+        const ncol = Math.max.apply(null, groups.map((g) => g.length));
+        const tbl = el('table', { style: 'width:100%;font-size:.82rem;margin-top:10px' });
+        const head = el('tr', {}, [el('th', { text: '#' })].concat(Array.from({ length: ncol }, (_, i) => el('th', { text: 'groep ' + (i + 1) }))));
+        tbl.append(el('thead', {}, head));
+        const tb = el('tbody', {});
+        groups.slice(0, 50).forEach((g, i) => { tb.append(el('tr', {}, [el('td', { text: String(i + 1) })].concat(Array.from({ length: ncol }, (_, j) => el('td', { text: g[j] == null ? '' : g[j] }))))); });
+        tbl.append(tb);
+        groupsBox.append(el('label', { text: 'Capture-groepen' }), tbl);
+      }
+    }
+    [pat, flags, text].forEach((n) => n.addEventListener('input', run));
+    wrap.append(el('details', { html: '<summary>📑 Regex-spiekbrief</summary>' +
+      '<table style="width:100%;font-size:.82rem;margin-top:8px"><tbody>' +
+      '<tr><td><code>.</code></td><td>elk teken (behalve nieuwe regel)</td></tr>' +
+      '<tr><td><code>\\d \\w \\s</code></td><td>cijfer · woordteken · witruimte (hoofdletter = negatie)</td></tr>' +
+      '<tr><td><code>[abc] [^abc] [a-z]</code></td><td>tekenklasse · negatie · bereik</td></tr>' +
+      '<tr><td><code>* + ?</code></td><td>0+ · 1+ · 0 of 1 keer</td></tr>' +
+      '<tr><td><code>{n} {n,} {n,m}</code></td><td>exact n · minstens n · n tot m keer</td></tr>' +
+      '<tr><td><code>^ $</code></td><td>begin · einde (van regel met flag m)</td></tr>' +
+      '<tr><td><code>( ) (?: ) |</code></td><td>groep · niet-vangende groep · of</td></tr>' +
+      '<tr><td><code>\\b</code></td><td>woordgrens</td></tr>' +
+      '<tr><td>flags</td><td><code>g</code> alle · <code>i</code> hoofdletterongevoelig · <code>m</code> meerregelig · <code>s</code> . matcht ook nieuwe regel</td></tr>' +
+      '</tbody></table>' }));
+    run();
+    container.append(shell('<b>Regex-tester</b> — zoek patronen in tekst', wrap, false));
+  });
+
+  // =====================================================================
+  //  CVSS — v3.1 basisscore
+  // =====================================================================
+  CS.registerLab('cvss', function (container, cfg) {
+    const METRICS = [
+      { k: 'AV', name: 'Attack Vector (aanvalsvector)', opts: [['N', 'Network'], ['A', 'Adjacent'], ['L', 'Local'], ['P', 'Physical']] },
+      { k: 'AC', name: 'Attack Complexity (complexiteit)', opts: [['L', 'Low'], ['H', 'High']] },
+      { k: 'PR', name: 'Privileges Required (rechten vooraf)', opts: [['N', 'None'], ['L', 'Low'], ['H', 'High']] },
+      { k: 'UI', name: 'User Interaction (interactie nodig)', opts: [['N', 'None'], ['R', 'Required']] },
+      { k: 'S', name: 'Scope (bereik)', opts: [['U', 'Unchanged'], ['C', 'Changed']] },
+      { k: 'C', name: 'Confidentiality (vertrouwelijkheid)', opts: [['N', 'None'], ['L', 'Low'], ['H', 'High']] },
+      { k: 'I', name: 'Integrity (integriteit)', opts: [['N', 'None'], ['L', 'Low'], ['H', 'High']] },
+      { k: 'A', name: 'Availability (beschikbaarheid)', opts: [['N', 'None'], ['L', 'Low'], ['H', 'High']] },
+    ];
+    const W = {
+      AV: { N: 0.85, A: 0.62, L: 0.55, P: 0.2 },
+      AC: { L: 0.77, H: 0.44 },
+      PR: { N: 0.85, L: 0.62, H: 0.27 },      // Scope Unchanged
+      PRc: { N: 0.85, L: 0.68, H: 0.5 },      // Scope Changed
+      UI: { N: 0.85, R: 0.62 },
+      C: { N: 0, L: 0.22, H: 0.56 },
+      I: { N: 0, L: 0.22, H: 0.56 },
+      A: { N: 0, L: 0.22, H: 0.56 },
+    };
+    const sel = { AV: 'N', AC: 'L', PR: 'N', UI: 'N', S: 'U', C: 'H', I: 'H', A: 'H' };
+    function roundup(x) { const i = Math.round(x * 100000); return (i % 10000 === 0) ? i / 100000 : (Math.floor(i / 10000) + 1) / 10; }
+    function score() {
+      const iss = 1 - (1 - W.C[sel.C]) * (1 - W.I[sel.I]) * (1 - W.A[sel.A]);
+      const impact = sel.S === 'U' ? 6.42 * iss : 7.52 * (iss - 0.029) - 3.25 * Math.pow(iss - 0.02, 15);
+      const pr = sel.S === 'C' ? W.PRc[sel.PR] : W.PR[sel.PR];
+      const expl = 8.22 * W.AV[sel.AV] * W.AC[sel.AC] * pr * W.UI[sel.UI];
+      if (impact <= 0) return 0;
+      const base = sel.S === 'U' ? Math.min(impact + expl, 10) : Math.min(1.08 * (impact + expl), 10);
+      return roundup(base);
+    }
+    function severity(s) { return s === 0 ? 'None' : s < 4 ? 'Low' : s < 7 ? 'Medium' : s < 9 ? 'High' : 'Critical'; }
+    const wrap = el('div', { class: 'lab-pad' });
+    const grid = el('div', {});
+    const vectorBox = el('div', { class: 'sqlquery' });
+    const scoreBox = el('div', { style: 'font-size:1.6rem;font-weight:800;margin:4px 0' });
+    const sevBox = el('div', { class: 'found-note' });
+    METRICS.forEach((mt) => {
+      const row = el('div', { style: 'margin:10px 0' });
+      row.append(el('label', { text: mt.k + ' — ' + mt.name, style: 'margin:0 0 4px' }));
+      const chips = el('div', { class: 'chip-row', style: 'margin:0' });
+      mt.opts.forEach(([code, label]) => {
+        const chip = el('span', { class: 'chip' + (sel[mt.k] === code ? ' on' : ''), text: code + ' · ' + label, onclick: () => { sel[mt.k] = code; refresh(); } });
+        chip.setAttribute('data-k', mt.k); chip.setAttribute('data-c', code);
+        chips.append(chip);
+      });
+      row.append(chips);
+      grid.append(row);
+    });
+    const pasteRow = el('div', { class: 'ans-row', style: 'margin-top:8px' });
+    const paste = el('input', { type: 'text', placeholder: 'CVSS:3.1/AV:N/AC:L/... plakken', style: 'flex:1' });
+    const pasteBtn = el('button', { class: 'btn small', text: 'Laden' });
+    pasteRow.append(paste, pasteBtn);
+    pasteBtn.addEventListener('click', () => {
+      const v = paste.value.toUpperCase();
+      METRICS.forEach((mt) => { const m = new RegExp('(?:^|/)' + mt.k + ':([A-Z])').exec(v); if (m) { const code = m[1]; if (mt.opts.some((o) => o[0] === code)) sel[mt.k] = code; } });
+      refresh();
+    });
+    function refresh() {
+      $$chips();
+      const s = score();
+      const vec = 'CVSS:3.1/' + METRICS.map((mt) => mt.k + ':' + sel[mt.k]).join('/');
+      vectorBox.textContent = vec;
+      scoreBox.textContent = s.toFixed(1) + ' / 10';
+      const sev = severity(s);
+      scoreBox.style.color = sev === 'Critical' || sev === 'High' ? 'var(--bad)' : sev === 'Medium' ? 'var(--warn)' : 'var(--good)';
+      sevBox.textContent = 'Ernst: ' + sev;
+    }
+    function $$chips() {
+      Array.from(grid.querySelectorAll('.chip')).forEach((c) => {
+        const k = c.getAttribute('data-k'), code = c.getAttribute('data-c');
+        c.classList.toggle('on', sel[k] === code);
+      });
+    }
+    if (cfg.vector) { paste.value = cfg.vector; pasteBtn.click(); }
+    wrap.append(el('div', { style: 'display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:6px' }, [scoreBox, sevBox]));
+    wrap.append(vectorBox, grid, pasteRow);
+    refresh();
+    container.append(shell('<b>CVSS v3.1-calculator</b> — bereken de basisscore', wrap, false));
+  });
+
+  // =====================================================================
+  //  TIMESTAMP — tijdstempels omrekenen
+  // =====================================================================
+  CS.registerLab('timestamp', function (container, cfg) {
+    const wrap = el('div', { class: 'lab-pad' });
+    wrap.append(el('label', { text: 'Waarde (een getal, of een datum zoals 2026-10-01 08:12:03)' }));
+    const inp = el('input', { type: 'text', placeholder: 'bv. 1696147923 of 133421...' }); inp.value = cfg.value || '';
+    wrap.append(inp);
+    const out = el('div', {});
+    wrap.append(out);
+    function fmt(d) {
+      if (!d || isNaN(d.getTime())) return null;
+      if (d.getUTCFullYear() < 1950 || d.getUTCFullYear() > 2200) return null;
+      const iso = d.toISOString().replace('.000', '');
+      let nl = '';
+      try { nl = d.toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }); } catch (e) { nl = ''; }
+      return { iso: iso, nl: nl };
+    }
+    function row(name, d, extra) {
+      const f = fmt(d);
+      const r = el('div', { class: 'logview', style: 'max-height:none;padding:8px 10px;margin:6px 0' });
+      r.append(el('div', { html: '<strong style="color:#9ef5c8">' + esc(name) + '</strong>' + (extra ? ' <span style="color:#7f8db5">' + esc(extra) + '</span>' : '') }));
+      if (f) { r.append(el('div', { text: f.iso + '  (UTC)' })); if (f.nl) r.append(el('div', { style: 'color:#9aa6c8', text: f.nl + '  (NL)' })); }
+      else r.append(el('div', { style: 'color:#7f8db5', text: '— geen plausibele datum —' }));
+      return r;
+    }
+    const EPOCH_1601 = -11644473600000; // ms vanaf Unix-epoch tot 1601-01-01
+    const EPOCH_2001 = 978307200000;    // ms vanaf Unix-epoch tot 2001-01-01
+    function render() {
+      out.innerHTML = '';
+      const raw = inp.value.trim();
+      if (!raw) return;
+      // Is het een datum?
+      if (/[-:a-zA-Z]/.test(raw) && !/^0x/i.test(raw)) {
+        let d = new Date(raw.replace(' ', 'T'));
+        if (isNaN(d.getTime())) d = new Date(raw);
+        if (!isNaN(d.getTime())) {
+          const ms = d.getTime();
+          out.append(el('div', { class: 'callout info', text: 'Als datum gelezen. Hieronder de bijbehorende tijdstempelwaarden.' }));
+          out.append(row('ISO 8601 (UTC)', d));
+          out.append(el('div', { class: 'lab-out', html:
+            'Unix-seconden: <strong>' + Math.floor(ms / 1000) + '</strong><br>' +
+            'Unix-milliseconden: <strong>' + ms + '</strong><br>' +
+            'Windows FILETIME: <strong>' + String((BigInt(ms) - BigInt(EPOCH_1601)) * 10000n) + '</strong><br>' +
+            'Chrome/WebKit (µs): <strong>' + String((BigInt(ms) - BigInt(EPOCH_1601)) * 1000n) + '</strong><br>' +
+            'Apple/Cocoa (s): <strong>' + Math.floor((ms - EPOCH_2001) / 1000) + '</strong>' }));
+          return;
+        }
+      }
+      // Getal
+      let num;
+      try { num = /^0x/i.test(raw) ? BigInt(raw) : BigInt(raw.replace(/[^0-9]/g, '') || '0'); } catch (e) { out.append(el('div', { class: 'callout warn', text: 'Kon dit niet als getal lezen.' })); return; }
+      const n = Number(num);
+      out.append(el('div', { class: 'found-note', text: 'Getal geïnterpreteerd als verschillende tijdstempelformaten. Alleen plausibele datums (1950–2200) worden getoond.' }));
+      out.append(row('Unix-tijd (seconden)', new Date(n * 1000), String(num)));
+      out.append(row('Unix-tijd (milliseconden)', new Date(n), String(num)));
+      out.append(row('Windows FILETIME (100 ns sinds 1601)', new Date(Number(num / 10000n) + EPOCH_1601), String(num)));
+      out.append(row('Chrome/WebKit (µs sinds 1601)', new Date(Number(num / 1000n) + EPOCH_1601), String(num)));
+      out.append(row('Apple/Cocoa (s sinds 2001)', new Date(n * 1000 + EPOCH_2001), String(num)));
+    }
+    inp.addEventListener('input', render);
+    render();
+    container.append(shell('<b>Tijdstempel-omrekenaar</b> — forensische datums ontcijferen', wrap, false));
+  });
+
+  // =====================================================================
+  //  IOC — indicatoren uit tekst halen
+  // =====================================================================
+  CS.registerLab('ioc', function (container, cfg) {
+    const wrap = el('div', { class: 'lab-pad' });
+    wrap.append(el('label', { text: 'Tekst / rapport (plak hier ruwe tekst met mogelijke indicatoren)' }));
+    const ta = el('textarea', { rows: '8', spellcheck: 'false' }); ta.value = cfg.text || '';
+    wrap.append(ta);
+    const btns = el('div', { class: 'chip-row' });
+    const defangBtn = el('span', { class: 'chip', text: '🛡️ Defang (veilig delen)' });
+    const refangBtn = el('span', { class: 'chip', text: '↩️ Refang' });
+    btns.append(defangBtn, refangBtn);
+    wrap.append(btns);
+    const out = el('div', {});
+    wrap.append(out);
+    const FILEEXT = /\.(exe|dll|ps1|bat|vbs|js|docm|docx|xlsm|xlsx|pdf|zip|rar|7z|txt|log|lnk|iso|img|msi|hta|jpg|jpeg|png|gif)$/i;
+    function refang(s) {
+      return s.replace(/\bhxxps\b/gi, 'https').replace(/\bhxxp\b/gi, 'http').replace(/\bfxp\b/gi, 'ftp')
+        .replace(/\[\.\]|\(\.\)|\{\.\}|\[dot\]|\(dot\)|\s+dot\s+/gi, '.')
+        .replace(/\[@\]|\(@\)|\[at\]|\(at\)|\s+at\s+/gi, '@')
+        .replace(/\[:\]|\[:/g, ':').replace(/\[\/\]/g, '/');
+    }
+    function defang(s) {
+      return s.replace(/https/gi, 'hxxps').replace(/http/gi, 'hxxp')
+        .replace(/\./g, '[.]').replace(/@/g, '[@]').replace(/:\/\//g, '[://]');
+    }
+    function uniq(a) { const seen = {}, out = []; a.forEach((x) => { const k = x.toLowerCase(); if (!seen[k]) { seen[k] = 1; out.push(x); } }); return out; }
+    function extract(text) {
+      const t = refang(text);
+      const ipv4 = uniq((t.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g) || []).filter((ip) => ip.split('.').every((o) => +o >= 0 && +o <= 255)));
+      const urls = uniq((t.match(/\b(?:https?|ftp):\/\/[^\s"'<>]+/gi) || []).map((u) => u.replace(/[.,;:)\]]+$/, '')));
+      const emails = uniq(t.match(/\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/gi) || []);
+      const sha256 = uniq(t.match(/\b[a-f0-9]{64}\b/gi) || []);
+      const sha1 = uniq((t.match(/\b[a-f0-9]{40}\b/gi) || []));
+      const md5 = uniq((t.match(/\b[a-f0-9]{32}\b/gi) || []));
+      const cves = uniq(t.match(/\bCVE-\d{4}-\d{4,}\b/gi) || []);
+      // domeinen: alle hostnamen, incl. in URL's en e-mails; geen IP's of bestandsnamen
+      const hostSet = {};
+      const addHost = (h) => { if (!h) return; h = h.replace(/^www\./i, ''); if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(h)) return; if (FILEEXT.test(h)) return; if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(h)) return; hostSet[h.toLowerCase()] = h; };
+      (t.match(/\b(?:https?|ftp):\/\/([a-z0-9.-]+)/gi) || []).forEach((u) => addHost(u.replace(/^[a-z]+:\/\//i, '')));
+      emails.forEach((e) => addHost(e.split('@')[1]));
+      (t.match(/\b([a-z0-9-]+\.)+[a-z]{2,}\b/gi) || []).forEach(addHost);
+      const domains = Object.values(hostSet);
+      return { ipv4, domains, urls, emails, md5, sha1, sha256, cves };
+    }
+    function render() {
+      out.innerHTML = '';
+      const r = extract(ta.value);
+      const groups = [
+        ['IPv4-adressen', r.ipv4], ['Domeinen', r.domains], ['URL\'s', r.urls], ['E-mailadressen', r.emails],
+        ['MD5-hashes', r.md5], ['SHA-1-hashes', r.sha1], ['SHA-256-hashes', r.sha256], ['CVE-nummers', r.cves],
+      ];
+      const summary = el('div', { class: 'chip-row' });
+      groups.forEach(([name, arr]) => summary.append(el('span', { class: 'chip' + (arr.length ? ' on' : ''), text: name + ': ' + arr.length })));
+      out.append(summary);
+      groups.forEach(([name, arr]) => {
+        if (!arr.length) return;
+        out.append(el('label', { text: name + ' (' + arr.length + ')' }));
+        out.append(el('div', { class: 'lab-out', text: arr.join('\n') }));
+      });
+    }
+    defangBtn.addEventListener('click', () => { const r = extract(ta.value); const all = [].concat(r.ipv4, r.domains, r.urls, r.emails); out.insertBefore(el('div', { class: 'lab-out', style: 'margin-bottom:10px', text: all.map(defang).join('\n') || '(niets om te defangen)' }), out.firstChild); });
+    refangBtn.addEventListener('click', () => { ta.value = refang(ta.value); render(); });
+    ta.addEventListener('input', render);
+    render();
+    container.append(shell('<b>IOC-extractor</b> — haal indicatoren uit vrije tekst', wrap, false));
+  });
+
+  // =====================================================================
+  //  URL — URL's ontleden (phishing-analyse)
+  // =====================================================================
+  CS.registerLab('url', function (container, cfg) {
+    const SHORTENERS = ['bit.ly', 'tinyurl.com', 'goo.gl', 't.co', 'ow.ly', 'is.gd', 'buff.ly', 'rb.gy', 'cutt.ly'];
+    const BRANDS = ['nederbank', 'pakketpost', 'rijksbelastingen', 'microsoft', 'apple', 'google', 'ideal', 'postnl', 'marktplaats', 'belastingdienst', 'ing', 'rabobank', 'paypal'];
+    const wrap = el('div', { class: 'lab-pad' });
+    wrap.append(el('label', { text: 'Voeg een URL toe om te ontleden' }));
+    const addRow = el('div', { class: 'ans-row' });
+    const inp = el('input', { type: 'text', placeholder: 'https://…', style: 'flex:1' });
+    const addBtn = el('button', { class: 'btn small primary', text: 'Ontleed' });
+    addRow.append(inp, addBtn);
+    wrap.append(addRow);
+    const out = el('div', {});
+    wrap.append(out);
+    function parse(raw) {
+      const flags = [];
+      const info = { raw: raw };
+      const m = /^([a-z][a-z0-9+.-]*):\/\/([^/?#]*)([^?#]*)(\?[^#]*)?(#.*)?$/i.exec(raw.trim());
+      if (!m) { info.error = 'Kon deze URL niet ontleden (ontbreekt het schema, bv. https://?).'; return info; }
+      info.scheme = m[1].toLowerCase();
+      let authority = m[2];
+      info.path = m[3] || ''; info.query = (m[4] || '').replace(/^\?/, '');
+      let userinfo = '';
+      if (authority.indexOf('@') >= 0) { userinfo = authority.slice(0, authority.lastIndexOf('@')); authority = authority.slice(authority.lastIndexOf('@') + 1); flags.push('Bevat een "@" in de URL: alles vóór de @ is gebruikersinfo; de echte host staat erná (' + authority + '). Klassieke misleiding.'); }
+      info.userinfo = userinfo;
+      let host = authority, port = '';
+      if (/:(\d+)$/.test(authority)) { port = authority.replace(/^.*:(\d+)$/, '$1'); host = authority.replace(/:(\d+)$/, ''); }
+      info.host = host; info.port = port;
+      const isIp = /^(?:\d{1,3}\.){3}\d{1,3}$/.test(host);
+      info.isIp = isIp;
+      const labels = host.split('.');
+      if (!isIp && labels.length >= 2) { info.regDomain = labels.slice(-2).join('.'); info.subdomain = labels.slice(0, -2).join('.'); }
+      else { info.regDomain = host; info.subdomain = ''; }
+      if (info.scheme === 'http') flags.push('Gebruikt http in plaats van https: verkeer is niet versleuteld.');
+      if (isIp) flags.push('De host is een rauw IP-adres in plaats van een domeinnaam — ongebruikelijk voor een echte dienst.');
+      if (/xn--/i.test(host)) flags.push('Bevat punycode (xn--): kan een homoglief-domein zijn dat lijkt op een bekende merknaam.');
+      if (!isIp && labels.length >= 4) flags.push('Veel subdomeinen (' + labels.length + ' labels): de echt geregistreerde naam is "' + info.regDomain + '", niet wat er vooraan staat.');
+      BRANDS.forEach((b) => { if (info.subdomain && info.subdomain.toLowerCase().indexOf(b) >= 0) flags.push('Een bekende merknaam ("' + b + '") staat in het subdomein, maar het echte domein is "' + info.regDomain + '". Misleiding.'); });
+      if (SHORTENERS.indexOf(info.regDomain.toLowerCase()) >= 0) flags.push('URL-verkorter (' + info.regDomain + '): de echte bestemming is verborgen.');
+      if (port && port !== '80' && port !== '443') flags.push('Ongebruikelijke poort (' + port + ').');
+      if (raw.length > 90) flags.push('Zeer lange URL (' + raw.length + ' tekens): kan bedoeld zijn om de echte host uit beeld te duwen.');
+      info.flags = flags;
+      return info;
+    }
+    function card(raw) {
+      const info = parse(raw);
+      const box = el('div', { class: 'task', style: 'margin:10px 0;padding:14px 16px' });
+      box.append(el('div', { class: 'sqlquery', style: 'margin:0 0 8px', text: raw }));
+      if (info.error) { box.append(el('div', { class: 'callout warn', text: info.error })); return box; }
+      const rows = [
+        ['Schema', info.scheme], ['Gebruikersinfo (@)', info.userinfo || '—'], ['Host', info.host],
+        ['Subdomein', info.subdomain || '—'], ['Geregistreerd domein', info.regDomain], ['Poort', info.port || '(standaard)'],
+        ['Pad', info.path || '/'], ['Query', info.query || '—'],
+      ];
+      const tbl = el('table', { style: 'width:100%;font-size:.84rem' }, el('tbody', {}, rows.map(([k, v]) => el('tr', {}, [el('td', { style: 'color:var(--muted);width:38%', text: k }), el('td', { style: 'font-family:var(--mono);word-break:break-all', text: v })]))));
+      box.append(tbl);
+      if (info.flags.length) { const ul = el('ul', { style: 'margin:8px 0 0;padding-left:18px' }); info.flags.forEach((f) => ul.append(el('li', { style: 'color:var(--bad);font-size:.84rem', text: f }))); box.append(el('div', { style: 'margin-top:8px;font-weight:600;color:var(--bad)', text: '🚩 Rode vlaggen (' + info.flags.length + ')' }), ul); }
+      else box.append(el('div', { class: 'found-note', style: 'color:var(--good)', text: '✓ Geen duidelijke rode vlaggen gevonden.' }));
+      return box;
+    }
+    function add(raw) { if (!raw.trim()) return; out.insertBefore(card(raw.trim()), out.firstChild); }
+    addBtn.addEventListener('click', () => { add(inp.value); inp.value = ''; });
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { add(inp.value); inp.value = ''; } });
+    (cfg.urls || []).forEach((u) => out.append(card(u)));
+    container.append(shell('<b>URL-ontleder</b> — kijk achter de schermen van een link', wrap, false));
+  });
+
+  // =====================================================================
+  //  YARA — regels schrijven en testen (subset)
+  // =====================================================================
+  CS.registerLab('yara', function (container, cfg) {
+    const wrap = el('div', { class: 'lab-pad' });
+    wrap.append(el('label', { text: 'YARA-regel(s)' }));
+    const ta = el('textarea', { rows: '12', spellcheck: 'false', style: 'font-size:.82rem' }); ta.value = cfg.rule || '';
+    wrap.append(ta);
+    const runBtn = el('button', { class: 'btn primary', text: '▶ Scan bestanden', style: 'margin-top:10px' });
+    wrap.append(runBtn);
+    const out = el('div', { style: 'margin-top:12px' });
+    wrap.append(out);
+
+    function fileBytes(f) {
+      if (f.hex != null) return f.hex.trim().split(/\s+/).filter(Boolean).map((h) => parseInt(h, 16) & 0xff);
+      const u = unescape(encodeURIComponent(f.text || ''));
+      const a = []; for (let i = 0; i < u.length; i++) a.push(u.charCodeAt(i) & 0xff);
+      return a;
+    }
+    function latin1(bytes) { return bytes.map((b) => String.fromCharCode(b)).join(''); }
+    function toWide(str) { let o = ''; for (let i = 0; i < str.length; i++) { o += str[i] + '\u0000'; } return o; }
+    function parseRules(src) {
+      const rules = [];
+      const re = /rule\s+([A-Za-z_]\w*)\s*(?::\s*[\w\s]+?)?\{/g;
+      let m;
+      while ((m = re.exec(src)) !== null) {
+        // vind bijpassend sluitend accolade
+        let depth = 1, i = re.lastIndex;
+        for (; i < src.length && depth; i++) { if (src[i] === '{') depth++; else if (src[i] === '}') depth--; }
+        const body = src.slice(re.lastIndex, i - 1);
+        rules.push({ name: m[1], body: body });
+        re.lastIndex = i;
+      }
+      return rules;
+    }
+    function parseStrings(body) {
+      const section = /strings\s*:([\s\S]*?)(?:condition\s*:|$)/i.exec(body);
+      const list = [];
+      if (!section) return list;
+      const lineRe = /\$([A-Za-z0-9_]*)\s*=\s*(.+)$/gm;
+      let m;
+      while ((m = lineRe.exec(section[1])) !== null) {
+        const id = m[1]; let val = m[2].trim();
+        const mods = [];
+        // modifiers achteraan
+        val = val.replace(/\s+(nocase|wide|ascii|fullword)\b/g, (x, mod) => { mods.push(mod); return ''; }).trim();
+        let kind, data;
+        if (/^"/.test(val)) { kind = 'text'; data = val.replace(/^"|"$/g, '').replace(/\\"/g, '"').replace(/\\\\/g, '\\').replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\x([0-9a-f]{2})/gi, (x, h) => String.fromCharCode(parseInt(h, 16))); }
+        else if (/^\{/.test(val)) { kind = 'hex'; data = val.replace(/^\{|\}$/g, '').trim().split(/\s+/).map((t) => t === '??' ? null : parseInt(t, 16)); }
+        else if (/^\//.test(val)) { const rm = /^\/(.*)\/([a-z]*)$/.exec(val); kind = 'regex'; data = rm ? new RegExp(rm[1], (rm[2].includes('i') ? 'i' : '') + (rm[2].includes('s') ? 's' : '') + 'g') : null; }
+        list.push({ id: id, kind: kind, data: data, mods: mods });
+      }
+      return list;
+    }
+    function countMatches(str, bytes, s) {
+      if (s.kind === 'text') {
+        let needles = [s.data];
+        if (s.mods.includes('wide') && !s.mods.includes('ascii')) needles = [toWide(s.data)];
+        else if (s.mods.includes('wide')) needles = [s.data, toWide(s.data)];
+        let total = 0; const positions = [];
+        needles.forEach((needle) => {
+          const hay = s.mods.includes('nocase') ? str.toLowerCase() : str;
+          const nd = s.mods.includes('nocase') ? needle.toLowerCase() : needle;
+          let idx = 0;
+          while ((idx = hay.indexOf(nd, idx)) >= 0) {
+            if (s.mods.includes('fullword')) {
+              const before = str[idx - 1], after = str[idx + needle.length];
+              const w = (c) => c && /[A-Za-z0-9_]/.test(c);
+              if (w(before) || w(after)) { idx += 1; continue; }
+            }
+            positions.push(idx); total++; idx += needle.length || 1;
+          }
+        });
+        return { count: total, positions: positions };
+      }
+      if (s.kind === 'hex') {
+        const pat = s.data; const positions = [];
+        for (let i = 0; i + pat.length <= bytes.length; i++) {
+          let ok = true;
+          for (let j = 0; j < pat.length; j++) { if (pat[j] !== null && bytes[i + j] !== pat[j]) { ok = false; break; } }
+          if (ok) positions.push(i);
+        }
+        return { count: positions.length, positions: positions };
+      }
+      if (s.kind === 'regex' && s.data) {
+        const positions = []; let m; s.data.lastIndex = 0; let guard = 0;
+        while ((m = s.data.exec(str)) !== null) { positions.push(m.index); if (m.index === s.data.lastIndex) s.data.lastIndex++; if (++guard > 10000) break; }
+        return { count: positions.length, positions: positions };
+      }
+      return { count: 0, positions: [] };
+    }
+    function evalCondition(cond, ctx) {
+      // vervang constructies door JS. ctx: match[id]={count,positions}, strs=[ids], filesize, uint
+      cond = cond.replace(/\bfilesize\b/g, '(' + ctx.filesize + ')');
+      cond = cond.replace(/(\d+)\s*(KB|MB)/gi, (x, n, u) => String(+n * (u.toUpperCase() === 'MB' ? 1048576 : 1024)));
+      cond = cond.replace(/uint8\s*\(\s*(\d+)\s*\)/gi, (x, o) => String(ctx.u8(+o)));
+      cond = cond.replace(/uint16\s*\(\s*(\d+)\s*\)/gi, (x, o) => String(ctx.u16(+o)));
+      cond = cond.replace(/uint32\s*\(\s*(\d+)\s*\)/gi, (x, o) => String(ctx.u32(+o)));
+      // "N of them" / "any of them" / "all of them"
+      const allIds = ctx.strs.slice();
+      function ofExpr(quant, ids) {
+        const hits = ids.filter((id) => ctx.match[id] && ctx.match[id].count > 0).length;
+        if (/^any$/i.test(quant)) return hits >= 1;
+        if (/^all$/i.test(quant)) return hits === ids.length && ids.length > 0;
+        const n = parseInt(quant, 10); return hits >= n;
+      }
+      function expandGroup(g) {
+        // ($a,$b) of ($s*)
+        return g.split(',').map((x) => x.trim()).flatMap((tok) => {
+          const mm = /^\$([A-Za-z0-9_]*)\*$/.exec(tok);
+          if (mm) return allIds.filter((id) => id.indexOf(mm[1]) === 0);
+          const one = /^\$([A-Za-z0-9_]+)$/.exec(tok); return one ? [one[1]] : [];
+        });
+      }
+      cond = cond.replace(/\b(any|all|\d+)\s+of\s+them\b/gi, (x, q) => '(' + ofExpr(q, allIds) + ')');
+      cond = cond.replace(/\b(any|all|\d+)\s+of\s*\(([^)]*)\)/gi, (x, q, g) => '(' + ofExpr(q, expandGroup(g)) + ')');
+      // $a at 0
+      cond = cond.replace(/\$([A-Za-z0-9_]+)\s+at\s+(\d+)/gi, (x, id, off) => '(' + ((ctx.match[id] && ctx.match[id].positions.indexOf(+off) >= 0)) + ')');
+      // $a in (lo..hi)
+      cond = cond.replace(/\$([A-Za-z0-9_]+)\s+in\s*\(\s*(\d+)\s*\.\.\s*(\d+|filesize|\d+)\s*\)/gi, (x, id, lo, hi) => { const h = /^\d+$/.test(hi) ? +hi : ctx.filesize; const ps = ctx.match[id] ? ctx.match[id].positions : []; return '(' + ps.some((p) => p >= +lo && p <= h) + ')'; });
+      // #a (count), $a (presence)
+      cond = cond.replace(/#([A-Za-z0-9_]+)/g, (x, id) => '(' + (ctx.match[id] ? ctx.match[id].count : 0) + ')');
+      cond = cond.replace(/\$([A-Za-z0-9_]+)/g, (x, id) => '(' + ((ctx.match[id] && ctx.match[id].count > 0)) + ')');
+      // operatoren
+      cond = cond.replace(/\band\b/gi, '&&').replace(/\bor\b/gi, '||').replace(/\bnot\b/gi, '!').replace(/\btrue\b/gi, 'true').replace(/\bfalse\b/gi, 'false');
+      cond = cond.replace(/0x[0-9a-f]+/gi, (h) => String(parseInt(h, 16)));
+      // alleen veilige tekens
+      if (/[^0-9\s()!&|<>=+\-*/.truefals]/i.test(cond.replace(/true|false/gi, ''))) { /* laat door, maar */ }
+      try { return !!Function('"use strict";return (' + cond + ');')(); } catch (e) { return 'ERR'; }
+    }
+    runBtn.addEventListener('click', () => {
+      out.innerHTML = '';
+      const rules = parseRules(ta.value);
+      if (!rules.length) { out.append(el('div', { class: 'callout warn', text: 'Geen geldige rule { } gevonden.' })); return; }
+      const parsed = rules.map((r) => ({ name: r.name, strings: parseStrings(r.body), cond: ((/condition\s*:([\s\S]*)$/i.exec(r.body) || [])[1] || '').trim() }));
+      (cfg.files || []).forEach((f) => {
+        const bytes = fileBytes(f);
+        const str = latin1(bytes);
+        const fileBox = el('div', { class: 'task', style: 'margin:8px 0;padding:12px 14px' });
+        fileBox.append(el('div', { html: '<strong>' + esc(f.name || 'bestand') + '</strong> <span style="color:var(--muted)">(' + bytes.length + ' bytes)</span>' }));
+        const ctx = { strs: [], match: {}, filesize: bytes.length, u8: (o) => bytes[o] || 0, u16: (o) => (bytes[o] || 0) | ((bytes[o + 1] || 0) << 8), u32: (o) => ((bytes[o] || 0) | ((bytes[o + 1] || 0) << 8) | ((bytes[o + 2] || 0) << 16) | ((bytes[o + 3] || 0) << 24)) >>> 0 };
+        parsed.forEach((r) => {
+          const myCtx = Object.assign({}, ctx, { strs: r.strings.map((s) => s.id), match: {} });
+          r.strings.forEach((s) => { myCtx.match[s.id] = countMatches(str, bytes, s); });
+          const res = r.cond ? evalCondition(r.cond, myCtx) : false;
+          const hitStrs = r.strings.filter((s) => myCtx.match[s.id].count > 0);
+          const line = el('div', { style: 'margin-top:6px' });
+          line.append(el('span', { style: 'font-weight:700;color:' + (res === true ? 'var(--good)' : res === 'ERR' ? 'var(--warn)' : 'var(--muted)'), text: (res === true ? '✓ RAAK' : res === 'ERR' ? '⚠ fout in condition' : '· geen match') + '  — regel ' + r.name }));
+          if (hitStrs.length) line.append(el('div', { class: 'found-note', text: 'strings gevonden: ' + hitStrs.map((s) => '$' + s.id + ' (' + myCtx.match[s.id].count + '×)').join(', ') }));
+          fileBox.append(line);
+        });
+        out.append(fileBox);
+      });
+    });
+    runBtn.click();
+    container.append(shell('<b>YARA-lab</b> — schrijf een regel en scan de bestanden', wrap, false));
+  });
+
+  // =====================================================================
+  //  TIMELINE — super-timeline van een onderzoek
+  // =====================================================================
+  CS.registerLab('timeline', function (container, cfg) {
+    const events = (cfg.events || []).slice().sort((a, b) => String(a.t).localeCompare(String(b.t)));
+    const marks = {};
+    const sources = Array.from(new Set(events.map((e) => e.src))).filter(Boolean);
+    const wrap = el('div', { class: 'lab-pad' });
+    const ctrl = el('div', { class: 'ans-row' });
+    const filter = el('input', { type: 'text', placeholder: 'filter… (tekst of /regex/)', style: 'flex:1' });
+    const cnt = el('span', { class: 'found-note' });
+    ctrl.append(filter, cnt);
+    wrap.append(ctrl);
+    const srcRow = el('div', { class: 'chip-row' });
+    const activeSrc = {};
+    sources.forEach((s) => { activeSrc[s] = true; });
+    sources.forEach((s) => { const chip = el('span', { class: 'chip on', text: s, onclick: () => { activeSrc[s] = !activeSrc[s]; chip.classList.toggle('on', activeSrc[s]); render(); } }); srcRow.append(chip); });
+    wrap.append(srcRow);
+    const rangeRow = el('div', { class: 'ans-row', style: 'margin-top:6px' });
+    const from = el('input', { type: 'text', placeholder: 'van (JJJJ-MM-DD UU:MM:SS)', style: 'flex:1' });
+    const to = el('input', { type: 'text', placeholder: 'tot', style: 'flex:1' });
+    rangeRow.append(from, to);
+    wrap.append(rangeRow);
+    const view = el('div', { class: 'logview', style: 'max-height:380px' });
+    wrap.append(view);
+    function parseT(s) { const d = new Date(String(s).replace(' ', 'T') + 'Z'); return isNaN(d.getTime()) ? null : d.getTime(); }
+    function matchesFilter(e, f) {
+      if (!f) return true;
+      const hay = [e.t, e.src, e.host, e.user, e.desc].filter(Boolean).join(' ').toLowerCase();
+      if (f.startsWith('/') && f.lastIndexOf('/') > 0) { try { return new RegExp(f.slice(1, f.lastIndexOf('/')), 'i').test(hay); } catch (x) { return true; } }
+      return hay.includes(f.toLowerCase());
+    }
+    function render() {
+      view.innerHTML = '';
+      const f = filter.value.trim();
+      const lo = parseT(from.value.trim()), hi = parseT(to.value.trim());
+      let shown = 0, prev = null;
+      events.forEach((e, i) => {
+        if (!activeSrc[e.src]) return;
+        if (!matchesFilter(e, f)) return;
+        const tms = parseT(e.t);
+        if (lo != null && tms != null && tms < lo) return;
+        if (hi != null && tms != null && tms > hi) return;
+        shown++;
+        let delta = '';
+        if (prev != null && tms != null) { const d = Math.round((tms - prev) / 1000); if (d >= 0) { delta = d < 60 ? ('+' + d + 's') : d < 3600 ? ('+' + Math.floor(d / 60) + 'm' + (d % 60 ? (d % 60) + 's' : '')) : ('+' + Math.floor(d / 3600) + 'u' + (Math.floor((d % 3600) / 60)) + 'm'); } }
+        prev = tms != null ? tms : prev;
+        const row = el('div', { class: 'ln', style: 'cursor:pointer;align-items:baseline' });
+        const star = el('span', { style: 'flex:none;width:18px;color:' + (marks[i] ? 'var(--warn)' : '#566288'), text: marks[i] ? '⭐' : '☆', onclick: (ev) => { ev.stopPropagation(); marks[i] = !marks[i]; render(); } });
+        row.append(star,
+          el('span', { style: 'flex:none;width:150px;color:#9ef5c8', text: e.t }),
+          el('span', { style: 'flex:none;width:60px;color:#7f8db5', text: delta }),
+          el('span', { style: 'flex:none;width:92px;color:#c9a6ff', text: e.src || '' }),
+          el('span', { style: 'flex:1;min-width:0', html: (e.host ? '<span style="color:#7f8db5">' + esc(e.host) + (e.user ? '\\' + esc(e.user) : '') + '</span> ' : '') + esc(e.desc || '') }));
+        view.append(row);
+      });
+      cnt.textContent = shown + ' / ' + events.length + ' gebeurtenissen';
+    }
+    [filter, from, to].forEach((n) => n.addEventListener('input', render));
+    render();
+    container.append(shell('<b>Super-timeline</b> — ' + esc(cfg.title || 'onderzoek'), wrap, false));
+  });
+
+  // =====================================================================
+  //  CHMOD — Linux-rechten omrekenen
+  // =====================================================================
+  CS.registerLab('chmod', function (container, cfg) {
+    const classes = ['Eigenaar (u)', 'Groep (g)', 'Anderen (o)'];
+    const perms = ['lezen (r=4)', 'schrijven (w=2)', 'uitvoeren (x=1)'];
+    const special = ['setuid (4)', 'setgid (2)', 'sticky (1)'];
+    const state = [[false, false, false], [false, false, false], [false, false, false]];
+    const spec = [false, false, false];
+    const wrap = el('div', { class: 'lab-pad' });
+    const octBox = el('div', { style: 'font-family:var(--mono);font-size:1.6rem;font-weight:800;margin:2px 0' });
+    const symBox = el('div', { class: 'sqlquery', style: 'margin:6px 0' });
+    const grid = el('div', { class: 'lab-grid2' });
+    function build() {
+      grid.innerHTML = '';
+      classes.forEach((c, ci) => {
+        const col = el('div', { style: 'background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:10px' });
+        col.append(el('div', { style: 'font-weight:700;margin-bottom:6px', text: c }));
+        perms.forEach((p, pi) => {
+          const lab = el('label', { class: 'switch', style: 'display:flex;margin:4px 0' });
+          const cb = el('input', { type: 'checkbox' }); cb.checked = state[ci][pi];
+          cb.addEventListener('change', () => { state[ci][pi] = cb.checked; refresh(); });
+          lab.append(cb, el('span', { class: 'track' }), el('span', { text: ' ' + p }));
+          col.append(lab);
+        });
+        grid.append(col);
+      });
+    }
+    const specRow = el('div', { class: 'chip-row' });
+    special.forEach((s, si) => { const chip = el('span', { class: 'chip', text: s, onclick: () => { spec[si] = !spec[si]; chip.classList.toggle('on', spec[si]); refresh(); } }); specRow.append(chip); });
+    function refresh() {
+      const digits = state.map((cl) => (cl[0] ? 4 : 0) + (cl[1] ? 2 : 0) + (cl[2] ? 1 : 0));
+      const specDigit = (spec[0] ? 4 : 0) + (spec[1] ? 2 : 0) + (spec[2] ? 1 : 0);
+      octBox.textContent = (specDigit ? specDigit : '') + digits.join('');
+      let sym = '';
+      state.forEach((cl, ci) => { sym += (cl[0] ? 'r' : '-'); sym += (cl[1] ? 'w' : '-'); let x = cl[2]; if (ci === 0 && spec[0]) sym += x ? 's' : 'S'; else if (ci === 1 && spec[1]) sym += x ? 's' : 'S'; else if (ci === 2 && spec[2]) sym += x ? 't' : 'T'; else sym += x ? 'x' : '-'; });
+      symBox.textContent = '-' + sym + '   (chmod ' + (specDigit ? specDigit : '') + digits.join('') + ')';
+    }
+    function loadOctal(str) {
+      const m = /(\d)?(\d)(\d)(\d)$/.exec(str.trim());
+      if (!m) return;
+      const sp = m[1] ? +m[1] : 0; spec[0] = !!(sp & 4); spec[1] = !!(sp & 2); spec[2] = !!(sp & 1);
+      [m[2], m[3], m[4]].forEach((d, ci) => { const n = +d; state[ci][0] = !!(n & 4); state[ci][1] = !!(n & 2); state[ci][2] = !!(n & 1); });
+      Array.from(specRow.children).forEach((chip, si) => chip.classList.toggle('on', spec[si]));
+      build(); refresh();
+    }
+    const loadRow = el('div', { class: 'ans-row', style: 'margin-top:8px' });
+    const oin = el('input', { type: 'text', placeholder: 'octaal laden, bv. 755 of 4755', style: 'flex:1' });
+    loadRow.append(oin, el('button', { class: 'btn small', text: 'Laden', onclick: () => loadOctal(oin.value) }));
+    wrap.append(el('div', { style: 'display:flex;gap:16px;align-items:center;flex-wrap:wrap' }, [octBox, symBox]), grid, el('label', { text: 'Speciale bits' }), specRow, loadRow);
+    build();
+    if (cfg.mode) loadOctal(String(cfg.mode)); else refresh();
+    container.append(shell('<b>chmod-calculator</b> — rechten ↔ octaal ↔ rwx', wrap, false));
+  });
+
+  // =====================================================================
+  //  NUMCONV — getallen omzetten
+  // =====================================================================
+  CS.registerLab('numconv', function (container, cfg) {
+    const wrap = el('div', { class: 'lab-pad' });
+    wrap.append(el('label', { text: 'Waarde (bv. 77, 0x4D, 0b1001101, of tekst met aanhalingstekens "MZ")' }));
+    const inp = el('input', { type: 'text', placeholder: '0x4D5A' }); inp.value = cfg.value || '';
+    wrap.append(inp);
+    const out = el('div', {});
+    wrap.append(out);
+    function render() {
+      out.innerHTML = '';
+      let raw = inp.value.trim();
+      if (!raw) return;
+      let n = null;
+      if (/^"[^"]*"$/.test(raw) || /^'[^']*'$/.test(raw)) {
+        const s = raw.slice(1, -1);
+        const codes = Array.from(s).map((c) => c.charCodeAt(0));
+        out.append(el('div', { class: 'lab-out', html: 'ASCII-codes: <strong>' + codes.join(' ') + '</strong><br>hex: <strong>' + codes.map((c) => c.toString(16).padStart(2, '0')).join(' ') + '</strong>' }));
+        return;
+      }
+      try {
+        if (/^0x[0-9a-f]+$/i.test(raw)) n = BigInt(raw);
+        else if (/^0b[01]+$/i.test(raw)) n = BigInt(parseInt(raw.slice(2), 2));
+        else if (/^0o[0-7]+$/i.test(raw)) n = BigInt(parseInt(raw.slice(2), 8));
+        else if (/^-?\d+$/.test(raw)) n = BigInt(raw);
+        else { out.append(el('div', { class: 'callout warn', text: 'Kon dit niet als getal lezen.' })); return; }
+      } catch (e) { out.append(el('div', { class: 'callout warn', text: 'Ongeldig getal.' })); return; }
+      const num = n;
+      const asciiOf = (v) => { const bytes = []; let x = v < 0n ? -v : v; if (x === 0n) bytes.push(0); while (x > 0n) { bytes.unshift(Number(x & 0xffn)); x >>= 8n; } return bytes.map((b) => (b >= 0x20 && b <= 0x7e) ? String.fromCharCode(b) : '·').join(''); };
+      out.append(el('div', { class: 'lab-out', html:
+        'Decimaal: <strong>' + num.toString(10) + '</strong><br>' +
+        'Hexadecimaal: <strong>0x' + (num < 0n ? '-' : '') + (num < 0n ? (-num).toString(16) : num.toString(16)).toUpperCase() + '</strong><br>' +
+        'Binair: <strong>0b' + (num < 0n ? '-' : '') + (num < 0n ? (-num).toString(2) : num.toString(2)) + '</strong><br>' +
+        'Octaal: <strong>0o' + (num < 0n ? '-' : '') + (num < 0n ? (-num).toString(8) : num.toString(8)) + '</strong><br>' +
+        'Als ASCII-bytes: <strong>' + esc(asciiOf(num)) + '</strong>' }));
+    }
+    inp.addEventListener('input', render);
+    render();
+    container.append(shell('<b>Getallen-omzetter</b> — decimaal · hex · binair · octaal · ASCII', wrap, false));
+  });
+
   // =====================================================================
   //  Encoding & hash helpers
   // =====================================================================

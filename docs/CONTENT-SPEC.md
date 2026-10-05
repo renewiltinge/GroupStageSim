@@ -246,6 +246,122 @@ pakket aan voor details; geef je `stream` mee, dan verschijnt die als "Follow st
 HTTP-POST of gereconstrueerde conversatie te verstoppen — zet `encoded: true` op die vraag). Maak 15-40
 realistische pakketten met een duidelijk spoor (exfiltratie, C2-verbinding, DNS-tunnel, verdachte download).
 
+### `jwt`: JSON Web Tokens inspecteren
+
+```js
+lab: { type: 'jwt', token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqYW4ifQ.<handtekening>' }
+```
+Toont header en payload gedecodeerd (met `exp`/`iat`/`nbf` als leesbare datum en of het token verlopen is),
+waarschuwingen voor zwakke configuraties (bijv. `alg: none`, ontbrekende `exp`) en een controle van een
+HS256-handtekening met een opgegeven sleutel. Bedoeld om tokens te begrijpen en te beoordelen.
+
+### `regex`: reguliere expressies testen
+
+```js
+lab: { type: 'regex', text: 'regel 1\nregel 2 ...', pattern: 'Failed password for (\\w+)', flags: 'gi' }
+```
+Live markering van alle treffers, een teller en een tabel met capture-groepen. `pattern` en `flags` zijn
+optioneel (startwaarde). Inclusief spiekbrief (`\d`, `\w`, `\s`, `[...]`, `+`, `*`, `?`, `{n,m}`, `^$`, groepen).
+Let op het dubbel escapen van backslashes in JavaScript-strings (`'\\d+'`).
+
+### `cvss`: CVSS v3.1-basisscore berekenen
+
+```js
+lab: { type: 'cvss', vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H' }   // vector optioneel
+```
+Knoppen voor alle acht basismetrieken (AV, AC, PR, UI, S, C, I, A), met live de officiële basisscore (0.0-10.0),
+de ernst (None/Low/Medium/High/Critical) en de vectorstring. De leerling kan ook een vector plakken.
+Voorbeeldscores ter controle: `AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H` = 9.8, `AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H` = 10.0,
+`AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N` = 6.1, `AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H` = 7.8, `AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N` = 5.9.
+
+### `timestamp`: tijdstempels omrekenen (forensie)
+
+```js
+lab: { type: 'timestamp', value: '133720000000000000' }   // value optioneel
+```
+Rekent een getal of datum om naar alle gangbare formaten: Unix-tijd (seconden en milliseconden),
+Windows FILETIME (100-ns-intervallen sinds 1601-01-01, o.a. NTFS/registry), Chrome/WebKit-tijd
+(microseconden sinds 1601-01-01), Apple/Cocoa-tijd (seconden sinds 2001-01-01), ISO 8601 in UTC en
+Nederlandse tijd (Europe/Amsterdam). Bij een getal laat het zien welke interpretaties een plausibele datum
+opleveren. **Reken voorbeeldwaarden zelf na met Node.**
+
+### `ioc`: indicatoren (IOC's) uit tekst halen
+
+```js
+lab: { type: 'ioc', text: 'Rapport ... 185.220.101[.]4 ... hxxps://evil[.]jvt[.]lab/x ... 44d88612fea8a8f36de82e1278abb02f ...' }
+```
+Haalt IPv4-adressen, domeinen, URL's, e-mailadressen, MD5/SHA-1/SHA-256-hashes en CVE-nummers uit vrije
+tekst — ook als ze "defanged" zijn (`hxxp`, `[.]`, `(.)`, `[at]`). Telt per soort, en kan de lijst
+defangen (veilig delen) of refangen. Fictieve domeinen eindigen bij voorkeur op `.jvt.lab` of `.example`.
+
+### `url`: URL's ontleden (phishing-analyse)
+
+```js
+lab: { type: 'url', urls: ['https://nederbank.nl.login-check.jvt.lab/inloggen?id=1', 'http://192.0.2.7/pakket'] }
+```
+Splitst elke URL in schema, gebruikersdeel (de `@`-truc), host, subdomein, geregistreerd domein, poort, pad en
+queryparameters, en toont rode vlaggen: IP-adres als host, `@` in de URL, punycode (`xn--`), http i.p.v. https,
+veel subdomeinen, een bekende merknaam als subdomein, URL-verkorters, ongebruikelijke poort, zeer lange URL.
+De leerling kan zelf URL's toevoegen.
+
+### `yara`: YARA-regels schrijven en testen
+
+```js
+lab: {
+  type: 'yara',
+  rule: `rule Verdacht_Script {
+  meta:
+    auteur = "JVT"
+  strings:
+    $a = "powershell" nocase
+    $b = "-enc" nocase
+    $mz = { 4D 5A }
+    $re = /https?:\\/\\/[a-z0-9.]+\\.jvt\\.lab/
+  condition:
+    ($a and $b) or ($mz at 0 and $re)
+}`,
+  files: [
+    { name: 'factuur.docm', text: '... powershell -enc SQBFAFgA ...' },
+    { name: 'kladblok.exe', hex: '4D 5A 90 00 ...' },
+  ],
+}
+```
+De leerling past de regel aan en scant de bestanden; per bestand zie je welke regels raken en welke strings
+waar gevonden zijn. Ondersteunde subset van YARA:
+- Meerdere `rule naam { ... }`-blokken (optioneel met tags `rule naam : tag1 tag2`); `meta:` wordt getoond maar niet gebruikt.
+- Strings: tekst `"..."` met modifiers `nocase`, `wide`, `ascii`, `fullword`; hex `{ 4D 5A ?? 00 }` (met `??` als joker);
+  regex `/.../` met optioneel `i` of `s` erachter.
+- Condition: `$a`, `#a` (aantal treffers), `@a` niet; `$a at 0`, `$a in (0..100)`, `any of them`, `all of them`,
+  `N of them`, `any|all|N of ($a, $b)`, `any of ($s*)`, `filesize` (met `KB`/`MB`), `uint8(n)`, `uint16(n)`,
+  `uint32(n)` (little-endian), vergelijkingen `== != < > <= >=`, `and`, `or`, `not`, haakjes, `true`, `false`.
+  Getallen decimaal of `0x..`.
+Geef bestanden via `text` (UTF-8) of `hex`. Bedenk 3-6 bestanden waarvan sommige wel en andere niet moeten raken
+(goed/fout-positieven), zodat de leerling de regel moet aanscherpen.
+
+### `timeline`: super-timeline van een onderzoek
+
+```js
+lab: {
+  type: 'timeline',
+  title: 'Zaak 2026-117 — WS-FIN-03',
+  events: [
+    { t: '2026-10-01 08:12:03', src: 'Security', host: 'WS-FIN-03', user: 'j.devries', desc: '4624 aanmelding type 10 (RDP) vanaf 203.0.113.50' },
+    { t: '2026-10-01 08:13:40', src: 'Prefetch', host: 'WS-FIN-03', desc: 'RCLONE.EXE-1A2B3C4D.pf — eerste uitvoering' },
+  ],
+}
+```
+Alle gebeurtenissen uit verschillende bronnen (eventlog, prefetch, MFT, browser, firewall, proxy, …) worden op tijd
+gesorteerd (`t` in UTC, `JJJJ-MM-DD UU:MM:SS`). Met tekst-/regexfilter, chips per bron, een van/tot-tijdvenster,
+de tijd sinds de vorige gebeurtenis (Δ) en de mogelijkheid om gebeurtenissen te markeren ⭐. Maak 25-60 events
+met ruis én een duidelijk aanvalsverhaal.
+
+### `chmod` en `numconv`: kleine rekenhulpen
+
+```js
+lab: { type: 'chmod', mode: '755' }   // Linux-rechten: vinkjes ↔ octaal ↔ rwxr-xr-x (incl. setuid/setgid/sticky)
+lab: { type: 'numconv', value: '0x4D5A' }  // getal omzetten: decimaal, hex, binair, octaal, ASCII-tekens
+```
+
 ## Schrijfstijl
 
 - Nederlands, informeel ("je"), helder en concreet. Leg vaktermen uit en gebruik de Engelse term tussen haakjes waar dat gangbaar is.

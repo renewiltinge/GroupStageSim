@@ -190,6 +190,7 @@
         el('button', { class: 'btn primary', text: continueTarget() ? '▶ Ga verder waar je was' : '▶ Begin bij het begin', onclick: () => go(continueTarget() || firstRoomHash()) }),
         el('button', { class: 'btn', text: '🎯 Oefenarena', onclick: () => go('#/arena') }),
         el('button', { class: 'btn', text: '🃏 Begrippentrainer', onclick: () => go('#/flashcards') }),
+        el('button', { class: 'btn', text: '🧰 Gereedschapskist', onclick: () => go('#/tools') }),
         el('button', { class: 'btn ghost', text: '🏅 Badges', onclick: showBadges }),
       ]),
       el('div', { class: 'stat-row' }, [
@@ -728,6 +729,65 @@
   }
 
   // =======================================================================
+  //  Gereedschapskist — alle interactieve tools los te gebruiken
+  // =======================================================================
+  const TOOLBOX = [
+    { type: 'cyberchef', icon: '🧪', name: 'CyberChef', desc: 'Coderen, decoderen en hashen (Base64, hex, ROT13, XOR, MD5/SHA-…).', cfg: { input: 'JVT{probeer_mij}' } },
+    { type: 'hashcrack', icon: '🔓', name: 'Hash-kraker', desc: 'Een woordenlijstaanval nabootsen op een hash.', cfg: { algo: 'md5', hash: '5f4dcc3b5aa765d61d8327deb882cf99', wordlist: ['123456', 'welkom', 'password', 'qwerty', 'geheim'] } },
+    { type: 'password', icon: '🔑', name: 'Wachtwoord-analyse', desc: 'Live de sterkte en kraaktijd van een wachtwoord zien.', cfg: {} },
+    { type: 'subnet', icon: '🧮', name: 'Subnet-calculator', desc: 'Subnetten uitrekenen en oefenvragen genereren.', cfg: {} },
+    { type: 'hexviewer', icon: '🔢', name: 'Hex-viewer', desc: 'Rauwe bytes lezen: magic bytes en verstopte strings.', cfg: { filename: 'voorbeeld.bin', hex: '89 50 4E 47 0D 0A 1A 0A 4A 56 54 7B 68 65 78 5F 6B 69 6A 6B 65 72 7D' } },
+    { type: 'jwt', icon: '🎫', name: 'JWT-inspecteur', desc: 'JSON Web Tokens decoderen en de handtekening controleren.', cfg: { token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqYW4iLCJyb2xlIjoidXNlciIsImlhdCI6MTc2MDAwMDAwMH0.4t3m7nQe8m0b9Qb1Qw5m3Hc0lJjQJh2b3n4c5d6e7f8' } },
+    { type: 'regex', icon: '🔤', name: 'Regex-tester', desc: 'Reguliere expressies live testen met markering en groepen.', cfg: { text: 'Oct 1 08:12:03 srv sshd[2211]: Failed password for root from 203.0.113.9\nOct 1 08:12:07 srv sshd[2213]: Failed password for invalid user admin from 203.0.113.9\nOct 1 08:13:01 srv sshd[2219]: Accepted password for jbakker from 10.0.0.5', pattern: 'Failed password for (?:invalid user )?(\\w+)', flags: 'gm' } },
+    { type: 'cvss', icon: '🩹', name: 'CVSS-calculator', desc: 'De CVSS v3.1-basisscore uit de vector berekenen.', cfg: {} },
+    { type: 'timestamp', icon: '🕰️', name: 'Tijdstempel-omrekenaar', desc: 'Unix, FILETIME, WebKit en Cocoa-tijd omzetten.', cfg: {} },
+    { type: 'ioc', icon: '🧾', name: 'IOC-extractor', desc: 'Indicatoren uit tekst halen en defangen.', cfg: { text: 'Verdachte host 203.0.113[.]44 en hxxps://login-check[.]jvt[.]lab/x\nMD5 44d88612fea8a8f36de82e1278abb02f — zie CVE-2021-44228.' } },
+    { type: 'url', icon: '🔗', name: 'URL-ontleder', desc: 'Een link ontleden en phishing-rode-vlaggen tonen.', cfg: { urls: ['https://www.nederbank.nl@203.0.113.45/inloggen', 'https://pakketpost.nl.bezorging-status.jvt.lab/track?id=1'] } },
+    { type: 'yara', icon: '🧬', name: 'YARA-lab', desc: 'Detectieregels schrijven en op bestanden testen.', cfg: {
+      rule: 'rule Verdacht_Script {\n  strings:\n    $a = "powershell" nocase\n    $b = "-enc" nocase\n    $mz = { 4D 5A }\n  condition:\n    ($a and $b) or $mz at 0\n}',
+      files: [
+        { name: 'macro.docm', text: 'AutoOpen: powershell -enc VwByAGkA... start2' },
+        { name: 'notitie.txt', text: 'PowerShell-cursus volgende week.' },
+        { name: 'klein.exe', hex: '4D 5A 90 00 03 00 00 00' },
+      ] } },
+    { type: 'timeline', icon: '⏳', name: 'Super-timeline', desc: 'Gebeurtenissen uit vele bronnen op één tijdlijn.', cfg: {
+      title: 'voorbeeld-onderzoek', events: [
+        { t: '2026-10-01 08:44:19', src: 'Security', host: 'WS-07', user: 'adm.backup', desc: '4624 aanmelding type 10 (RDP) vanaf 203.0.113.77' },
+        { t: '2026-10-01 08:45:37', src: 'Prefetch', host: 'WS-07', desc: 'POWERSHELL.EXE — eerste uitvoering' },
+        { t: '2026-10-01 09:01:10', src: 'Proxy', host: 'WS-07', desc: 'Upload naar upload.cloudvault.example (198.51.100.140)' },
+        { t: '2026-10-01 09:25:19', src: 'Security', host: 'WS-07', desc: '1102 — audit-log gewist' },
+      ] } },
+    { type: 'chmod', icon: '🔐', name: 'chmod-calculator', desc: 'Linux-rechten ↔ octaal ↔ rwx.', cfg: { mode: '644' } },
+    { type: 'numconv', icon: '🔟', name: 'Getallen-omzetter', desc: 'Decimaal · hex · binair · octaal · ASCII.', cfg: { value: '0x4D5A' } },
+  ];
+  function renderTools() {
+    const root = $('#app'); root.innerHTML = '';
+    const wrap = el('section', { class: 'roomview wrap' });
+    wrap.append(el('div', { class: 'crumbs' }, [el('a', { text: '🏠 Home', onclick: () => go('#/') }), document.createTextNode('  ›  '), el('strong', { text: '🧰 Gereedschapskist' })]));
+    wrap.append(el('h1', { text: '🧰 Gereedschapskist' }));
+    wrap.append(el('p', { class: 'sum', style: 'color:var(--muted);max-width:680px', text: 'Alle interactieve tools uit de lessen, los te gebruiken — ook voor je eigen (ethische) oefeningen. Alles draait lokaal in je browser; er wordt niets verstuurd. Klik een gereedschap om het te openen.' }));
+
+    const nav = el('div', { class: 'chip-row', style: 'margin:14px 0 20px' });
+    TOOLBOX.forEach((t) => nav.append(el('span', { class: 'chip', text: t.icon + ' ' + t.name, onclick: () => { const node = $('#tool-' + t.type); if (node) node.scrollIntoView({ behavior: 'smooth', block: 'start' }); } })));
+    wrap.append(nav);
+
+    TOOLBOX.forEach((t) => {
+      const sec = el('div', { class: 'task', id: 'tool-' + t.type });
+      sec.append(el('h2', { text: t.icon + ' ' + t.name }));
+      sec.append(el('div', { class: 'body', html: '<p style="color:var(--muted);margin-top:0">' + esc(t.desc) + '</p>' }));
+      const box = el('div', {});
+      sec.append(box);
+      const renderer = CS.labs[t.type];
+      if (renderer) { try { renderer(box, t.cfg || {}, {}); } catch (e) { box.append(el('div', { class: 'callout danger', text: 'Tool kon niet laden: ' + e.message })); } }
+      else box.append(el('div', { class: 'callout warn', text: 'Onbekende tool: ' + t.type }));
+      wrap.append(sec);
+    });
+    root.append(wrap);
+    renderFooter(root);
+    window.scrollTo(0, 0);
+  }
+
+  // =======================================================================
   //  Footer + router
   // =======================================================================
   function renderFooter(root) {
@@ -745,6 +805,7 @@
     if (m) renderRoom(decodeURIComponent(m[1]));
     else if (h === '#/arena') renderArena();
     else if (h === '#/flashcards') renderFlashcards();
+    else if (h === '#/tools') renderTools();
     else renderHome();
   }
   window.addEventListener('hashchange', route);
