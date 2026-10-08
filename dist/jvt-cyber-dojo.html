@@ -6,26 +6,26 @@
    ====================================================================== */
 
 :root {
-  --bg: #0b1020;
-  --bg-2: #0e1428;
-  --surface: #141c33;
-  --surface-2: #1b2544;
-  --surface-3: #243156;
-  --border: #2a3657;
-  --text: #e8ecf8;
-  --muted: #9aa6c8;
-  --faint: #6b779c;
-  --accent: #39d98a;
-  --accent-2: #2bb673;
-  --accent-soft: rgba(57, 217, 138, 0.14);
-  --accent-ink: #052016;
-  --link: #6db5ff;
-  --good: #39d98a;
-  --bad: #ff6b6b;
-  --warn: #ffbe4d;
-  --info: #6db5ff;
-  --danger: #ff6b6b;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --bg: #0e1218;
+  --bg-2: #11161d;
+  --surface: #151b23;
+  --surface-2: #1b222c;
+  --surface-3: #222b37;
+  --border: #272f3b;
+  --text: #d7dde6;
+  --muted: #8b97a6;
+  --faint: #5c6775;
+  --accent: #6cb79a;
+  --accent-2: #579a80;
+  --accent-soft: rgba(108, 183, 154, 0.11);
+  --accent-ink: #07130e;
+  --link: #87a9cc;
+  --good: #6cb79a;
+  --bad: #d18a8a;
+  --warn: #cdac6f;
+  --info: #87a9cc;
+  --danger: #d18a8a;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.26);
   --radius: 14px;
   --radius-sm: 9px;
   --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
@@ -47,16 +47,16 @@
   --text: #16203a;
   --muted: #566288;
   --faint: #8591b2;
-  --accent: #10b06a;
-  --accent-2: #0b8f55;
-  --accent-soft: rgba(16, 176, 106, 0.12);
+  --accent: #2f9e74;
+  --accent-2: #26855f;
+  --accent-soft: rgba(47, 158, 116, 0.12);
   --accent-ink: #ffffff;
-  --link: #1766c7;
-  --good: #10b06a;
-  --bad: #d64545;
-  --warn: #b7791f;
-  --info: #1766c7;
-  --danger: #d64545;
+  --link: #2767b8;
+  --good: #2f9e74;
+  --bad: #c25151;
+  --warn: #a9741f;
+  --info: #2767b8;
+  --danger: #c25151;
   --shadow: 0 10px 30px rgba(20, 30, 60, 0.12);
   color-scheme: light;
 }
@@ -95,11 +95,10 @@ body {
   margin: 0;
   font-family: var(--sans);
   background:
-    radial-gradient(1100px 600px at 85% -10%, var(--accent-soft), transparent 60%),
-    radial-gradient(900px 500px at -10% 0%, rgba(109, 181, 255, 0.10), transparent 55%),
+    radial-gradient(1200px 700px at 88% -15%, var(--accent-soft), transparent 55%),
     var(--bg);
   color: var(--text);
-  line-height: 1.6;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -152,7 +151,7 @@ kbd {
 .brand .logo {
   width: 34px; height: 34px; border-radius: 9px;
   display: grid; place-items: center; font-size: 1.1rem;
-  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+  background: var(--accent);
   color: var(--accent-ink); box-shadow: var(--shadow);
 }
 .brand small { color: var(--muted); font-weight: 600; font-size: 0.72rem; display: block; margin-top: -3px; }
@@ -180,7 +179,7 @@ kbd {
   cursor: pointer;
 }
 .xp-pill .lvl {
-  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+  background: var(--accent);
   color: var(--accent-ink); border-radius: 999px; padding: 2px 9px; font-size: 0.78rem;
 }
 
@@ -193,7 +192,7 @@ kbd {
   transition: transform .08s, border-color .15s, background .15s;
 }
 .btn:hover { transform: translateY(-1px); border-color: var(--accent); }
-.btn.primary { background: linear-gradient(145deg, var(--accent), var(--accent-2)); color: var(--accent-ink); border-color: transparent; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
 .btn.ghost { background: transparent; }
 .btn.small { padding: 6px 11px; font-size: 0.82rem; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -201,7 +200,7 @@ kbd {
 /* ---------- Hero ---------- */
 .hero { padding: 46px 0 10px; }
 .hero h1 { font-size: 2.4rem; margin: 0 0 10px; }
-.hero h1 .g { background: linear-gradient(110deg, var(--accent), var(--link)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero h1 .g { color: var(--accent); }
 .hero p.lead { color: var(--muted); font-size: 1.1rem; max-width: 640px; margin: 0 0 20px; }
 .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
 
@@ -223,7 +222,7 @@ kbd {
 .section-head .meta { color: var(--muted); font-size: 0.85rem; }
 .section-desc { color: var(--muted); margin: 2px 0 14px 42px; max-width: 760px; }
 .pathbar { height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin: 0 0 20px 42px; max-width: 760px; }
-.pathbar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .5s; }
+.pathbar > i { display: block; height: 100%; background: var(--accent); transition: width .5s; }
 
 /* ---------- Room cards ---------- */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; }
@@ -251,7 +250,7 @@ kbd {
 .tag.diff-Gemiddeld { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, var(--border)); }
 .tag.diff-Moeilijk { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, var(--border)); }
 .card .progress { height: 5px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
-.card .progress > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .4s; }
+.card .progress > i { display: block; height: 100%; background: var(--accent); transition: width .4s; }
 .card .foot { display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--muted); }
 .card .done-badge {
   position: absolute; top: 12px; right: 12px; font-size: 0.72rem; font-weight: 800;
@@ -296,6 +295,9 @@ kbd {
 
 .task { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 26px; margin-bottom: 22px; scroll-margin-top: 76px; }
 .task > h2 { margin-top: 0; display: flex; align-items: center; gap: 10px; }
+.task .body { line-height: 1.72; }
+.task .body p { margin: 0 0 0.95em; max-width: 72ch; }
+.task .body li { margin: 3px 0; }
 .task .body > :first-child { margin-top: 0; }
 .task .body img { max-width: 100%; }
 .task .body table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 0.9rem; }
@@ -417,7 +419,7 @@ kbd {
 
 /* sqli */
 .sqlform { max-width: 420px; }
-.sqlquery { background: #0a0e1c; color: #9ef5c8; padding: 10px 12px; border-radius: 8px; font-family: var(--mono); font-size: 0.82rem; margin: 10px 0; word-break: break-all; }
+.sqlquery { background: #0a0e1c; color: #8ec7ab; padding: 10px 12px; border-radius: 8px; font-family: var(--mono); font-size: 0.82rem; margin: 10px 0; word-break: break-all; }
 :root[data-theme="light"] .sqlquery { background: #0f1526; }
 
 /* toggle */
@@ -1032,7 +1034,7 @@ kbd {
     const doneRooms = ROOMS.filter(roomDone).length;
     const body = el('div', {});
     body.append(el('p', { html: '<strong>Level ' + L.lvl + '</strong> · ' + STATE.xp + ' XP totaal' }));
-    body.append(el('div', { class: 'meter' }, el('i', { style: 'width:' + Math.round((L.into / L.need) * 100) + '%;background:linear-gradient(90deg,var(--accent),var(--accent-2))' })));
+    body.append(el('div', { class: 'meter' }, el('i', { style: 'width:' + Math.round((L.into / L.need) * 100) + '%;background:var(--accent)' })));
     body.append(el('p', { class: 'found-note', text: L.into + ' / ' + L.need + ' XP tot level ' + (L.lvl + 1) }));
     body.append(el('ul', {}, [
       el('li', { text: doneRooms + ' van ' + ROOMS.length + ' rooms voltooid' }),
@@ -1225,7 +1227,9 @@ kbd {
   // =======================================================================
   const TOOLBOX = [
     { type: 'cyberchef', icon: '🧪', name: 'CyberChef', desc: 'Coderen, decoderen en hashen (Base64, hex, ROT13, XOR, MD5/SHA-…).', cfg: { input: 'JVT{probeer_mij}' } },
-    { type: 'hashcrack', icon: '🔓', name: 'Hash-kraker', desc: 'Een woordenlijstaanval nabootsen op een hash.', cfg: { algo: 'md5', hash: '5f4dcc3b5aa765d61d8327deb882cf99', wordlist: ['123456', 'welkom', 'password', 'qwerty', 'geheim'] } },
+    { type: 'hashcrack', icon: '🔓', name: 'Hash-kraker', desc: 'Woordenlijst, regels (mangling) of brute-force (masker) — op MD5/SHA/NTLM.', cfg: { algo: 'md5', hash: '5f4dcc3b5aa765d61d8327deb882cf99', wordlist: ['123456', 'welkom', 'password', 'qwerty', 'geheim', 'letmein'] } },
+    { type: 'hashid', icon: '🧭', name: 'Hash-herkenner', desc: 'Welk hashtype is dit? Herkent MD5, NTLM, SHA, bcrypt en meer.', cfg: { value: '$2y$10$N9qo8uLOickgx2ZMRZoMy.MH/rq8qjHjhHj' } },
+    { type: 'cipher', icon: '🗝️', name: 'Cijfer-kraker', desc: 'Caesar/ROT, XOR, Vigenère en Atbash ontcijferen.', cfg: { text: 'Kl nlolptl cshn pz QCA{jhlzhy_pz_thrrlspqr}' } },
     { type: 'password', icon: '🔑', name: 'Wachtwoord-analyse', desc: 'Live de sterkte en kraaktijd van een wachtwoord zien.', cfg: {} },
     { type: 'subnet', icon: '🧮', name: 'Subnet-calculator', desc: 'Subnetten uitrekenen en oefenvragen genereren.', cfg: {} },
     { type: 'hexviewer', icon: '🔢', name: 'Hex-viewer', desc: 'Rauwe bytes lezen: magic bytes en verstopte strings.', cfg: { filename: 'voorbeeld.bin', hex: '89 50 4E 47 0D 0A 1A 0A 4A 56 54 7B 68 65 78 5F 6B 69 6A 6B 65 72 7D' } },
@@ -1336,7 +1340,7 @@ kbd {
 
   // small sync hashers (voor hashcrack & cyberchef) ----------------------
   const Hash = {
-    md5: md5, sha1: sha1, sha256: sha256,
+    md5: md5, sha1: sha1, sha256: sha256, md4: md4, ntlm: ntlm,
   };
 
   // =====================================================================
@@ -1689,48 +1693,268 @@ kbd {
   });
 
   // =====================================================================
-  //  HASHCRACK
+  //  HASHCRACK — woordenlijst + regels + brute-force (masker)
   // =====================================================================
   CS.registerLab('hashcrack', function (container, cfg) {
-    const algo = cfg.algo || 'md5';
+    const algo = (cfg.algo || 'md5').toLowerCase();
     const salt = cfg.salt || '';
+    const saltPos = cfg.saltPos || 'prefix'; // 'prefix' => hash(salt+pw), 'suffix' => hash(pw+salt)
     const target = String(cfg.hash).toLowerCase();
-    const list = (cfg.wordlist || []).slice();
+    const baseList = (cfg.wordlist || []).slice();
+    const hashFn = Hash[algo] || Hash.md5;
+    function hashWord(w) { return hashFn(saltPos === 'suffix' ? w + salt : salt + w); }
+
     const wrap = el('div', { class: 'lab-pad' });
     wrap.append(el('div', { html: '<strong>Doel-hash (' + algo.toUpperCase() + (salt ? ', salt=&quot;' + esc(salt) + '&quot;' : '') + '):</strong>' }));
-    wrap.append(el('div', { class: 'lab-out', text: target }));
-    wrap.append(el('label', { text: 'Woordenlijst (' + list.length + ' woorden) — of voeg eigen gok toe' }));
+    wrap.append(el('div', { class: 'lab-out', style: 'word-break:break-all', text: target }));
+
+    // --- modus-keuze ---
+    let mode = 'dict';
+    const modeRow = el('div', { class: 'chip-row', style: 'margin-top:10px' });
+    const dictPane = el('div', {}), bfPane = el('div', { class: 'hide' });
+    const mDict = el('span', { class: 'chip on', text: '📖 Woordenlijst' });
+    const mBf = el('span', { class: 'chip', text: '🔡 Brute-force (masker)' });
+    mDict.addEventListener('click', () => { mode = 'dict'; mDict.classList.add('on'); mBf.classList.remove('on'); dictPane.classList.remove('hide'); bfPane.classList.add('hide'); });
+    mBf.addEventListener('click', () => { mode = 'bf'; mBf.classList.add('on'); mDict.classList.remove('on'); bfPane.classList.remove('hide'); dictPane.classList.add('hide'); });
+    modeRow.append(mDict, mBf);
+    wrap.append(modeRow);
+
+    // --- woordenlijst-paneel ---
+    dictPane.append(el('label', { text: 'Woordenlijst — voeg eigen gokken toe' }));
     const addRow = el('div', { class: 'ans-row' });
     const guess = el('input', { type: 'text', placeholder: 'eigen woord…', style: 'flex:1' });
-    addRow.append(guess, el('button', { class: 'btn small', text: 'Voeg toe', onclick: () => { if (guess.value.trim()) { list.push(guess.value.trim()); guess.value = ''; renderList(); } } }));
-    wrap.append(addRow);
+    const list = baseList.slice();
     const listBox = el('div', { class: 'chip-row' });
-    wrap.append(listBox);
-    const runBtn = el('button', { class: 'btn primary', text: '▶ Start woordenlijstaanval', style: 'margin-top:10px' });
-    wrap.append(runBtn);
-    const result = el('div', { class: 'lab-out', style: 'margin-top:10px' });
-    wrap.append(result);
-
-    function hashWord(w) { return Hash[algo](salt + w); }
     function renderList() { listBox.innerHTML = ''; list.forEach((w) => listBox.append(el('span', { class: 'chip', text: w }))); }
-    renderList();
+    addRow.append(guess, el('button', { class: 'btn small', text: 'Voeg toe', onclick: () => { if (guess.value.trim()) { list.push(guess.value.trim()); guess.value = ''; renderList(); } } }));
+    dictPane.append(addRow, listBox);
+    // regels (mangling)
+    dictPane.append(el('label', { text: 'Regels (mangling) — rek de lijst op, zoals Hashcat/John' }));
+    const rules = { cap: false, leet: false, digits: false, bang: false, year: false };
+    const ruleRow = el('div', { class: 'chip-row' });
+    const ruleDefs = [['cap', 'Eerste letter hoofd'], ['leet', 'l33t (a→@ e→3 o→0 s→$)'], ['digits', '+ cijfer 0–99'], ['year', '+ jaar 1990–2026'], ['bang', '+ leesteken ! ? @ #']];
+    ruleDefs.forEach(([k, label]) => { const c = el('span', { class: 'chip', text: label, onclick: () => { rules[k] = !rules[k]; c.classList.toggle('on', rules[k]); updateCount(); } }); ruleRow.append(c); });
+    dictPane.append(ruleRow);
+    const ruleCount = el('div', { class: 'found-note' });
+    dictPane.append(ruleCount);
+
+    function leet(w) { return w.replace(/a/gi, '@').replace(/e/gi, '3').replace(/o/gi, '0').replace(/s/gi, '$').replace(/i/gi, '1'); }
+    function* candidates() {
+      for (const base of list) {
+        const forms = new Set([base]);
+        if (rules.cap) forms.add(base.charAt(0).toUpperCase() + base.slice(1));
+        if (rules.leet) { Array.from(forms).forEach((f) => forms.add(leet(f))); }
+        const stems = Array.from(forms);
+        for (const s of stems) {
+          yield s;
+          if (rules.digits) for (let d = 0; d <= 99; d++) yield s + d;
+          if (rules.year) for (let y = 1990; y <= 2026; y++) yield s + y;
+          if (rules.bang) for (const p of ['!', '?', '@', '#', '123', '!!']) yield s + p;
+        }
+      }
+    }
+    function countCandidates() { let n = 0; for (const _ of candidates()) { n++; if (n > 1e6) break; } return n; }
+    function updateCount() { ruleCount.textContent = '≈ ' + countCandidates().toLocaleString('nl-NL') + ' kandidaten uit ' + list.length + ' basiswoorden'; }
+
+    // --- brute-force-paneel ---
+    const charsets = { lower: 'abcdefghijklmnopqrstuvwxyz', upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', digits: '0123456789', symbols: '!@#$%&*' };
+    const bfSel = { lower: true, upper: false, digits: true, symbols: false };
+    bfPane.append(el('label', { text: 'Tekenset' }));
+    const csRow = el('div', { class: 'chip-row' });
+    [['lower', 'a–z'], ['upper', 'A–Z'], ['digits', '0–9'], ['symbols', '!@#$…']].forEach(([k, label]) => { const c = el('span', { class: 'chip' + (bfSel[k] ? ' on' : ''), text: label, onclick: () => { bfSel[k] = !bfSel[k]; c.classList.toggle('on', bfSel[k]); bfInfo(); } }); csRow.append(c); });
+    bfPane.append(csRow);
+    bfPane.append(el('label', { text: 'Maximale lengte' }));
+    const lenSel = el('select', {}, [1, 2, 3, 4].map((n) => el('option', { value: n, text: n + ' tekens' })));
+    lenSel.value = '3';
+    bfPane.append(lenSel);
+    const bfNote = el('div', { class: 'found-note' });
+    bfPane.append(bfNote);
+    const BF_CAP = 800000;
+    function bfCharset() { return Object.keys(charsets).filter((k) => bfSel[k]).map((k) => charsets[k]).join(''); }
+    function bfTotal() { const cs = bfCharset().length, L = +lenSel.value; let t = 0; for (let i = 1; i <= L; i++) t += Math.pow(cs, i); return t; }
+    function bfInfo() { const t = bfTotal(); bfNote.innerHTML = 'Zoekruimte: <strong>' + t.toLocaleString('nl-NL') + '</strong> combinaties' + (t > BF_CAP ? ' — <span style="color:var(--warn)">te groot, er worden er maximaal ' + BF_CAP.toLocaleString('nl-NL') + ' geprobeerd. Dit laat juist zien waarom lengte zo belangrijk is.</span>' : '.'); }
+    lenSel.addEventListener('change', bfInfo);
+
+    wrap.append(dictPane, bfPane);
+    const runBtn = el('button', { class: 'btn primary', text: '▶ Start kraken', style: 'margin-top:12px' });
+    const stat = el('div', { class: 'found-note', style: 'margin-top:8px' });
+    const result = el('div', { class: 'lab-out', style: 'margin-top:8px' });
+    wrap.append(runBtn, stat, result);
+
+    let running = false;
+    function finish(found, cand, tried, t0) {
+      running = false; runBtn.disabled = false; runBtn.textContent = '▶ Start kraken';
+      const secs = Math.max((performance.now() - t0) / 1000, 0.001);
+      stat.textContent = tried.toLocaleString('nl-NL') + ' pogingen · ' + Math.round(tried / secs).toLocaleString('nl-NL') + ' hashes/s · ' + secs.toFixed(1) + 's';
+      result.innerHTML = '';
+      if (found != null) result.append(el('div', { html: '<strong>🔓 Gekraakt! Wachtwoord: <code>' + esc(found) + '</code></strong>', style: 'color:var(--good)' }));
+      else result.append(el('div', { text: '✗ Niet gekraakt binnen de geprobeerde kandidaten. Kies een grotere lijst, zet regels aan, of verleng het masker.', style: 'color:var(--bad)' }));
+    }
     runBtn.addEventListener('click', () => {
-      result.textContent = ''; let i = 0; runBtn.disabled = true;
-      const step = () => {
-        if (i >= list.length) { result.append(el('div', { text: '✗ Niet gekraakt. Voeg meer woorden toe.', style: 'color:var(--bad)' })); runBtn.disabled = false; return; }
-        const w = list[i];
-        const h = hashWord(w);
-        const line = el('div', { class: 'resp' });
-        const hit = h === target;
-        line.textContent = 'proberen "' + w + '" → ' + h.slice(0, 24) + '… ' + (hit ? '✓ TREFFER' : '✗');
-        if (hit) line.style.color = 'var(--good)';
-        result.append(line);
-        if (hit) { result.append(el('div', { html: '<strong>🔓 Wachtwoord gevonden: <code>' + esc(w) + '</code></strong>', style: 'margin-top:6px;color:var(--good)' })); runBtn.disabled = false; return; }
-        i++; setTimeout(step, 110);
+      if (running) return; running = true; runBtn.disabled = true; runBtn.textContent = '… bezig';
+      result.innerHTML = ''; stat.textContent = '';
+      const t0 = performance.now();
+      let tried = 0, found = null;
+      let gen;
+      if (mode === 'dict') { gen = candidates(); }
+      else {
+        const cs = bfCharset();
+        if (!cs) { running = false; runBtn.disabled = false; runBtn.textContent = '▶ Start kraken'; result.append(el('div', { class: 'callout warn', text: 'Kies minstens één tekenset.' })); return; }
+        const L = +lenSel.value;
+        gen = (function* () {
+          const idx = [];
+          for (let len = 1; len <= L; len++) {
+            idx.length = len; idx.fill(0);
+            while (true) {
+              yield idx.map((i) => cs[i]).join('');
+              let p = len - 1;
+              while (p >= 0) { idx[p]++; if (idx[p] < cs.length) break; idx[p] = 0; p--; }
+              if (p < 0) break;
+            }
+          }
+        })();
+      }
+      const chunk = () => {
+        const budget = 6000; let n = 0;
+        while (n < budget) {
+          const nx = gen.next();
+          if (nx.done) { finish(found, null, tried, t0); return; }
+          const w = nx.value; tried++; n++;
+          if (hashWord(w) === target) { found = w; finish(found, null, tried, t0); return; }
+          if (mode === 'bf' && tried >= BF_CAP) { finish(found, null, tried, t0); return; }
+          if (tried > 2e6) { finish(found, null, tried, t0); return; }
+        }
+        stat.textContent = tried.toLocaleString('nl-NL') + ' pogingen…';
+        setTimeout(chunk, 0);
       };
-      step();
+      chunk();
     });
-    container.append(shell('<b>Hash-kraker</b> — woordenlijstaanval (lab)', wrap, false));
+    renderList(); updateCount(); bfInfo();
+    container.append(shell('<b>Hash-kraker</b> — woordenlijst, regels en brute-force (lab)', wrap, false));
+  });
+
+  // =====================================================================
+  //  HASHID — herken het hashtype
+  // =====================================================================
+  CS.registerLab('hashid', function (container, cfg) {
+    const wrap = el('div', { class: 'lab-pad' });
+    wrap.append(el('label', { text: 'Plak een hash om het type te herkennen' }));
+    const inp = el('input', { type: 'text', placeholder: 'bv. 5f4dcc3b5aa765d61d8327deb882cf99' }); inp.value = cfg.value || '';
+    wrap.append(inp);
+    const out = el('div', {});
+    wrap.append(out);
+    function identify(h) {
+      h = h.trim();
+      const res = [];
+      const isHex = /^[a-f0-9]+$/i.test(h);
+      if (/^\$2[aby]\$\d\d\$/.test(h)) res.push(['bcrypt', 'Blowfish-gebaseerd, met kostenfactor. Traag met opzet — zeer lastig te kraken.', true]);
+      else if (/^\$6\$/.test(h)) res.push(['sha512crypt ($6$)', 'Linux /etc/shadow, met salt en vele rondes.', true]);
+      else if (/^\$5\$/.test(h)) res.push(['sha256crypt ($5$)', 'Linux /etc/shadow, met salt en vele rondes.', true]);
+      else if (/^\$1\$/.test(h)) res.push(['md5crypt ($1$)', 'Oud Unix-formaat met salt. Verouderd.', true]);
+      else if (/^\$argon2/i.test(h)) res.push(['Argon2', 'Moderne, geheugenharde functie. Aanbevolen voor wachtwoorden.', true]);
+      else if (/^\{SSHA\}/i.test(h)) res.push(['SSHA (LDAP)', 'Salted SHA-1 in Base64, veel in directory-servers.', true]);
+      else if (/^\{SHA\}/i.test(h)) res.push(['SHA-1 (LDAP {SHA})', 'Base64-gecodeerde SHA-1, zonder salt.', false]);
+      else if (isHex) {
+        const n = h.length;
+        if (n === 32) { res.push(['MD5', 'Snel en zonder salt → kwetsbaar voor woordenlijst- en brute-force-aanvallen.', false]); res.push(['NTLM', 'Windows-wachtwoordhash (MD4 van UTF-16LE). Even snel, geen salt.', false]); res.push(['MD4', 'Verouderd, zeer snel.', false]); }
+        else if (n === 40) res.push(['SHA-1', 'Verouderd (botsingen bekend). Zonder salt snel te kraken.', false]);
+        else if (n === 56) res.push(['SHA-224', 'SHA-2-familie.', false]);
+        else if (n === 64) { res.push(['SHA-256', 'SHA-2-familie. Zonder salt nog steeds snel per hash.', false]); res.push(['SHA3-256 / BLAKE2', 'Zelfde lengte, andere functie.', false]); }
+        else if (n === 96) res.push(['SHA-384', 'SHA-2-familie.', false]);
+        else if (n === 128) res.push(['SHA-512', 'SHA-2-familie.', false]);
+        else if (n === 16) res.push(['Mogelijk CRC/half-MD5', 'Korte hex — vaak een checksum, geen veilige hash.', false]);
+        else res.push(['Onbekende hex-lengte (' + n + ')', 'Komt niet overeen met een bekende hash.', false]);
+      } else if (/^[A-Za-z0-9+/]+={0,2}$/.test(h) && h.length % 4 === 0) {
+        res.push(['Base64-gecodeerd', 'Dit is codering, geen hash. Decodeer het eerst (zie CyberChef).', false]);
+      } else if (h.includes(':') && /^[a-f0-9]+:/i.test(h)) {
+        res.push(['hash:salt of user:hash', 'Een samengesteld formaat — splits op de dubbele punt en herken elk deel apart.', false]);
+      } else res.push(['Onherkend', 'Geen patroon herkend. Controleer op spaties of knip-/plakfouten.', false]);
+      return res;
+    }
+    function render() {
+      out.innerHTML = '';
+      if (!inp.value.trim()) return;
+      const res = identify(inp.value);
+      res.forEach(([name, note, strong]) => {
+        out.append(el('div', { class: 'callout ' + (strong ? 'tip' : 'info'), html: '<strong>' + esc(name) + '</strong>' + (strong ? ' 🛡️ <em>(traag / gesalt — moeilijk te kraken)</em>' : '') + '<br>' + esc(note) }));
+      });
+      out.append(el('div', { class: 'found-note', text: 'Lengte: ' + inp.value.trim().length + ' tekens. Let op: lengte alleen is niet bewijzend — meerdere functies delen dezelfde lengte.' }));
+    }
+    inp.addEventListener('input', render);
+    render();
+    container.append(shell('<b>Hash-herkenner</b> — welk type is dit?', wrap, false));
+  });
+
+  // =====================================================================
+  //  CIPHER — klassieke cijfers kraken (Caesar/XOR/Vigenère/Atbash)
+  // =====================================================================
+  CS.registerLab('cipher', function (container, cfg) {
+    const wrap = el('div', { class: 'lab-pad' });
+    wrap.append(el('label', { text: 'Versleutelde tekst' }));
+    const inp = el('textarea', { rows: '3', spellcheck: 'false' }); inp.value = cfg.text || '';
+    wrap.append(inp);
+    const methodRow = el('div', { class: 'chip-row' });
+    const methods = [['caesar', 'Caesar / ROT (alle 26)'], ['xor', 'XOR (1 byte, brute-force)'], ['vigenere', 'Vigenère (met sleutel)'], ['atbash', 'Atbash'], ['reverse', 'Omkeren']];
+    let method = 'caesar';
+    methods.forEach(([k, label]) => { const c = el('span', { class: 'chip' + (k === method ? ' on' : ''), text: label, onclick: () => { method = k; Array.from(methodRow.children).forEach((x) => x.classList.remove('on')); c.classList.add('on'); render(); } }); methodRow.append(c); });
+    wrap.append(methodRow);
+    const keyRow = el('div', { class: 'ans-row hide' });
+    const keyInp = el('input', { type: 'text', placeholder: 'Vigenère-sleutel, bv. dojo', style: 'flex:1' });
+    keyRow.append(keyInp);
+    wrap.append(keyRow);
+    keyInp.addEventListener('input', render);
+    const out = el('div', {});
+    wrap.append(out);
+
+    function shiftText(s, n) { return s.replace(/[a-z]/gi, (c) => { const b = c <= 'Z' ? 65 : 97; return String.fromCharCode((c.charCodeAt(0) - b + n) % 26 + b); }); }
+    // Nederlands/Engels-achtige score: veelvoorkomende letters, spaties en woorden, en JVT{
+    function score(s) {
+      const low = s.toLowerCase(); let sc = 0;
+      for (const ch of low) { if (' etaoinshrdlu'.includes(ch)) sc += 2; else if (ch >= 'a' && ch <= 'z') sc += 0.3; else if (ch === ' ') sc += 1; else if (ch < ' ') sc -= 3; else sc -= 0.2; }
+      [' de ', ' het ', ' een ', ' en ', ' van ', ' the ', ' and ', 'jvt{', 'flag', 'wachtwoord', 'geheim'].forEach((w) => { if (low.includes(w)) sc += 25; });
+      return sc;
+    }
+    function atbash(s) { return s.replace(/[a-z]/gi, (c) => { const b = c <= 'Z' ? 65 : 97; return String.fromCharCode(b + 25 - (c.charCodeAt(0) - b)); }); }
+    function vigenere(s, key, dec) { if (!key) return s; let ki = 0; return s.replace(/[a-z]/gi, (c) => { const b = c <= 'Z' ? 65 : 97; const k = key[ki % key.length].toLowerCase().charCodeAt(0) - 97; ki++; const off = dec ? (26 - k) : k; return String.fromCharCode((c.charCodeAt(0) - b + off) % 26 + b); }); }
+    function render() {
+      keyRow.classList.toggle('hide', method !== 'vigenere');
+      out.innerHTML = '';
+      const s = inp.value;
+      if (!s) return;
+      if (method === 'caesar') {
+        const rows = [];
+        for (let n = 0; n <= 25; n++) { const dec = shiftText(s, (26 - n) % 26); rows.push({ n, dec, sc: score(dec) }); }
+        const best = rows.slice().sort((a, b) => b.sc - a.sc)[0];
+        out.append(el('div', { class: 'callout tip', html: '🔓 <strong>Beste gok: ROT' + best.n + '</strong> (verschuiving ' + best.n + ')<br><code>' + esc(best.dec.slice(0, 160)) + '</code>' }));
+        const box = el('div', { class: 'logview', style: 'max-height:260px' });
+        rows.forEach((r) => { const ln = el('div', { class: 'ln' }); ln.append(el('span', { class: 'n', text: 'ROT' + r.n }), el('span', { text: r.dec, style: r === best ? 'color:#8ec7ab' : '' })); box.append(ln); });
+        out.append(box);
+      } else if (method === 'xor') {
+        const bytes = []; const u = unescape(encodeURIComponent(s)); for (let i = 0; i < u.length; i++) bytes.push(u.charCodeAt(i) & 0xff);
+        // als invoer hex lijkt, lees als hex
+        let data = bytes;
+        if (/^[0-9a-f\s]+$/i.test(s.trim()) && s.replace(/\s/g, '').length % 2 === 0) { data = s.trim().split(/\s+/).join('').match(/.{2}/g).map((h) => parseInt(h, 16)); }
+        const cands = [];
+        for (let k = 0; k < 256; k++) { const dec = data.map((b) => String.fromCharCode(b ^ k)).join(''); cands.push({ k, dec, sc: score(dec) }); }
+        cands.sort((a, b) => b.sc - a.sc);
+        out.append(el('div', { class: 'callout tip', html: '🔓 <strong>Beste sleutel: 0x' + cands[0].k.toString(16).padStart(2, '0') + ' (' + cands[0].k + ')</strong><br><code>' + esc(cands[0].dec.slice(0, 160)) + '</code>' }));
+        out.append(el('label', { text: 'Top 6 kandidaten' }));
+        const box = el('div', { class: 'logview', style: 'max-height:200px' });
+        cands.slice(0, 6).forEach((c) => { const ln = el('div', { class: 'ln' }); ln.append(el('span', { class: 'n', text: '0x' + c.k.toString(16).padStart(2, '0') }), el('span', { text: c.dec.slice(0, 120) })); box.append(ln); });
+        out.append(box);
+      } else if (method === 'vigenere') {
+        out.append(el('label', { text: 'Ontsleuteld (met sleutel "' + esc(keyInp.value || '') + '")' }));
+        out.append(el('div', { class: 'lab-out', text: vigenere(s, keyInp.value.replace(/[^a-z]/gi, ''), true) }));
+        out.append(el('div', { class: 'found-note', text: 'Tip: ken je de sleutellengte niet? Zoek herhalende stukken (Kasiski) of probeer korte woorden. Deze tool ontsleutelt met de sleutel die je invult.' }));
+      } else if (method === 'atbash') {
+        out.append(el('div', { class: 'lab-out', text: atbash(s) }));
+      } else if (method === 'reverse') {
+        out.append(el('div', { class: 'lab-out', text: s.split('').reverse().join('') }));
+      }
+    }
+    inp.addEventListener('input', render);
+    render();
+    container.append(shell('<b>Cijfer-kraker</b> — klassieke versleuteling ontcijferen', wrap, false));
   });
 
   // =====================================================================
@@ -2129,7 +2353,7 @@ kbd {
       const line = el('div', { class: 'ln' });
       line.append(
         el('span', { style: 'color:#7f8db5;flex:none', text: off.toString(16).padStart(8, '0') }),
-        el('span', { style: 'color:#9ef5c8;white-space:pre', text: ' ' + hexPad + ' ' }),
+        el('span', { style: 'color:#8ec7ab;white-space:pre', text: ' ' + hexPad + ' ' }),
         el('span', { style: 'color:#d6e2ff;white-space:pre', text: ascii }),
       );
       dump.append(line);
@@ -2196,7 +2420,7 @@ kbd {
           el('span', { style: 'flex:none;width:58px;color:#7f8db5', text: String(p.time) }),
           el('span', { style: 'flex:none;width:112px', text: p.src }),
           el('span', { style: 'flex:none;width:112px', text: p.dst }),
-          el('span', { style: 'flex:none;width:52px;color:#9ef5c8', text: p.proto }),
+          el('span', { style: 'flex:none;width:52px;color:#8ec7ab', text: p.proto }),
           el('span', { style: 'flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis', text: p.info }),
         );
         table.append(row);
@@ -2492,7 +2716,7 @@ kbd {
     function row(name, d, extra) {
       const f = fmt(d);
       const r = el('div', { class: 'logview', style: 'max-height:none;padding:8px 10px;margin:6px 0' });
-      r.append(el('div', { html: '<strong style="color:#9ef5c8">' + esc(name) + '</strong>' + (extra ? ' <span style="color:#7f8db5">' + esc(extra) + '</span>' : '') }));
+      r.append(el('div', { html: '<strong style="color:#8ec7ab">' + esc(name) + '</strong>' + (extra ? ' <span style="color:#7f8db5">' + esc(extra) + '</span>' : '') }));
       if (f) { r.append(el('div', { text: f.iso + '  (UTC)' })); if (f.nl) r.append(el('div', { style: 'color:#9aa6c8', text: f.nl + '  (NL)' })); }
       else r.append(el('div', { style: 'color:#7f8db5', text: '— geen plausibele datum —' }));
       return r;
@@ -2880,7 +3104,7 @@ kbd {
         const row = el('div', { class: 'ln', style: 'cursor:pointer;align-items:baseline' });
         const star = el('span', { style: 'flex:none;width:18px;color:' + (marks[i] ? 'var(--warn)' : '#566288'), text: marks[i] ? '⭐' : '☆', onclick: (ev) => { ev.stopPropagation(); marks[i] = !marks[i]; render(); } });
         row.append(star,
-          el('span', { style: 'flex:none;width:150px;color:#9ef5c8', text: e.t }),
+          el('span', { style: 'flex:none;width:150px;color:#8ec7ab', text: e.t }),
           el('span', { style: 'flex:none;width:60px;color:#7f8db5', text: delta }),
           el('span', { style: 'flex:none;width:92px;color:#c9a6ff', text: e.src || '' }),
           el('span', { style: 'flex:1;min-width:0', html: (e.host ? '<span style="color:#7f8db5">' + esc(e.host) + (e.user ? '\\' + esc(e.user) : '') + '</span> ' : '') + esc(e.desc || '') }));
@@ -3000,8 +3224,48 @@ kbd {
   function caesar(s, n) { return s.replace(/[a-z]/gi, (c) => { const base = c <= 'Z' ? 65 : 97; return String.fromCharCode((c.charCodeAt(0) - base + n % 26 + 26) % 26 + base); }); }
   function xorStr(s, key) { if (!key) return s; let o = ''; for (let i = 0; i < s.length; i++) o += String.fromCharCode(s.charCodeAt(i) ^ key.charCodeAt(i % key.length)); return o; }
 
+  // ---- MD4 (voor NTLM-demonstratie) -------------------------------------
+  function md4(str) {
+    function rl(x, c) { return (x << c) | (x >>> (32 - c)); }
+    function add(a, b) { return (a + b) & 0xffffffff; }
+    const u = unescape(encodeURIComponent(str)); const bytes = [];
+    for (let i = 0; i < u.length; i++) bytes.push(u.charCodeAt(i) & 0xff);
+    return md4FromBytes(bytes);
+  }
+  function md4FromBytes(bytes) {
+    const add = (a, b) => (a + b) & 0xffffffff;
+    const rol = (x, s) => ((x << s) | (x >>> (32 - s))) & 0xffffffff;
+    const F = (x, y, z) => (x & y) | (~x & z);
+    const G = (x, y, z) => (x & y) | (x & z) | (y & z);
+    const H = (x, y, z) => x ^ y ^ z;
+    const msg = bytes.slice(); const bitLen = msg.length * 8;
+    msg.push(0x80); while (msg.length % 64 !== 56) msg.push(0);
+    for (let i = 0; i < 8; i++) msg.push((Math.floor(bitLen / Math.pow(2, 8 * i))) & 0xff);
+    let A = 0x67452301, B = 0xefcdab89, C = 0x98badcfe, D = 0x10325476;
+    for (let off = 0; off < msg.length; off += 64) {
+      const X = [];
+      for (let i = 0; i < 16; i++) X[i] = (msg[off + i * 4] | (msg[off + i * 4 + 1] << 8) | (msg[off + i * 4 + 2] << 16) | (msg[off + i * 4 + 3] << 24)) >>> 0;
+      let a = A, b = B, c = C, d = D;
+      const ff = (a, b, c, d, k, s) => rol(add(add(a, F(b, c, d)), X[k]), s);
+      const gg = (a, b, c, d, k, s) => rol(add(add(add(a, G(b, c, d)), X[k]), 0x5a827999), s);
+      const hh = (a, b, c, d, k, s) => rol(add(add(add(a, H(b, c, d)), X[k]), 0x6ed9eba1), s);
+      // Ronde 1 (k = 0..15, shifts 3,7,11,19)
+      for (let k = 0; k < 16; k += 4) { a = ff(a, b, c, d, k, 3); d = ff(d, a, b, c, k + 1, 7); c = ff(c, d, a, b, k + 2, 11); b = ff(b, c, d, a, k + 3, 19); }
+      // Ronde 2 (k = 0,4,8,12,1,..., shifts 3,5,9,13)
+      for (let j = 0; j < 4; j++) { a = gg(a, b, c, d, j, 3); d = gg(d, a, b, c, j + 4, 5); c = gg(c, d, a, b, j + 8, 9); b = gg(b, c, d, a, j + 12, 13); }
+      // Ronde 3 (k = 0,8,4,12,2,..., shifts 3,9,11,15)
+      const r3 = [0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15];
+      for (let i = 0; i < 16; i += 4) { a = hh(a, b, c, d, r3[i], 3); d = hh(d, a, b, c, r3[i + 1], 9); c = hh(c, d, a, b, r3[i + 2], 11); b = hh(b, c, d, a, r3[i + 3], 15); }
+      A = add(A, a); B = add(B, b); C = add(C, c); D = add(D, d);
+    }
+    const le = (n) => { let s = ''; for (let i = 0; i < 4; i++) s += ((n >>> (i * 8)) & 0xff).toString(16).padStart(2, '0'); return s; };
+    return le(A) + le(B) + le(C) + le(D);
+  }
+  // NTLM = MD4(UTF-16LE(wachtwoord))
+  function ntlm(str) { const bytes = []; for (let i = 0; i < str.length; i++) { const code = str.charCodeAt(i); bytes.push(code & 0xff, (code >>> 8) & 0xff); } return md4FromBytes(bytes); }
+
   // Expose encoders globally voor content indien nodig
-  CS.enc = { b64encode, b64decode, toHex, fromHex, caesar, xorStr, md5, sha1, sha256 };
+  CS.enc = { b64encode, b64decode, toHex, fromHex, caesar, xorStr, md5, sha1, sha256, md4, ntlm };
 
   // ---- MD5 (geverifieerde klassieke implementatie) ----------------------
   function md5(str) {
@@ -6743,6 +7007,338 @@ grep -r KoffieCMS advies</code></pre>
 
 </script>
 <script>
+/* Room: Klassieke cijfers kraken — Caesar, Vigenère & XOR */
+CS.registerRoom({
+  id: 'cijfers-kraken',
+  path: 'security-kern',
+  order: 5,
+  title: 'Klassieke cijfers kraken: Caesar, Vigenère & XOR',
+  icon: '🗝️',
+  difficulty: 'Gemiddeld',
+  minutes: 60,
+  summary: 'Kraak zelf Caesar, Atbash, Vigenère en een XOR-cijfer, en begrijp waarom klassieke cijfers vallen terwijl een one-time pad en AES dat niet doen.',
+  objectives: [
+    'Coderen, versleutelen en hashen uit elkaar houden en uitleggen waarom klassieke cijfers kraakbaar zijn',
+    'Het principe van Kerckhoffs toepassen op de sleutel versus het algoritme',
+    'Een Caesar-/ROT-cijfer kraken met brute force en frequentieanalyse',
+    'Atbash en een Vigenère-cijfer herkennen en ontsleutelen',
+    'Een 1-byte-XOR-cijfer brute-forcen en uitleggen waarom een one-time pad onbreekbaar is',
+    'Onderbouwen waarom we vandaag gepubliceerde algoritmes als AES gebruiken in plaats van "security through obscurity"',
+  ],
+  tasks: [
+    {
+      title: 'Taak 1 — Van coderen naar kraken: waarom klassieke cijfers vallen',
+      content: `
+        <p>In de vorige room zag je al drie begrippen die vaak door elkaar lopen. We halen ze kort op, want
+        in deze room gaan we cijfers daadwerkelijk <strong>kraken</strong> en dan is het belangrijk om precies te
+        weten waar je mee bezig bent.</p>
+
+        <ul>
+          <li><strong>Coderen (encoding):</strong> data in een ander formaat zetten, zonder sleutel. Denk aan
+          Base64 of hex. Iedereen die het schema kent, draait het terug. Dit beschermt niets.</li>
+          <li><strong>Versleutelen (encryptie):</strong> data vertrouwelijk maken met een <em>sleutel</em>. Zonder
+          de juiste sleutel is de ciphertext onleesbaar. Dit is wat we in deze room aanvallen.</li>
+          <li><strong>Hashen:</strong> een eenrichtings-vingerafdruk maken die je niet kunt terugrekenen. Je
+          gebruikt het voor integriteit en wachtwoordopslag, niet om iets later "uit te pakken".</li>
+        </ul>
+
+        <h3>Wat maakt een cijfer kraakbaar?</h3>
+        <p>Klassieke cijfers (van voor het computertijdperk) zijn vandaag speelgoed. Er zijn twee grote redenen
+        waarom ze vallen:</p>
+        <ul>
+          <li><strong>Kleine sleutelruimte:</strong> het aantal mogelijke sleutels is zo klein dat je ze gewoon
+          allemaal kunt proberen. Dat heet <em>brute force</em>. Een Caesarcijfer heeft maar 25 zinvolle sleutels;
+          die probeer je sneller uit dan je koffie koud wordt.</li>
+          <li><strong>Patronen in de taal:</strong> natuurlijke taal is niet willekeurig. In het Nederlands komt de
+          letter <code>e</code> veruit het vaakst voor, gevolgd door <code>n</code> en <code>a</code>. Ook spaties,
+          dubbele letters en korte woorden verraden structuur. Met <strong>frequentieanalyse</strong> raad je de
+          sleutel zonder alles te proberen.</li>
+        </ul>
+
+        <h3>Het principe van Kerckhoffs</h3>
+        <p>De Nederlandse taalkundige Auguste Kerckhoffs formuleerde in 1883 een regel die nog steeds de kern van
+        de moderne cryptografie is: <strong>een systeem moet veilig blijven, zelfs als de aanvaller alles weet
+        behalve de sleutel</strong>. Met andere woorden: de geheimhouding zit in de <em>sleutel</em>, niet in het
+        algoritme. Klassieke cijfers overtreden dit juist: zodra je weet "dit is ROT13" of "dit is Atbash", lees je
+        mee, want er is nauwelijks een echte sleutel. Moderne algoritmes zijn daarentegen openbaar gepubliceerd en
+        jarenlang door de hele wereld aangevallen — en toch veilig, omdat alleen de sleutel geheim is.</p>
+
+        <div class="callout danger">
+          <strong>Ethiek:</strong> je leert hier cijfers kraken om te begrijpen waarom zwakke versleuteling faalt.
+          Oefen dit alleen op materiaal dat <em>voor jou bedoeld is</em>: de labs in deze room, CTF-uitdagingen of
+          je eigen data. Andermans versleutelde berichten ontcijferen zonder toestemming kan strafbaar zijn
+          (computervredebreuk, art. 138ab Sr). Kennis is om te verdedigen.
+        </div>
+      `,
+      questions: [
+        { q: 'Wat beschermt volgens het principe van Kerckhoffs de vertrouwelijkheid van een bericht?', options: ['Het geheimhouden van het algoritme', 'Het geheimhouden van de sleutel', 'Dat niemand weet dat er een bericht is'], answer: 1, explain: 'Kerckhoffs: het systeem mag openbaar zijn; alleen de sleutel moet geheim blijven.' },
+        { q: 'Noem de aanvalsmethode waarbij je simpelweg alle mogelijke sleutels één voor één probeert.', answer: ['brute force', 'bruteforce', 'brute-force'], hint: 'Het is Engels en betekent letterlijk "met brute kracht".', explain: 'Bij een kleine sleutelruimte, zoals bij Caesar, is brute force triviaal.' },
+        { q: 'Welke letter komt in het Nederlands het vaakst voor en is daarom het startpunt van frequentieanalyse?', answer: ['e'], hint: 'Dezelfde letter domineert ook in het Engels en Duits.', explain: 'De e is veruit de meest voorkomende letter; die kennis verraadt de verschuiving.' },
+        { q: 'Ik begrijp dat ik deze kraaktechnieken alleen oefen op materiaal dat voor mij bedoeld is (labs, CTF of eigen data).', noAnswer: true },
+      ],
+    },
+
+    {
+      title: 'Taak 2 — Caesar en ROT: brute force en frequentieanalyse',
+      content: `
+        <p>Het <strong>Caesarcijfer</strong> is het bekendste klassieke cijfer, vernoemd naar Julius Caesar. Je
+        schuift elke letter een vast aantal plaatsen op in het alfabet. Bij een verschuiving van 3 wordt
+        <code>a</code> een <code>d</code> en <code>b</code> een <code>e</code>. Het woord <code>geheim</code> wordt
+        dan <code>jhkhlp</code>. De "sleutel" is simpelweg dat getal.</p>
+
+        <p><strong>ROT13</strong> is een Caesarcijfer met een vaste verschuiving van 13. Omdat het alfabet 26
+        letters heeft, is ROT13 zijn eigen omkering: tweemaal toepassen geeft de oorspronkelijke tekst. Je zag het
+        vroeger op forums om spoilers af te schermen — nooit om iets echt geheim te houden.</p>
+
+        <h3>Aanval 1: brute force</h3>
+        <p>Een Caesarcijfer heeft maar <strong>25 zinvolle verschuivingen</strong> (0 verandert niets). Dus je
+        probeert ze gewoon allemaal en kijkt welke regel leesbaar Nederlands oplevert. Dat is precies wat het lab
+        hieronder doet: het toont alle 26 mogelijkheden onder elkaar en zet er een "beste gok" bij.</p>
+
+        <h3>Aanval 2: frequentieanalyse</h3>
+        <p>Wil je het slim aanpakken, dan tel je de letters. Komt in de ciphertext bijvoorbeeld de <code>l</code>
+        het vaakst voor, dan is de kans groot dat die overeenkomt met de Nederlandse <code>e</code>. Het verschil
+        tussen <code>l</code> en <code>e</code> is dan je verschuiving. Zo kraak je zelfs lange teksten zonder alle
+        sleutels te proberen — en dit is dezelfde techniek die later ook complexere substitutiecijfers onderuithaalt.</p>
+
+        <div class="callout info">
+          <strong>Let op:</strong> Caesar en ROT raken alleen letters. Cijfers, de accolades <code>{ }</code> en
+          underscores in een vlag blijven staan. Een versleutelde vlag ziet er daarom nog steeds "een beetje als
+          een vlag" uit — handig als herkenningspunt bij het kraken.
+        </div>
+
+        <h3>Aan de slag</h3>
+        <p>In het lab staat een versleuteld bericht. Laat de tool alle verschuivingen tonen en vind de regel die
+        leesbaar Nederlands oplevert. Daarin staat een vlag in het formaat <code>JVT{...}</code>. Noteer ook welke
+        verschuiving (ROT-getal) het bericht gebruikt.</p>
+      `,
+      lab: { type: 'cipher', text: 'Kl nlolptl cshn pz QCA{jhlzhy_pz_thrrlspqr}' },
+      questions: [
+        { q: 'Welke verschuiving (ROT-getal) gebruikt het bericht in het lab?', answer: ['7', 'rot7', '7 plaatsen'], hint: 'Kijk bij welke verschuiving de regel leesbaar Nederlands wordt; het lab zet er een "beste gok" bij.', explain: 'De juiste verschuiving is 7 (ROT7); dan wordt het bericht leesbaar.' },
+        { q: 'Wat is de vlag in het ontsleutelde bericht?', answer: ['JVT{caesar_is_makkelijk}'], encoded: true, hint: 'Ontsleutel met ROT7 en lees de vlag tussen de accolades.', explain: 'Met 25 mogelijke sleutels is een Caesarcijfer binnen een seconde gekraakt.' },
+        { q: 'Waarom is frequentieanalyse zo effectief tegen een Caesarcijfer?', options: ['Omdat de letterverdeling van de taal bewaard blijft; je herkent de e en leidt de verschuiving af', 'Omdat het cijfer de spaties weggooit', 'Omdat het cijfer een heel grote sleutelruimte heeft'], answer: 0, explain: 'Caesar verschuift alle letters gelijk, dus de frequentiepatronen van de taal blijven intact.' },
+      ],
+    },
+
+    {
+      title: 'Taak 3 — Atbash en omkeren: eenvoudige substituties',
+      content: `
+        <p>Het Caesarcijfer is een <strong>substitutiecijfer</strong>: elke letter wordt vervangen door een andere
+        volgens een vaste regel. <strong>Atbash</strong> is nog zo'n substitutie, maar dan zonder getal als sleutel:
+        je spiegelt het alfabet. De eerste letter wordt de laatste en omgekeerd — <code>a</code> wordt
+        <code>z</code>, <code>b</code> wordt <code>y</code>, <code>c</code> wordt <code>x</code>, enzovoort.</p>
+
+        <table>
+          <thead><tr><th>Klaar</th><th>a</th><th>b</th><th>c</th><th>...</th><th>x</th><th>y</th><th>z</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Cipher</strong></td><td>z</td><td>y</td><td>x</td><td>...</td><td>c</td><td>b</td><td>a</td></tr>
+          </tbody>
+        </table>
+
+        <p>Atbash is net als ROT13 <strong>zijn eigen omkering</strong>: je past dezelfde bewerking nog een keer toe
+        om het bericht terug te krijgen. Er is geen sleutel die je hoeft te raden; weet je dat het Atbash is, dan ben
+        je meteen binnen. Dat maakt het als beveiliging waardeloos, maar het is een mooi voorbeeld van een vaste
+        substitutie.</p>
+
+        <h3>Omkeren is géén versleuteling</h3>
+        <p>Nog eenvoudiger is het simpelweg <strong>omkeren</strong> van een tekst (<code>geheim</code> wordt
+        <code>miehig</code>). Dit lijkt op versleuteling, maar er is geen sleutel en geen substitutie — het is puur
+        een volgorde-truc, net als coderen. Verwar het niet met echte encryptie: wie de truc kent, leest direct mee.</p>
+
+        <div class="callout tip">
+          <strong>Tip bij het herkennen:</strong> ziet een cijfertekst er uit als onzin-letters maar met nog steeds
+          herkenbare woordlengtes en accolades? Probeer dan eerst de "gratis" cijfers: ROT13, Atbash en omkeren.
+          Veel CTF-opgaven beginnen met zo'n laagje.
+        </div>
+
+        <h3>Aan de slag</h3>
+        <p>In het lab staat een met Atbash versleutelde vlag. Kies in de tool de Atbash-bewerking (of pas de
+        alfabet-spiegeling toe) en lees de vlag.</p>
+      `,
+      lab: { type: 'cipher', text: 'QEG{zgyzhs_lntvwizzrw}' },
+      questions: [
+        { q: 'Wat is de vlag na het toepassen van Atbash op het bericht in het lab?', answer: ['JVT{atbash_omgedraaid}'], encoded: true, hint: 'Atbash spiegelt het alfabet: a<->z, b<->y, ... en is zijn eigen omkering.', explain: 'Atbash heeft geen te raden sleutel; ken je de methode, dan is het direct leesbaar.' },
+        { q: 'Wat hebben Atbash en ROT13 gemeen?', options: ['Ze hebben een enorme sleutelruimte', 'Ze zijn hun eigen omkering: nog een keer toepassen geeft de originele tekst', 'Ze gebruiken allebei een lange, geheime sleutel'], answer: 1, explain: 'Bij beide draai je het bericht terug door dezelfde bewerking opnieuw toe te passen.' },
+        { q: 'Is het omkeren van een tekst een vorm van versleuteling?', options: ['Nee, er is geen sleutel; het is een volgorde-truc zoals coderen', 'Ja, het is net zo sterk als AES', 'Alleen als de tekst langer is dan 20 tekens'], answer: 0, explain: 'Zonder sleutel is het geen encryptie; iedereen die de truc kent leest mee.' },
+      ],
+    },
+
+    {
+      title: 'Taak 4 — Vigenère: polyalfabetisch en sleutellengte',
+      content: `
+        <p>Lang gold het <strong>Vigenère-cijfer</strong> als "onbreekbaar" (le chiffre indéchiffrable). Het is een
+        slimme uitbreiding op Caesar: in plaats van elke letter met <em>dezelfde</em> verschuiving op te schuiven,
+        gebruik je een <strong>sleutelwoord</strong> waarbij elke letter van dat woord een eigen verschuiving
+        aangeeft. Daarom heet het <strong>polyalfabetisch</strong>: er zijn meerdere "alfabetten" tegelijk in gebruik.</p>
+
+        <p>Stel het sleutelwoord is <code>dojo</code>. Dan geldt: <code>d</code> = schuif 3, <code>o</code> = schuif
+        14, <code>j</code> = schuif 9, <code>o</code> = schuif 14, en daarna begint het sleutelwoord weer van voren.
+        Zo krijgt de eerste letter van je tekst verschuiving 3, de tweede 14, de derde 9, de vierde 14, de vijfde
+        weer 3, enzovoort.</p>
+
+        <h3>Waarom is Vigenère sterker dan Caesar?</h3>
+        <p>Omdat dezelfde klaartekstletter nu verschillende cijferletters kan opleveren (afhankelijk van de positie),
+        wordt simpele frequentieanalyse verstoord: het "e-is-het-vaakst"-patroon wordt uitgesmeerd. Brute force op
+        het hele sleutelwoord is ook lastig, want de sleutelruimte groeit snel met de lengte van de sleutel.</p>
+
+        <h3>De zwakke plek: sleutellengte</h3>
+        <p>Toch valt Vigenère. De truc is om eerst de <strong>sleutellengte</strong> te achterhalen. Daarvoor bestaat
+        het <strong>Kasiski-onderzoek</strong>: komt in de ciphertext een stukje van bijvoorbeeld drie letters
+        meerdere keren voor, dan is de afstand tussen die herhalingen waarschijnlijk een veelvoud van de
+        sleutellengte. Vind je zulke afstanden (bijvoorbeeld 8 en 12), dan is de grootste gemene deler (hier 4) een
+        goede gok voor de sleutellengte. Ken je de lengte eenmaal, dan knip je de tekst in kolommen die élk met
+        dezelfde verschuiving zijn versleuteld — en op elke kolom werkt gewone frequentieanalyse wéér gewoon. Zo is
+        "le chiffre indéchiffrable" alsnog te kraken.</p>
+
+        <div class="callout info">
+          <strong>In dit lab</strong> krijg je de sleutel cadeau: het sleutelwoord is <code>dojo</code>. In een echte
+          aanval zou je die eerst via Kasiski en frequentieanalyse moeten reconstrueren. Vul de sleutel in de tool in
+          en lees het ontsleutelde bericht.
+        </div>
+
+        <h3>Aan de slag</h3>
+        <p>Open het lab, vul het sleutelwoord <code>dojo</code> in bij de Vigenère-bewerking en ontsleutel het
+        bericht. Er staat een vlag in.</p>
+      `,
+      lab: { type: 'cipher', text: 'Gs bzhicso wb rrxx sq rn joop zxwmh MJC{jlunbhfn_uhyaodyc}' },
+      questions: [
+        { q: 'Welk sleutelwoord gebruik je om het Vigenère-bericht in het lab te ontsleutelen?', answer: ['dojo'], hint: 'Het staat in de uitleg van deze taak genoemd.', explain: 'Met het sleutelwoord "dojo" wordt het bericht leesbaar.' },
+        { q: 'Wat is de vlag in het ontsleutelde Vigenère-bericht?', answer: ['JVT{vigenere_gekraakt}'], encoded: true, hint: 'Vul de sleutel dojo in en lees de vlag tussen de accolades.', explain: 'Ken je (of raad je) de sleutel, dan valt ook een polyalfabetisch cijfer.' },
+        { q: 'Waar dient het Kasiski-onderzoek voor bij het kraken van Vigenère?', options: ['Het schat de lengte van het sleutelwoord uit afstanden tussen herhalingen', 'Het berekent direct de vlag', 'Het maakt de sleutel langer zodat hij veiliger wordt'], answer: 0, explain: 'Met de sleutellengte kun je de tekst in kolommen splitsen en per kolom frequentieanalyse doen.' },
+      ],
+    },
+
+    {
+      title: 'Taak 5 — XOR: de brug naar modern (en het onbreekbare one-time pad)',
+      content: `
+        <p>Tijd voor het cijfer dat de brug slaat naar moderne cryptografie: <strong>XOR</strong> (exclusieve of).
+        XOR is een bit-bewerking: <code>0 XOR 0 = 0</code>, <code>1 XOR 1 = 0</code>, maar
+        <code>0 XOR 1 = 1</code> en <code>1 XOR 0 = 1</code>. De bit wordt dus 1 als de twee bits verschillen.
+        Het mooie: XOR is zijn eigen omkering. Doe je <code>klaartekst XOR sleutel = ciphertext</code>, dan geldt
+        ook <code>ciphertext XOR sleutel = klaartekst</code>. Dezelfde bewerking versleutelt én ontsleutelt.</p>
+
+        <figure class="diagram">
+          <svg viewBox="0 0 520 110">
+            <rect x="10" y="40" width="130" height="40" rx="8" fill="var(--surface-2)" stroke="currentColor" />
+            <text x="75" y="65" text-anchor="middle" fill="currentColor" font-size="13">klaartekst</text>
+            <text x="165" y="65" text-anchor="middle" fill="var(--accent)" font-size="20">⊕</text>
+            <rect x="190" y="40" width="130" height="40" rx="8" fill="var(--surface-2)" stroke="currentColor" />
+            <text x="255" y="65" text-anchor="middle" fill="currentColor" font-size="13">sleutel (byte)</text>
+            <text x="345" y="65" text-anchor="middle" fill="currentColor" font-size="18">=</text>
+            <rect x="370" y="40" width="140" height="40" rx="8" fill="var(--surface-2)" stroke="currentColor" />
+            <text x="440" y="65" text-anchor="middle" fill="currentColor" font-size="13">ciphertext</text>
+          </svg>
+          <figcaption>XOR versleutelt per byte; dezelfde bewerking met dezelfde sleutel draait het weer terug.</figcaption>
+        </figure>
+
+        <h3>1-byte-XOR: triviaal te brute-forcen</h3>
+        <p>Als je een korte, herhaalde sleutel gebruikt, is XOR zwak. Het extreemste geval is een sleutel van één
+        byte: dezelfde waarde wordt met élke byte van de tekst ge-XOR'd. Een byte heeft maar 256 mogelijke waarden
+        (0 tot en met 255), dus een aanvaller probeert ze simpelweg allemaal en kijkt welke sleutel leesbare tekst
+        oplevert. Dat is precies wat het lab doet: het brute-forcet alle 256 sleutels.</p>
+
+        <h3>Waarom een herhaalde sleutel lekt</h3>
+        <p>Bij een korte, herhaalde sleutel komt hetzelfde stukje sleutel steeds terug. Daardoor ontstaan weer
+        patronen in de ciphertext, en patronen zijn precies wat frequentieanalyse en statistiek uitbuiten. Hoe korter
+        en vaker herhaald de sleutel, hoe makkelijker te kraken.</p>
+
+        <h3>Het one-time pad: wél onbreekbaar</h3>
+        <p>XOR zelf is niet het probleem — de <em>sleutel</em> is het. Gebruik je een sleutel die (1) <strong>echt
+        willekeurig</strong> is, (2) <strong>minstens even lang</strong> als het bericht, en (3) <strong>maar één
+        keer</strong> gebruikt wordt, dan heb je een <strong>one-time pad</strong>. Dat is bewijsbaar onbreekbaar:
+        elke mogelijke klaartekst van dezelfde lengte is even waarschijnlijk, dus de ciphertext verraadt letterlijk
+        niets. De catch: zo'n sleutel is onpraktisch — hij is even lang als al je data en je moet hem veilig delen.
+        Breek je één van de drie regels (hergebruik, te kort, niet willekeurig), dan stort de garantie meteen in.
+        Moderne cijfers als AES benaderen dit praktisch met korte sleutels en slimme wiskunde.</p>
+
+        <h3>Aan de slag</h3>
+        <p>In het lab staat een XOR-ciphertext als hex. Laat de tool alle 256 sleutels proberen en vind de byte-sleutel
+        die een leesbare vlag oplevert.</p>
+      `,
+      lab: { type: 'cipher', text: '60 7c 7e 51 52 45 58 75 4f 4f 44 75 48 53 5e 4f 57' },
+      questions: [
+        { q: 'Wat is de vlag na het brute-forcen van de 1-byte-XOR in het lab?', answer: ['JVT{xor_een_byte}'], encoded: true, hint: 'Een byte-sleutel heeft maar 256 mogelijkheden; laat het lab ze allemaal proberen.', explain: 'Met slechts 256 sleutels is een 1-byte-XOR net zo triviaal te kraken als Caesar.' },
+        { q: 'Hoeveel mogelijke sleutels moet je proberen om een 1-byte-XOR-cijfer te brute-forcen?', answer: ['256'], hint: 'Een byte is 8 bits.', explain: 'Een byte heeft 2^8 = 256 mogelijke waarden, dus maximaal 256 pogingen.' },
+        { q: 'Welke drie eigenschappen maken een XOR-sleutel tot een onbreekbaar one-time pad?', options: ['Echt willekeurig, minstens even lang als het bericht, en maar één keer gebruikt', 'Kort, makkelijk te onthouden en vaak hergebruikt', 'Precies 8 tekens lang en alleen cijfers'], answer: 0, explain: 'Alle drie zijn nodig; breek er één en de garantie van onbreekbaarheid vervalt.' },
+        { q: 'Waarom is XOR met een korte, herhaalde sleutel zwak?', options: ['Omdat de herhaling patronen in de ciphertext achterlaat die statistiek en frequentieanalyse uitbuiten', 'Omdat XOR niet omkeerbaar is', 'Omdat XOR alleen op letters werkt, niet op bytes'], answer: 0, explain: 'Een herhaalde sleutel brengt structuur terug; precies wat een aanvaller nodig heeft.' },
+      ],
+    },
+
+    {
+      title: 'Taak 6 — Van klassiek naar modern: waarom we AES en openheid vertrouwen',
+      content: `
+        <p>Je hebt nu vier cijfers eigenhandig gekraakt. Ze faalden telkens om dezelfde redenen: een te kleine
+        sleutelruimte, bewaarde taalpatronen, of een sleutel die hergebruikt of te kort was. Tijd om te kijken
+        waarom moderne cryptografie die valkuilen vermijdt.</p>
+
+        <h3>Grote sleutelruimte</h3>
+        <p><strong>AES</strong> (Advanced Encryption Standard) gebruikt sleutels van 128, 192 of 256 bits. Een
+        256-bits sleutel betekent ongeveer 10^77 mogelijkheden — meer dan er atomen in het waarneembare heelal zijn.
+        Brute force is dan geen optie meer: alle computers op aarde samen zouden astronomisch veel langer dan de
+        leeftijd van het heelal nodig hebben. Vergelijk dat met de 25 sleutels van Caesar of de 256 van 1-byte-XOR.</p>
+
+        <h3>Geen patronen</h3>
+        <p>Een goed modern cijfer zorgt dat de ciphertext er statistisch uitziet als ruis: elke bytewaarde komt
+        ongeveer even vaak voor en herhalingen verdwijnen. Daarvoor combineer je AES met een goede <em>mode</em>
+        (zoals GCM) en een unieke <em>IV/nonce</em> per bericht. Zo is er niets voor frequentieanalyse om op aan te
+        grijpen — precies waar Caesar en Vigenère op vielen.</p>
+
+        <h3>Security through obscurity faalt</h3>
+        <p>Klassieke cijfers leunden op geheimhouding van de <em>methode</em>: zolang niemand wist dat het Atbash of
+        ROT13 was, leek het veilig. Zodra de methode bekend werd, was het voorbij. Dat heet
+        <strong>security through obscurity</strong>, en het is een klassieke denkfout. Methodes lekken altijd: via
+        reverse engineering, een ex-medewerker, of simpelweg door te gokken. Daarom volgt de moderne praktijk het
+        principe van Kerckhoffs tot in het extreme: algoritmes als AES zijn <strong>openbaar gepubliceerd</strong> en
+        worden al decennia door duizenden onderzoekers wereldwijd aangevallen. Dat ze dat overleven, is juist het
+        bewijs van hun sterkte. Een cijfer dat zijn veiligheid dankt aan "niemand weet hoe het werkt" is per definitie
+        verdacht.</p>
+
+        <div class="callout tip">
+          <strong>Vuistregel:</strong> gebruik nooit zelfgebouwde of geheime encryptie voor iets dat ertoe doet.
+          Kies een gepubliceerd, goed onderzocht algoritme (AES, ChaCha20) via een beproefde bibliotheek, en richt al
+          je energie op het veilig beheren van de <em>sleutel</em>.
+        </div>
+
+        <div class="callout danger">
+          <strong>Ethiek, tot slot:</strong> de technieken uit deze room zijn dual-use. Je kunt er een CTF mee winnen
+          of een eigen zwakke configuratie mee ontdekken — of je kunt grenzen overschrijden. Blijf binnen je eigen lab
+          of werk met expliciete, schriftelijke toestemming. Vind je echte zwakke versleuteling bij een organisatie,
+          meld het dan verantwoord (responsible disclosure, bijvoorbeeld via het NCSC of een coordinated vulnerability
+          disclosure-traject). Zo maak je het internet veiliger in plaats van onveiliger.
+        </div>
+      `,
+      questions: [
+        { q: 'Waarom is "security through obscurity" (veiligheid door geheimhouding van de methode) een denkfout?', options: ['Omdat methodes altijd lekken; echte veiligheid moet in de geheime sleutel zitten, niet in een geheim algoritme', 'Omdat geheime algoritmes te snel zijn', 'Omdat het alleen bij korte berichten werkt'], answer: 0, explain: 'Zodra de methode bekend wordt, valt het systeem. Kerckhoffs: alleen de sleutel hoort geheim te zijn.' },
+        { q: 'Noem de moderne, openbaar gepubliceerde symmetrische standaard die we vandaag vertrouwen vanwege zijn enorme sleutelruimte.', answer: ['AES'], hint: 'Advanced Encryption Standard.', explain: 'AES is openbaar, jarenlang aangevallen en nog steeds veilig; alleen de sleutel is geheim.' },
+        { q: 'Wat is de belangrijkste reden dat AES-256 niet te brute-forcen is terwijl Caesar dat wel is?', options: ['De gigantische sleutelruimte (ongeveer 10^77 sleutels) maakt alle sleutels proberen onmogelijk', 'AES verbergt het bericht beter voor het oog', 'AES gebruikt helemaal geen sleutel'], answer: 0, explain: 'Met 2^256 sleutels is uitputtend zoeken fysiek onhaalbaar; Caesar heeft er maar 25.' },
+        { q: 'Ik begrijp dat ik zwakke versleuteling alleen onderzoek binnen mijn eigen lab of met toestemming, en vondsten verantwoord meld.', noAnswer: true },
+      ],
+    },
+  ],
+  terms: [
+    { term: 'Substitutiecijfer', def: 'Cijfer waarbij elke letter volgens een vaste regel door een andere wordt vervangen, zoals Caesar en Atbash.' },
+    { term: 'Caesarcijfer', def: 'Substitutiecijfer dat elke letter een vast aantal plaatsen opschuift; heeft maar 25 zinvolle sleutels.' },
+    { term: 'ROT13', def: 'Caesarcijfer met verschuiving 13; is zijn eigen omkering en biedt geen echte beveiliging.' },
+    { term: 'Atbash', def: 'Substitutiecijfer dat het alfabet spiegelt (a<->z, b<->y, ...); is zijn eigen omkering en heeft geen te raden sleutel.' },
+    { term: 'Frequentieanalyse', def: 'Kraakmethode die de letterverdeling van de taal gebruikt (in het Nederlands is de e het vaakst) om de sleutel af te leiden.' },
+    { term: 'Vigenère-cijfer', def: 'Polyalfabetisch cijfer dat met een sleutelwoord per positie een andere verschuiving toepast.' },
+    { term: 'Polyalfabetisch', def: 'Eigenschap dat dezelfde klaartekstletter verschillende cijferletters kan opleveren, afhankelijk van de positie.' },
+    { term: 'Kasiski-onderzoek', def: 'Techniek om de sleutellengte van Vigenère te schatten uit de afstanden tussen herhaalde stukjes ciphertext.' },
+    { term: 'Sleutelruimte', def: 'Het totale aantal mogelijke sleutels; hoe kleiner, hoe makkelijker brute force werkt.' },
+    { term: 'XOR', def: 'Bit-bewerking die 1 geeft als de bits verschillen; zijn eigen omkering en de basis van veel moderne cijfers.' },
+    { term: 'One-time pad', def: 'XOR met een echt willekeurige sleutel die minstens even lang is als het bericht en maar één keer wordt gebruikt; bewijsbaar onbreekbaar.' },
+    { term: "Kerckhoffs' principe", def: 'Een cryptosysteem moet veilig blijven als de aanvaller alles weet behalve de sleutel; geheimhouding zit in de sleutel, niet in het algoritme.' },
+    { term: 'Security through obscurity', def: 'De denkfout dat iets veilig is zolang de methode geheim blijft; faalt zodra de methode uitlekt.' },
+  ],
+  resources: [
+    { title: 'CyberChef (officiële versie)', url: 'https://gchq.github.io/CyberChef/' },
+    { title: 'Wikipedia — Frequency analysis', url: 'https://en.wikipedia.org/wiki/Frequency_analysis' },
+    { title: 'CryptoHack — leer cryptografie door uitdagingen', url: 'https://cryptohack.org/' },
+  ],
+});
+
+</script>
+<script>
 /* Room: OWASP Top 10 (editie 2025) */
 CS.registerRoom({
   id: 'owasp-top-10',
@@ -7814,6 +8410,737 @@ CS.registerRoom({
     { title: 'PortSwigger Web Security Academy — Cross-site scripting', url: 'https://portswigger.net/web-security/cross-site-scripting' },
     { title: 'OWASP Cheat Sheet Series', url: 'https://cheatsheetseries.owasp.org/' },
     { title: 'NCSC (Nederland)', url: 'https://www.ncsc.nl/' },
+  ],
+});
+
+</script>
+<script>
+/* Room: Wachtwoorden kraken — woordenlijst, regels en maskers */
+CS.registerRoom({
+  id: 'wachtwoorden-kraken',
+  path: 'offensief',
+  order: 5,
+  title: 'Wachtwoorden kraken: woordenlijst, regels & maskers',
+  icon: '🔓',
+  difficulty: 'Moeilijk',
+  minutes: 80,
+  summary: 'Een kraak-diepgang: leer offline wachtwoordhashes kraken met woordenlijsten, regels (mangling) en maskers — binnen de wet, alleen op je eigen of gelekte hashes in een lab.',
+  objectives: [
+    'De wettelijke en ethische grenzen van wachtwoorden kraken benoemen (art. 138ab Sr, scope, toestemming)',
+    'Uitleggen waarom kraken = gokken + hashen + vergelijken, en het verschil tussen snelle en trage hashes',
+    'Een woordenlijstaanval (dictionary) uitvoeren op een hash',
+    'Regels (mangling) toepassen om varianten van basiswoorden te maken',
+    'Een masker-aanval (brute force) inzetten op korte wachtwoorden en de zoekruimte inschatten',
+    'Salt, NTLM en trage hashes herkennen en uitleggen hoe je kraken onhaalbaar maakt',
+  ],
+  tasks: [
+    {
+      title: 'Taak 1 — Eerst de wet en de ethiek',
+      content: `
+        <p>Voor we ook maar één hash aanraken, dit: wachtwoorden kraken is een krachtige techniek die je
+        <strong>alleen legaal</strong> mag inzetten. Doe je het verkeerd, dan pleeg je een misdrijf. Deze taak is geen
+        formaliteit — het is de grens tussen een pentester en een crimineel.</p>
+
+        <h3>De gouden regel</h3>
+        <div class="callout danger"><strong>Je kraakt uitsluitend:</strong>
+          <ul>
+            <li>je <strong>eigen</strong> hashes (wachtwoorden die jij zelf hebt gezet), of</li>
+            <li>hashes waarvoor je <strong>schriftelijke toestemming</strong> hebt (een opdracht met scope), of</li>
+            <li>oefenhashes in een <strong>lab</strong> zoals dit, of in een legale CTF/wargame.</li>
+          </ul>
+          Alles daarbuiten — het account van een ander, een hash die je ergens vond, de wifi van de buren — is
+          strafbaar. Punt.
+        </div>
+
+        <h3>Offline, nooit online</h3>
+        <p>Een belangrijk misverstand: je kraakt <strong>nooit een online dienst</strong> door op een inlogpagina
+        duizenden wachtwoorden in te typen. Dat is traag, het valt meteen op, het triggert account-lockout en
+        rate limiting, en het is bovendien <em>computervredebreuk</em>. Echt kraken gebeurt <strong>offline</strong>:
+        een aanvaller (of jij, in opdracht) heeft al een bestand met <em>gehashte</em> wachtwoorden in handen — uit een
+        datalek, een buitgemaakte database, of de wachtwoord-opslag van een systeem dat je mag testen — en probeert op
+        de <em>eigen</em> computer te achterhalen welk wachtwoord bij welke hash hoort. Geen enkele server merkt daar
+        iets van, want je raakt die server niet aan.</p>
+
+        <h3>De Nederlandse wet: art. 138ab Sr</h3>
+        <p>Opzettelijk en wederrechtelijk binnendringen in een geautomatiseerd werk heet <strong>computervredebreuk</strong>
+        en staat in <strong>artikel 138ab van het Wetboek van Strafrecht (Sr)</strong>. Een wachtwoord van een ander
+        kraken om ergens binnen te komen valt daar direct onder. Ook het enkel <em>voorhanden hebben</em> of verspreiden
+        van gelekte wachtwoordbestanden kan strafbaar zijn (heling van gegevens, art. 139g Sr). "Ik wilde alleen
+        kijken" is geen excuus; het gaat om <em>opzet</em> en het ontbreken van <em>toestemming</em>.</p>
+
+        <h3>Waarom pentesters dit wél legaal doen</h3>
+        <p>Een pentester of red-teamer kraakt wachtwoorden om een organisatie te helpen: zijn de wachtwoorden sterk
+        genoeg? Dat mag, omdat er een <strong>opdracht</strong> ligt met een duidelijke <strong>scope</strong> (wat mag
+        je wel en niet raken) en <strong>rules of engagement</strong>, schriftelijk vastgelegd en ondertekend. Die
+        toestemming is je enige wettelijke basis. Zonder papier geen test. Werk altijd binnen de scope, documenteer wat
+        je doet, en lever de resultaten vertrouwelijk op — nooit publiceren of de gekraakte wachtwoorden hergebruiken.</p>
+
+        <div class="callout warn"><strong>Onthoud:</strong> de techniek in deze room is identiek voor een pentester en
+        voor een crimineel. Het enige verschil is <em>toestemming</em>. In dit lab oefen je op veilige oefenhashes die
+        wij voor je klaarzetten — precies zoals het hoort.</div>
+      `,
+      questions: [
+        { q: 'Welk Nederlands wetsartikel gaat over computervredebreuk (binnendringen)?', answer: ['138ab', 'art. 138ab', 'artikel 138ab', '138ab sr'], hint: 'Het staat in het Wetboek van Strafrecht en begint met 138.', explain: 'Art. 138ab Sr stelt het opzettelijk en wederrechtelijk binnendringen in een geautomatiseerd werk strafbaar.' },
+        { q: 'Wat is de enige wettelijke basis waarop een pentester wachtwoorden mag kraken?', options: ['Schriftelijke toestemming/opdracht met scope', 'Een goed doel', 'Dat de hash toch al gelekt was', 'Dat niemand het merkt'], answer: 0, explain: 'Zonder getekende opdracht met scope en rules of engagement is er geen wettelijke basis; dan is het strafbaar.' },
+        { q: 'Waarom kraak je nooit een online dienst door wachtwoorden op de inlogpagina te proberen?', options: ['Het is traag, valt op door lockout/rate limiting en is computervredebreuk', 'Omdat online wachtwoorden niet gehasht zijn', 'Omdat het altijd lukt', 'Omdat de hash dan verdwijnt'], answer: 0, explain: 'Online gokken is traag, loopt tegen lockout/rate limiting en is bovendien strafbaar. Echt kraken is offline op hashes die je mag testen.' },
+        { q: 'Ik begrijp dat ik alleen mijn eigen hashes, oefenhashes of hashes met schriftelijke toestemming mag kraken.', noAnswer: true },
+      ],
+    },
+
+    {
+      title: 'Taak 2 — Hoe een hash werkt en wat "kraken" echt is',
+      content: `
+        <p>Om te kraken moet je eerst snappen wat een hash is. Een <strong>hashfunctie</strong> (zoals MD5, SHA-1,
+        SHA-256) neemt invoer van elke lengte en maakt daar een vaste, korte uitvoer van: de <strong>hash</strong>.
+        Drie eigenschappen zijn cruciaal:</p>
+        <ul>
+          <li><strong>Deterministisch:</strong> dezelfde invoer geeft altijd exact dezelfde hash.</li>
+          <li><strong>Eenrichting:</strong> uit de hash kun je het origineel niet <em>terugrekenen</em>.</li>
+          <li><strong>Lawine-effect:</strong> verander één teken en de hele hash verandert.</li>
+        </ul>
+        <p>Diensten slaan daarom geen wachtwoorden op, maar de hash ervan. Bij het inloggen hashen ze wat jij intypt en
+        vergelijken ze dat met de opgeslagen hash. Komt het overeen, dan ben je binnen — zonder dat het wachtwoord zelf
+        ergens bewaard hoeft te worden.</p>
+
+        <h3>Kraken = gokken + hashen + vergelijken</h3>
+        <p>Omdat een hash eenrichting is, kun je hem niet "terugrekenen". Wat je wél kunt, is <strong>gokken</strong>.
+        Het recept is simpel en het is letterlijk het enige wat elke kraaktool doet:</p>
+        <ol>
+          <li>Neem een kandidaat-wachtwoord (een gok).</li>
+          <li><strong>Hash</strong> die kandidaat met hetzelfde algoritme.</li>
+          <li><strong>Vergelijk</strong> met de doel-hash. Gelijk? Gevonden. Niet gelijk? Volgende gok.</li>
+        </ol>
+        <p>Kraken is dus geen wiskundige truc die de hash "omdraait"; het is heel snel heel veel gokken. De kunst zit in
+        <em>slim</em> gokken (woordenlijsten, regels en maskers — de volgende taken) en in <em>snel</em> gokken.</p>
+
+        <h3>Snelle versus trage hashes</h3>
+        <p>Hoe sneller je één gok kunt hashen, hoe meer gokken per seconde — en dus hoe makkelijker te kraken. Dit is het
+        belangrijkste onderscheid van de hele room:</p>
+        <table>
+          <thead><tr><th>Type</th><th>Voorbeelden</th><th>Gokken/seconde (grofweg)</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Snelle hash</strong></td><td>MD5, SHA-1, SHA-256, NTLM</td><td>miljarden op een goede GPU</td></tr>
+            <tr><td><strong>Trage hash</strong></td><td>bcrypt, scrypt, Argon2, PBKDF2</td><td>duizenden — met opzet geremd</td></tr>
+          </tbody>
+        </table>
+        <p>Snelle hashes zijn ontworpen voor snelheid (bestandscontrole), niet voor wachtwoorden. MD5 en SHA-256 zijn
+        razendsnel, dus een aanvaller raast door enorme lijsten. Trage hashes zoals <strong>bcrypt</strong> en
+        <strong>Argon2</strong> zijn juist <em>expres</em> traag gemaakt (werkfactor/kosten): één gok duurt relatief lang,
+        waardoor miljarden gokken ineens onbetaalbaar worden. Daarover meer in taak 6.</p>
+
+        <h3>Eerst herkennen: welke hash is dit?</h3>
+        <p>Voor je gaat kraken, moet je weten <em>welk algoritme</em> je voor je hebt — anders hash je je gokken met het
+        verkeerde recept en vind je nooit iets. Vaak kun je dat aan de lengte en vorm zien:</p>
+        <ul>
+          <li><strong>MD5</strong>: 32 hex-tekens. <strong>NTLM</strong>: ook 32 hex (Windows).</li>
+          <li><strong>SHA-1</strong>: 40 hex-tekens.</li>
+          <li><strong>SHA-256</strong>: 64 hex-tekens.</li>
+          <li><strong>bcrypt</strong>: begint met <code>$2a$</code>/<code>$2b$</code>/<code>$2y$</code>. <strong>sha512crypt</strong>: begint met <code>$6$</code>.</li>
+        </ul>
+        <p>Gebruik het lab hieronder: plak een hash en laat de tool raden welk type het is. Oefen met een paar lengtes
+        zodat je het straks op het oog herkent.</p>
+      `,
+      lab: { type: 'hashid', value: '9bea15890f18ef35a12767fef5d234b8' },
+      questions: [
+        { q: 'Waarom kun je een hash niet "terugrekenen" naar het wachtwoord?', options: ['Omdat een hashfunctie eenrichting is; je kunt alleen gokken, hashen en vergelijken', 'Omdat de hash versleuteld is met een sleutel', 'Omdat hashes geheim zijn', 'Dat kan juist wel, met de juiste formule'], answer: 0, explain: 'Een hash is eenrichting. Kraken is daarom gokken + hashen + vergelijken, geen terugrekening.' },
+        { q: 'Je plakt de hash uit het lab. Hoeveel hex-tekens telt een MD5-hash?', answer: ['32'], hint: 'Tel de tekens, of lees het af in de hashid-tool.', explain: 'MD5 is 32 hex-tekens. NTLM is ook 32, SHA-1 is 40 en SHA-256 is 64.' },
+        { q: 'Welk type hash is het lastigst te kraken omdat het expres traag is?', options: ['bcrypt / Argon2 (trage hash)', 'MD5', 'SHA-1', 'NTLM'], answer: 0, explain: 'Trage hashes zoals bcrypt en Argon2 remmen elke gok af, waardoor massaal gokken onbetaalbaar wordt.' },
+        { q: 'Waaraan herken je een bcrypt-hash in één oogopslag?', answer: ['$2a$', '$2b$', '$2y$', '2a', '2b'], hint: 'Kijk naar de eerste tekens; het begint met een dollarteken en een versielabel.', explain: 'bcrypt-hashes beginnen met $2a$, $2b$ of $2y$, gevolgd door de werkfactor.' },
+      ],
+    },
+
+    {
+      title: 'Taak 3 — De woordenlijstaanval (dictionary)',
+      content: `
+        <p>De meest gebruikte en meest effectieve aanval is de <strong>woordenlijstaanval</strong> (dictionary attack).
+        Het idee sluit naadloos aan op taak 2: in plaats van blind alle combinaties te proberen, gok je slim met een
+        <strong>woordenlijst</strong> (wordlist) vol waarschijnlijke wachtwoorden. Voor elk woord: hashen, vergelijken,
+        door. Omdat mensen voorspelbaar zijn, kraak je zo een groot deel van elke lekdump in seconden.</p>
+
+        <h3>Waarom dit zo goed werkt</h3>
+        <p>Mensen kiezen geen willekeurige tekens. Ze kiezen namen, plaatsen, het woord "welkom", hun favoriete club,
+        of een bekend lek-wachtwoord. Een goede woordenlijst bevat precies die woorden, gesorteerd op hoe vaak ze
+        voorkomen. De beroemdste is <strong>rockyou.txt</strong> (ruim 14 miljoen wachtwoorden uit een oud datalek);
+        andere bekende lijsten komen uit projecten als <em>SecLists</em> en <em>weakpass</em>. Je hoeft die lijsten
+        hier niet te downloaden — onthoud alleen dat ze bestaan en dat kraaktools als
+        <strong>hashcat</strong> en <strong>John the Ripper</strong> ze razendsnel aflopen.</p>
+
+        <div class="callout info"><strong>rockyou?</strong> De lijst dankt zijn naam aan het bedrijf RockYou, dat in 2009
+        miljoenen wachtwoorden in platte tekst opsloeg en lekte. Sindsdien is het hét startpunt voor een
+        woordenlijstaanval — een pijnlijk monument voor slechte opslag.</div>
+
+        <h3>Aan de slag</h3>
+        <p>In het lab staat een MD5-hash en een kleine woordenlijst (zo werkt het echt, alleen veel korter). Start de
+        woordenlijstaanval en laat de tool de lijst aflopen. De tool hasht elk woord met MD5 en vergelijkt het met de
+        doel-hash. Eén woord geeft exact dezelfde hash — dat is het wachtwoord.</p>
+
+        <div class="callout tip"><strong>Tip:</strong> je kunt in de tool ook je eigen gok toevoegen. Probeer eerst
+        zelf te raden welk woord in zo'n lijst het meest voor de hand ligt, en kijk of je gelijk had.</div>
+
+        <h3>Je beloning</h3>
+        <p>Heb je het wachtwoord gevonden? Mooi — dan heb je je eerste hash gekraakt. Als bewijs lever je deze vlag in:</p>
+        <details><summary>Toon de vlag (pas openen nadat je het wachtwoord hebt gekraakt)</summary>
+          <p>Je verdiende vlag is <code>JVT{woordenlijst_kraakt_snel}</code>. Omdat MD5 een snelle hash is, was de hele
+          lijst in een fractie van een seconde doorlopen — onthoud dat gevoel als we het straks over trage hashes
+          hebben.</p>
+        </details>
+      `,
+      lab: {
+        type: 'hashcrack',
+        algo: 'md5',
+        hash: '371620aa75830b1388b63305b0d42f06',
+        salt: '',
+        wordlist: ['123456', 'qwerty', 'welkom', 'wachtwoord', 'admin', 'liefde', 'voetbal', 'maandag'],
+      },
+      questions: [
+        { q: 'Start de woordenlijstaanval. Welk wachtwoord hoort bij de hash?', answer: ['welkom'], hint: 'Laat de tool de hele lijst aflopen; één woord geeft precies dezelfde MD5.', explain: 'Het woord "welkom" heeft exact deze MD5-hash. Een klassieke dictionary-treffer.' },
+        { q: 'Hoe heet de beroemde woordenlijst uit een oud datalek die vaak het startpunt is?', answer: ['rockyou', 'rockyou.txt'], hint: 'Vernoemd naar het bedrijf dat de wachtwoorden lekte.', explain: 'rockyou.txt bevat ruim 14 miljoen gelekte wachtwoorden en is het klassieke startpunt.' },
+        { q: 'Wat is de vlag die je verdient na het kraken?', answer: ['JVT{woordenlijst_kraakt_snel}'], hint: 'Hij staat in het inklapbare blok onderaan de taak.', explain: 'De vlag JVT{woordenlijst_kraakt_snel} bewijst je eerste geslaagde woordenlijstaanval.' },
+        { q: 'Waarom werkt een woordenlijstaanval zo vaak?', options: ['Omdat mensen voorspelbare wachtwoorden kiezen (namen, lek-woorden, "welkom")', 'Omdat hashes zwak zijn', 'Omdat de tool de hash terugrekent', 'Omdat alle wachtwoorden in rockyou staan'], answer: 0, explain: 'Mensen kiezen geen willekeur; een lijst van waarschijnlijke wachtwoorden pakt daarom een groot deel.' },
+      ],
+    },
+
+    {
+      title: 'Taak 4 — Regels en mangling: varianten op een thema',
+      content: `
+        <p>Een kale woordenlijst mist alles wat mensen <em>aan</em> een woord plakken: een hoofdletter vooraan, een
+        cijfer of jaartal erachter, een uitroepteken, of letters vervangen door lijkende tekens (l33t-speak). Daarvoor
+        bestaan <strong>regels</strong> (rules), ook wel <strong>mangling</strong> genoemd. Een regel is een kleine
+        transformatie die de tool op elk woord uit de lijst toepast — zo maak je uit één basiswoord tientallen
+        realistische varianten, zonder je lijst op te blazen.</p>
+
+        <h3>Veelgebruikte regels</h3>
+        <ul>
+          <li><strong>Hoofdletter:</strong> <code>welkom</code> → <code>Welkom</code>.</li>
+          <li><strong>Cijfers erachter (digits):</strong> het woord + <code>0</code> t/m <code>99</code>, dus
+          <code>welkom0</code>, <code>welkom1</code>, … <code>welkom99</code>.</li>
+          <li><strong>Jaartal erachter (year):</strong> het woord + een jaartal van <code>1990</code> t/m <code>2026</code>,
+          dus <code>zomer1990</code> … <code>zomer2026</code>.</li>
+          <li><strong>l33t-speak:</strong> <code>a</code>→<code>4</code>, <code>e</code>→<code>3</code>,
+          <code>o</code>→<code>0</code>, <code>i</code>→<code>1</code>/<code>!</code>, <code>s</code>→<code>5</code>.
+          Zo wordt <code>liefde</code> bijvoorbeeld <code>l13fd3</code>.</li>
+          <li><strong>Leesteken erachter:</strong> vaak gewoon een <code>!</code>.</li>
+        </ul>
+        <p>Combineer je regels (hoofdletter + jaartal), dan zit je al gauw op precies het soort wachtwoord dat een mens
+        verzint als "sterk": <code>Zomer2024</code>, <code>Welkom2025!</code>, <code>V0etbal1</code>. Voor de tool is dat
+        nog steeds één basiswoord plus een handjevol regels — kinderspel.</p>
+
+        <h3>Rekenvoorbeeld</h3>
+        <p>Neem het basiswoord <code>zomer</code>. Dat staat vast in elke degelijke woordenlijst. Met de
+        <em>year</em>-regel maakt de tool daar onder meer <code>zomer2024</code> van (want 2024 ligt tussen 1990 en
+        2026). Precies die variant is in het lab de oplossing: het basiswoord alléén kraakt de hash niet, maar het
+        basiswoord <em>met de juiste regel</em> wel.</p>
+
+        <div class="callout tip"><strong>In dit lab:</strong> de woordenlijst bevat basiswoorden als <code>zomer</code>
+        en <code>welkom</code>. Voor de oefening staat het doelwoord er óók in, zodat je sowieso een treffer krijgt. Maar
+        de echte les is: zet in je hoofd de <em>year</em>-regel aan en zie hoe uit <code>zomer</code> vanzelf
+        <code>zomer2024</code> ontstaat. In hashcat zou je dat doen met een regelbestand als <code>best64.rule</code>.</div>
+
+        <h3>Je beloning</h3>
+        <details><summary>Toon de vlag (pas openen nadat je het wachtwoord hebt gevonden)</summary>
+          <p>Je verdiende vlag: <code>JVT{regels_maken_varianten}</code>. Onthoud: een "sterk ogend" wachtwoord als
+          <code>Zomer2024</code> is voor een kraaktool nauwelijks meer werk dan het kale woord <code>zomer</code>.</p>
+        </details>
+      `,
+      lab: {
+        type: 'hashcrack',
+        algo: 'md5',
+        hash: '2a4652cb030cfef3627fe1624e77ac16',
+        salt: '',
+        wordlist: ['welkom', 'zomer', 'winter', 'voetbal', 'liefde', 'wachtwoord', 'zomer2024'],
+      },
+      questions: [
+        { q: 'Welk wachtwoord hoort bij de hash in dit lab?', answer: ['zomer2024'], hint: 'Neem het basiswoord "zomer" en plak er met de jaartal-regel een jaar achter.', explain: 'zomer2024 ontstaat uit het basiswoord "zomer" plus de year-regel (1990-2026).' },
+        { q: 'De digits-regel plakt welke reeks achter een woord?', options: ['0 tot en met 99', '1990 tot en met 2026', 'alleen het getal 1', 'een willekeurig getal'], answer: 0, explain: 'De digits-regel maakt woord+0 t/m woord+99; de year-regel doet woord+1990 t/m woord+2026.' },
+        { q: 'Hoe heet het omzetten van letters naar lijkende tekens, zoals "e" naar "3" en "a" naar "4"?', answer: ['l33t', 'l33t-speak', 'leet', 'leetspeak', 'leet-speak'], hint: 'Spreek uit als "leet"; schrijf het zelf ook vaak met cijfers.', explain: 'l33t-speak vervangt letters door lijkende cijfers/tekens; een veelgebruikte mangling-regel.' },
+        { q: 'Wat is de vlag die je hier verdient?', answer: ['JVT{regels_maken_varianten}'], hint: 'Staat in het inklapbare blok onderaan.', explain: 'JVT{regels_maken_varianten} — regels maken uit één basiswoord vele realistische kandidaten.' },
+      ],
+    },
+
+    {
+      title: 'Taak 5 — Brute force met maskers',
+      content: `
+        <p>Soms zit een wachtwoord in geen enkele lijst en is het ook geen variant van een woord: het is gewoon een
+        kort, willekeurig rijtje tekens zoals <code>q7m</code>. Dan rest de botte bijl: <strong>brute force</strong>,
+        oftewel écht alle combinaties proberen. Om dat gericht te doen gebruik je een <strong>masker</strong> (mask).</p>
+
+        <h3>Wat is een masker?</h3>
+        <p>Een masker beschrijft de <em>vorm</em> van het wachtwoord met tekenklassen, zodat je niet nodeloos combinaties
+        probeert. In hashcat-notatie:</p>
+        <table>
+          <thead><tr><th>Symbool</th><th>Tekenklasse</th><th>Aantal</th></tr></thead>
+          <tbody>
+            <tr><td><code>?l</code></td><td>kleine letters a-z</td><td>26</td></tr>
+            <tr><td><code>?u</code></td><td>hoofdletters A-Z</td><td>26</td></tr>
+            <tr><td><code>?d</code></td><td>cijfers 0-9</td><td>10</td></tr>
+            <tr><td><code>?s</code></td><td>leestekens</td><td>ca. 33</td></tr>
+            <tr><td><code>?a</code></td><td>alles (letters+cijfers+leestekens)</td><td>ca. 95</td></tr>
+          </tbody>
+        </table>
+        <p>Het masker <code>?l?d?l</code> betekent dus: kleine letter, cijfer, kleine letter. Dat zijn 26 × 10 × 26 =
+        <strong>6.760</strong> mogelijkheden — voor een computer niets. Precies zo'n wachtwoord zit in het lab.</p>
+
+        <h3>Zoekruimte: waarom +1 teken alles verandert</h3>
+        <p>De zoekruimte groeit <strong>exponentieel</strong> met de lengte. Reken mee met alleen kleine letters (26 per
+        positie):</p>
+        <ul>
+          <li>3 tekens: 26³ = 17.576</li>
+          <li>4 tekens: 26⁴ = 456.976</li>
+          <li>5 tekens: 26⁵ = 11.881.376</li>
+          <li>6 tekens: 26⁶ = 308.915.776</li>
+        </ul>
+        <p>Elk extra teken vermenigvuldigt het totaal met 26. Gebruik je álle 95 tekens (<code>?a</code>), dan is dat
+        zelfs maal 95 per positie. Daarom is een kort wachtwoord met brute force zo gekraakt, maar wordt het bij
+        voldoende lengte <em>onhaalbaar</em>: bij 12+ willekeurige tekens duurt het langer dan het bestaan van het
+        heelal, zelfs op snelle hardware. Lengte is je beste verdediging — de kern van taak 7.</p>
+
+        <h3>Aan de slag</h3>
+        <p>In het lab staat een MD5-hash van een kort wachtwoord van 3 tekens: een kleine letter, een cijfer en een
+        kleine letter. Dat woord staat <em>niet</em> als los woord in een normale woordenlijst. Denk in het masker
+        <code>?l?d?l</code> en loop die kleine zoekruimte af (of voeg je gok toe). Welk wachtwoord is het?</p>
+
+        <div class="callout tip"><strong>Tip:</strong> omdat de zoekruimte hier maar 6.760 kandidaten is, is dit in een
+        oogwenk gekraakt. Stel je voor dat elke positie uit 95 tekens kon bestaan en het wachtwoord 12 lang was — dan
+        was geen enkele mask-aanval meer haalbaar.</div>
+
+        <details><summary>Toon de vlag (pas openen nadat je het wachtwoord hebt gekraakt)</summary>
+          <p>Je verdiende vlag: <code>JVT{masker_vindt_het_korte}</code>. Maskers maken brute force gericht — maar ze
+          verliezen het altijd van voldoende lengte.</p>
+        </details>
+      `,
+      lab: {
+        type: 'hashcrack',
+        algo: 'md5',
+        hash: '0c355ce06793ac2b0eca93ab800cf582',
+        salt: '',
+        wordlist: ['welkom', 'zomer2024', 'voetbal', 'liefde', 'admin', 'q7m'],
+      },
+      questions: [
+        { q: 'Welk kort wachtwoord (3 tekens) hoort bij de hash?', answer: ['q7m'], hint: 'Masker ?l?d?l: kleine letter, cijfer, kleine letter.', explain: 'q7m past op het masker ?l?d?l en geeft exact deze MD5-hash.' },
+        { q: 'Hoeveel kandidaten telt het masker ?l?d?l (a-z, 0-9, a-z)?', answer: ['6760', '6.760'], hint: 'Vermenigvuldig 26 × 10 × 26.', explain: '26 × 10 × 26 = 6.760 mogelijkheden — triviaal voor een computer.' },
+        { q: 'Wat gebeurt er met de zoekruimte als je één teken aan een wachtwoord toevoegt?', options: ['Die wordt vermenigvuldigd met het aantal mogelijke tekens (exponentiële groei)', 'Die wordt verdubbeld', 'Die blijft gelijk', 'Die wordt met één opgeteld'], answer: 0, explain: 'Elk extra teken vermenigvuldigt het totaal met de grootte van de tekenklasse; vandaar de explosieve groei.' },
+        { q: 'Wat is de vlag die je hier verdient?', answer: ['JVT{masker_vindt_het_korte}'], hint: 'Staat in het inklapbare blok onderaan.', explain: 'JVT{masker_vindt_het_korte} — maskers kraken korte wachtwoorden, maar verliezen van lengte.' },
+      ],
+    },
+
+    {
+      title: 'Taak 6 — Salt, NTLM en trage hashes',
+      content: `
+        <p>Tot nu toe kraakten we kale, ongesalte hashes. In de praktijk kom je drie dingen tegen die het kraken
+        beïnvloeden: <strong>salt</strong>, het Windows-formaat <strong>NTLM</strong>, en <strong>trage hashes</strong>.</p>
+
+        <h3>Salt verslaat rainbow tables</h3>
+        <p>Een <strong>salt</strong> is een willekeurige, per-gebruiker-unieke waarde die vóór het hashen aan het
+        wachtwoord wordt geplakt: opgeslagen wordt <code>hash(salt + wachtwoord)</code>, samen met het salt. Gevolg:
+        twee gebruikers met hetzelfde wachtwoord krijgen tóch verschillende hashes. Dat maakt een
+        <strong>rainbow table</strong> — een gigantische vooraf berekende tabel van hash→wachtwoord — nutteloos, want
+        die tabel is berekend zonder jouw salt. De aanvaller moet per hash opnieuw beginnen met gokken. Salt maakt
+        kraken dus niet onmogelijk, maar wel véél duurder, en het blokkeert hergebruik van voorberekende tabellen.</p>
+
+        <div class="callout info"><strong>Peper (pepper):</strong> een extra geheim dat (anders dan salt) níét bij de
+        hash wordt opgeslagen maar apart, bijvoorbeeld in een HSM of app-config. Lekt alleen de database, dan mist de
+        aanvaller de peper en kan hij zelfs met het juiste wachtwoord de hash niet reproduceren.</div>
+
+        <h3>NTLM: Windows-wachtwoorden</h3>
+        <p>Windows slaat lokale en domein-wachtwoorden op als <strong>NTLM</strong>-hashes (te vinden in de SAM of in
+        <em>ntds.dit</em> op een domaincontroller). NTLM is een <em>snelle</em>, <em>ongesalte</em> hash — slecht nieuws
+        voor de verdediging: twee accounts met hetzelfde wachtwoord hebben dezelfde NTLM-hash, en er is geen salt die
+        rainbow tables tegenhoudt. Voor een pentester betekent dit: buitgemaakte NTLM-hashes kraak je vaak net zo vlot
+        als MD5. Let op: NTLM is 32 hex-tekens, net als MD5 — je kunt ze niet aan de lengte onderscheiden, dus je moet
+        weten waar de hash vandaan komt.</p>
+        <p>In het lab staat een echte NTLM-hash van een realistisch Windows-wachtwoord. Zet in de tool het algoritme op
+        <strong>ntlm</strong> en draai de woordenlijst. Welk wachtwoord is het?</p>
+
+        <h3>Trage hashes: de echte verdediging</h3>
+        <p>Goede systemen slaan wachtwoorden niet op met MD5 of NTLM, maar met een <strong>trage hash</strong> die
+        bewust rekenkracht kost: <strong>bcrypt</strong>, <strong>scrypt</strong> of <strong>Argon2</strong>. Je stelt
+        een <em>werkfactor</em> (cost) in; hoger = trager. Eén login van een echte gebruiker merkt die vertraging
+        nauwelijks, maar een aanvaller die miljarden keren wil gokken, loopt vast. Herken je ze:</p>
+        <ul>
+          <li><strong>bcrypt</strong>: <code>$2b$12$R9h/cIPz0gi.URNNX3kh2OPST9PgBkqquzi.Ss7KIUgO2t0jWMUW</code> — begint met <code>$2b$</code> en de werkfactor <code>12</code>.</li>
+          <li><strong>sha512crypt</strong>: <code>$6$rqi.N7mO$l12...</code> — begint met <code>$6$</code> (op veel Linux-systemen in <code>/etc/shadow</code>).</li>
+          <li><strong>Argon2</strong>: <code>$argon2id$v=19$m=65536,t=3,p=4$...</code> — de huidige aanrader.</li>
+        </ul>
+        <p>Plak zulke strings gerust in de hashid-tool uit taak 2 om het dollarteken-prefix te leren herkennen. Zie je
+        <code>$2b$</code> of <code>$6$</code>, dan weet je: dit wordt een lange zit, en een kale woordenlijst op MD5-tempo
+        gaat hier niet werken.</p>
+
+        <details><summary>Toon de vlag (pas openen nadat je de NTLM-hash hebt gekraakt)</summary>
+          <p>Je verdiende vlag: <code>JVT{ntlm_valt_net_zo_hard}</code>. Een zwak wachtwoord blijft zwak, of het nu als
+          MD5 of als NTLM is opgeslagen — alleen een trage, gesalte hash plus een sterk wachtwoord houdt stand.</p>
+        </details>
+      `,
+      lab: {
+        type: 'hashcrack',
+        algo: 'ntlm',
+        hash: '7d15f3b02e19d20498964e420b92b99a',
+        salt: '',
+        wordlist: ['welkom', 'Zomer2024', 'Wachtwoord1', 'admin', 'Welkom2025', 'computer'],
+      },
+      questions: [
+        { q: 'Zet het algoritme op ntlm en kraak de hash. Welk wachtwoord is het?', answer: ['Wachtwoord1', 'wachtwoord1'], hint: 'Een klassiek Windows-wachtwoord: een woord met hoofdletter en een cijfer erachter.', explain: 'Wachtwoord1 is de NTLM-hash in dit lab; een typisch (zwak) Windows-wachtwoord.' },
+        { q: 'Waarom maakt een salt rainbow tables nutteloos?', options: ['Omdat gelijke wachtwoorden tóch verschillende hashes krijgen, buiten de voorberekende tabel om', 'Omdat het wachtwoord erdoor langer wordt', 'Omdat de hash erdoor geheim wordt', 'Omdat salt het algoritme verandert'], answer: 0, explain: 'Door het unieke salt klopt geen enkele voorberekende tabel meer; de aanvaller moet per hash opnieuw gokken.' },
+        { q: 'Een hash begint met "$6$". Welk type is dit?', options: ['sha512crypt (trage hash)', 'MD5', 'NTLM', 'SHA-1'], answer: 0, explain: 'Het prefix $6$ staat voor sha512crypt, een trage hash die je vaak in /etc/shadow ziet.' },
+        { q: 'Wat is de vlag die je hier verdient?', answer: ['JVT{ntlm_valt_net_zo_hard}'], hint: 'Staat in het inklapbare blok onderaan.', explain: 'JVT{ntlm_valt_net_zo_hard} — NTLM is snel en ongesalt, dus zwakke wachtwoorden vallen net zo makkelijk.' },
+      ],
+    },
+
+    {
+      title: 'Taak 7 — Verdedigen: kraken onhaalbaar maken',
+      content: `
+        <p>Je weet nu hoe kraken werkt — en dat is precies waarom je het ook kunt tegenhouden. Een aanvaller wint op
+        <em>snelheid</em> en <em>voorspelbaarheid</em>. Verdedigen betekent: beide wegnemen. Hier is het complete
+        recept, van gebruiker tot systeem.</p>
+
+        <h3>Voor de gebruiker: lengte en onvoorspelbaarheid</h3>
+        <ul>
+          <li><strong>Lengte verslaat alles.</strong> Zoals je in taak 5 zag, groeit de zoekruimte exponentieel met de
+          lengte. Een lang wachtwoord is immuun voor brute force, ongeacht de hardware.</li>
+          <li><strong>Gebruik wachtwoordzinnen</strong> (passphrases): vier of meer willekeurige woorden, zoals
+          <code>kaas-fiets-donder-maandag</code>. Lang, te onthouden, en onvoorspelbaar genoeg om woordenlijsten en
+          regels te verslaan — mits de woorden écht willekeurig gekozen zijn.</li>
+          <li><strong>Vermijd het voorspelbare:</strong> namen, geboortedata, <code>Welkom2025!</code>,
+          toetsenbordrijtjes. Precies dát pakken woordenlijst + regels als eerste.</li>
+          <li><strong>Uniek per account</strong> en bewaard in een <strong>wachtwoordmanager</strong>, zodat één lek niet
+          al je accounts meesleept.</li>
+        </ul>
+
+        <h3>Voor het systeem: traag, gesalt, gepeperd</h3>
+        <ul>
+          <li><strong>Trage hash met hoge werkfactor:</strong> bewaar wachtwoorden met <strong>bcrypt</strong>,
+          <strong>scrypt</strong> of (aanrader) <strong>Argon2</strong>. Zo kost elke gok de aanvaller rekentijd en wordt
+          massaal kraken onbetaalbaar.</li>
+          <li><strong>Altijd een unieke salt per gebruiker</strong> — verslaat rainbow tables en verbergt dat twee mensen
+          hetzelfde wachtwoord hebben.</li>
+          <li><strong>Eventueel een peper</strong> (apart geheim, niet in de database) voor een extra laag als de database
+          lekt.</li>
+          <li><strong>Rate limiting en account-lockout</strong> tegen online gokken.</li>
+        </ul>
+
+        <h3>De vangnetten</h3>
+        <ul>
+          <li><strong>MFA</strong> (multifactor-authenticatie): zelfs een gekraakt wachtwoord is dan niet genoeg. De
+          belangrijkste maatregel na lengte.</li>
+          <li><strong>Lekcontrole:</strong> controleer wachtwoorden tegen bekende datalekken. Op
+          <strong>Have I Been Pwned</strong> check je of jouw gegevens in een lek zitten; veel diensten blokkeren
+          proactief wachtwoorden die al ooit gelekt zijn.</li>
+        </ul>
+
+        <div class="callout tip"><strong>Probeer het in het lab:</strong> typ eerst een kort, voorspelbaar wachtwoord en
+        bekijk de geschatte kraaktijd. Maak het daarna fors langer met een paar extra woorden en zie de schatting
+        omslaan van "seconden" naar "onhaalbaar". Zo voel je taak 5 terug in de praktijk.</div>
+
+        <h3>Afsluiting</h3>
+        <p>Je kunt nu hashes herkennen en kraken met woordenlijsten, regels en maskers — en je begrijpt waarom salt,
+        trage hashes en lengte dat tegenhouden. Belangrijker nog: je weet waar de grens ligt. Deze kennis is krachtig,
+        en krachtig gereedschap gebruik je verantwoord: alleen op je eigen hashes, op oefenhashes, of binnen een
+        getekende opdracht. Zo zet je kraken in waar het hoort — om systemen sterker te maken, niet om in te breken.</p>
+
+        <div class="callout info"><strong>Verder oefenen?</strong> Doe legale CTF's en wargames (bijvoorbeeld
+        OverTheWire, HackTheBox) en lees de documentatie van hashcat en John the Ripper. Blijf op de hoogte via het
+        <strong>NCSC</strong>.</div>
+      `,
+      lab: { type: 'password' },
+      questions: [
+        { q: 'Welke eigenschap van een wachtwoord verslaat brute force het sterkst?', options: ['De lengte flink vergroten', 'Eén hoofdletter toevoegen', 'Een cijfer aan het eind plakken', 'Het maandelijks wijzigen'], answer: 0, explain: 'De zoekruimte groeit exponentieel met de lengte; een lange (wachtwoord)zin is daardoor onhaalbaar te brute-forcen.' },
+        { q: 'Met welke opslagmethode maakt een systeem kraken het moeilijkst?', options: ['Een trage, gesalte hash (bcrypt/Argon2) met hoge werkfactor', 'MD5', 'NTLM', 'Platte tekst met een back-up'], answer: 0, explain: 'Een trage, gesalte hash remt elke gok af en verslaat rainbow tables; Argon2 is de huidige aanrader.' },
+        { q: 'Welke maatregel zorgt dat zelfs een gekraakt wachtwoord niet genoeg is om in te loggen?', answer: ['mfa', 'multifactor-authenticatie', '2fa', 'multifactor', 'tweefactor'], hint: 'Een tweede factor naast het wachtwoord.', explain: 'MFA voegt een tweede factor toe, zodat een gestolen of gekraakt wachtwoord alleen niet volstaat.' },
+        { q: 'Ik kan uitleggen hoe kraken werkt én hoe je het met lengte, trage gesalte hashes, MFA en lekcontrole tegenhoudt.', noAnswer: true },
+      ],
+    },
+  ],
+  terms: [
+    { term: 'Hash', def: 'Vaste, korte uitvoer van een eenrichtings-hashfunctie; verandert volledig bij één gewijzigd teken.' },
+    { term: 'Woordenlijstaanval (dictionary)', def: 'Kraken door een lijst van waarschijnlijke wachtwoorden af te gaan: elk woord hashen en vergelijken.' },
+    { term: 'Wordlist', def: 'Lijst met kandidaat-wachtwoorden, zoals rockyou.txt, gebruikt bij een woordenlijstaanval.' },
+    { term: 'Regel (rule/mangling)', def: 'Kleine transformatie op een woord (hoofdletter, cijfers, jaartal, l33t) om realistische varianten te maken.' },
+    { term: 'l33t-speak', def: 'Letters vervangen door lijkende tekens (a→4, e→3, o→0, s→5); een veelgebruikte mangling-regel.' },
+    { term: 'Brute force', def: 'Systematisch alle mogelijke combinaties proberen; alleen haalbaar bij korte wachtwoorden.' },
+    { term: 'Masker (mask)', def: 'Beschrijving van de vorm van een wachtwoord met tekenklassen (?l ?u ?d ?s ?a) om brute force gericht te maken.' },
+    { term: 'Zoekruimte', def: 'Het totale aantal mogelijke wachtwoorden; groeit exponentieel met de lengte.' },
+    { term: 'Salt', def: 'Unieke, per-gebruiker willekeurige waarde die vóór het hashen wordt toegevoegd; verslaat rainbow tables.' },
+    { term: 'Peper (pepper)', def: 'Extra geheim dat apart van de database wordt bewaard, als extra laag bovenop salt.' },
+    { term: 'Rainbow table', def: 'Vooraf berekende tabel van hash naar wachtwoord; nutteloos tegen gesalte hashes.' },
+    { term: 'Trage hash', def: 'Wachtwoord-hash die bewust rekenkracht kost (bcrypt, scrypt, Argon2) om massaal gokken onbetaalbaar te maken.' },
+    { term: 'NTLM', def: 'Snelle, ongesalte Windows-wachtwoordhash (SAM/ntds.dit); 32 hex-tekens, net als MD5.' },
+    { term: 'Werkfactor (cost)', def: 'Instelbare traagheid van een trage hash; hoger betekent meer rekentijd per gok.' },
+  ],
+  resources: [
+    { title: 'hashcat — de snelste wachtwoord-kraker (documentatie)', url: 'https://hashcat.net/hashcat/' },
+    { title: 'John the Ripper (Openwall)', url: 'https://www.openwall.com/john/' },
+    { title: 'Have I Been Pwned — check je gegevens op datalekken', url: 'https://haveibeenpwned.com/' },
+    { title: 'NCSC — Nationaal Cyber Security Centrum', url: 'https://www.ncsc.nl/' },
+  ],
+});
+
+</script>
+<script>
+/* Room: Crack the Hash — de uitdaging (offensief, oefen-CTF rond hashes kraken) */
+CS.registerRoom({
+  id: 'crack-the-hash',
+  path: 'offensief',
+  order: 6,
+  title: 'Crack the Hash — de uitdaging',
+  icon: '🧩',
+  difficulty: 'Moeilijk',
+  minutes: 60,
+  summary: 'Een CTF-achtige oefen-room die oploopt in moeilijkheid. In zes levels kraak je steeds een wachtwoordhash — van simpel MD5 tot NTLM, brute-force en gesalte hashes — en verzamel je onderweg drie vlaggen.',
+  objectives: [
+    'Een hash-algoritme herkennen aan lengte en context (MD5, SHA-1, SHA-256, NTLM)',
+    'Een woordenlijstaanval (dictionary attack) uitvoeren tegen een hash',
+    'Een kort wachtwoord met brute-force (masker-modus) terugvinden',
+    'Uitleggen waarom snelle, ongesalte hashes zo kwetsbaar zijn',
+    'Begrijpen hoe een salt rainbow tables onbruikbaar maakt',
+  ],
+  terms: [
+    { term: 'Hash', def: 'Een eenrichtingsvingerafdruk van data. Je kunt hem niet "terugrekenen"; kraken betekent gokken tot de hash klopt.' },
+    { term: 'MD5', def: 'Verouderd, 128-bits hash-algoritme (32 hex-tekens). Razendsnel en ongesalt: zeer makkelijk te kraken.' },
+    { term: 'SHA-1', def: '160-bits hash (40 hex-tekens). Gebroken (botsingen bekend) en zonder salt snel te kraken.' },
+    { term: 'SHA-256', def: 'Lid van de SHA-2-familie, 256 bits (64 hex-tekens). Sterk als hash, maar zonder salt per gok nog steeds snel.' },
+    { term: 'NTLM', def: 'Windows-wachtwoordhash (MD4 van het wachtwoord in UTF-16LE). 32 hex-tekens, net als MD5, en net zo snel.' },
+    { term: 'Woordenlijstaanval (dictionary attack)', def: 'Je hasht elk woord uit een lijst waarschijnlijke wachtwoorden en vergelijkt met de doel-hash.' },
+    { term: 'Brute-force (masker)', def: 'Je probeert systematisch alle combinaties binnen een tekenset en lengte. Werkt alleen bij korte wachtwoorden.' },
+    { term: 'Salt', def: 'Een unieke, willekeurige toevoeging per wachtwoord vóór het hashen. Maakt vooraf berekende tabellen (rainbow tables) nutteloos.' },
+    { term: 'Rainbow table', def: 'Een vooraf berekende tabel van hash naar wachtwoord. Snel, maar waardeloos zodra elke hash een eigen salt heeft.' },
+  ],
+  resources: [
+    { title: 'CrackStation — gratis hash-opzoeker en uitleg over wachtwoordhashing', url: 'https://crackstation.net/' },
+    { title: 'Hashcat — de bekendste hash-kraker (modi, maskers, regels)', url: 'https://hashcat.net/' },
+    { title: 'John the Ripper (Openwall) — klassieke wachtwoordkraker', url: 'https://www.openwall.com/john/' },
+  ],
+  tasks: [
+    {
+      title: 'Level 1 — MD5: de opwarmer',
+      content: `
+        <p>Welkom bij <strong>Crack the Hash</strong>. Dit is een oefen-CTF: zes levels, oplopend in moeilijkheid. In elk
+        level krijg je een wachtwoordhash en kraak je die. Het <strong>gekraakte wachtwoord is telkens het antwoord</strong>
+        op de hoofdvraag. Onderweg verdien je drie vlaggen (<code>JVT{...}</code>).</p>
+
+        <div class="callout danger">
+          <strong>Ethiek eerst:</strong> hashes kraken oefen je alleen op je eigen materiaal of in een lab als dit. Andermans
+          wachtwoorden kraken zonder toestemming is strafbaar (computervredebreuk, art. 138ab Sr).
+        </div>
+
+        <p>We beginnen makkelijk. Dit is een <strong>MD5</strong>-hash: 128 bits, weergegeven als <strong>32 hex-tekens</strong>.
+        MD5 is oud en razendsnel te berekenen — precies daarom is het waardeloos voor wachtwoorden: een aanvaller kan er
+        miljarden per seconde proberen.</p>
+
+        <pre><code>371620aa75830b1388b63305b0d42f06</code></pre>
+
+        <p>Gebruik de hash-kraker hieronder. Hij staat op <strong>Woordenlijst</strong>: klik op <strong>Start kraken</strong>
+        en de tool hasht elk woord uit de lijst en vergelijkt het met de doel-hash. Het bijbehorende wachtwoord is een heel
+        gewoon Nederlands woord dat helaas nog steeds veel voorkomt. Lees het gekraakte wachtwoord af — dat is je antwoord.</p>
+      `,
+      lab: {
+        type: 'hashcrack',
+        algo: 'md5',
+        hash: '371620aa75830b1388b63305b0d42f06',
+        wordlist: ['123456', 'wachtwoord', 'welkom', 'voetbal', 'admin', 'zomer2024', 'qwerty', 'geheim', 'liefde'],
+      },
+      questions: [
+        { q: 'Wat is het gekraakte wachtwoord?', answer: ['welkom'], hint: 'Start de woordenlijstaanval; de tool toont "Gekraakt! Wachtwoord: ...".', explain: 'De MD5-hash 371620aa... is de hash van "welkom", een klassiek zwak wachtwoord.' },
+        { q: 'Hoeveel hex-tekens telt een MD5-hash?', answer: ['32'], hint: 'Tel de tekens van de hash hierboven.', explain: 'MD5 is 128 bits = 16 bytes = 32 hex-tekens.' },
+        { q: 'Waarom is MD5 ongeschikt om wachtwoorden op te slaan?', options: ['Omdat het te lang is', 'Omdat het razendsnel te berekenen is en geen salt heeft', 'Omdat het geheim is', 'Omdat het alleen op Linux werkt'], answer: 1, explain: 'MD5 is snel en ongesalt, dus een aanvaller probeert enorme aantallen gokken per seconde.' },
+      ],
+    },
+
+    {
+      title: 'Level 2 — SHA-1: iets langer',
+      content: `
+        <p>Level omhoog. Deze hash is langer: <strong>40 hex-tekens</strong>. Dat is het kenmerk van <strong>SHA-1</strong>
+        (160 bits). SHA-1 geldt als <em>gebroken</em> — er zijn botsingen bekend — en zonder salt is hij nog steeds snel te
+        kraken met een woordenlijst.</p>
+
+        <pre><code>fda48d6a63f351dc46d411336de4ba33f77b66f5</code></pre>
+
+        <p>De hash-kraker hieronder staat al op <strong>algoritme SHA-1</strong> (je ziet "Doel-hash (SHA1)" bovenaan).
+        Start de woordenlijstaanval. Lukt het niet meteen? Je mag <strong>eigen gokken toevoegen</strong> met het invoerveld,
+        en je kunt de <strong>regels (mangling)</strong> aanzetten om varianten te maken (hoofdletter vooraan, een cijfer of
+        jaartal erachter) — precies zoals Hashcat en John the Ripper dat doen.</p>
+
+        <p>Het wachtwoord hier is een populair hobby-woord. Kraak het en noteer het als je antwoord.</p>
+
+        <div class="callout tip">
+          <strong>Tip:</strong> de lengte van een hash geeft een sterke hint over het type. 32 tekens → MD5 (of NTLM),
+          40 → SHA-1, 64 → SHA-256. Lengte alleen is geen bewijs, maar het is je eerste houvast.
+        </div>
+
+        <div class="callout info">
+          <strong>Vlag verdiend (levels 1-2):</strong> je hebt je eerste twee hashes met een woordenlijst gekraakt.
+          Noteer de vlag <code>JVT{eerste_hashes_gekraakt}</code>.
+        </div>
+      `,
+      lab: {
+        type: 'hashcrack',
+        algo: 'sha1',
+        hash: 'fda48d6a63f351dc46d411336de4ba33f77b66f5',
+        wordlist: ['hockey', 'voetbal', 'tennis', 'ajax', 'feyenoord', 'sport', 'oranje', 'welkom'],
+      },
+      questions: [
+        { q: 'Wat is het gekraakte wachtwoord?', answer: ['voetbal'], hint: 'Start de aanval met algoritme SHA-1; het is een populaire sport.', explain: 'De SHA-1-hash fda48d6a... hoort bij het wachtwoord "voetbal".' },
+        { q: 'Hoeveel hex-tekens telt een SHA-1-hash?', answer: ['40'], hint: 'Tel de tekens van de hash in deze taak.', explain: 'SHA-1 is 160 bits = 20 bytes = 40 hex-tekens.' },
+        { q: 'Je hebt de eerste twee hashes gekraakt. Welke vlag hoort bij deze mijlpaal? (JVT{eerste_hashes_gekraakt})', answer: ['JVT{eerste_hashes_gekraakt}'], hint: 'De vlag staat letterlijk in de vraag en hieronder bij de uitleg.', explain: 'Goed bezig: JVT{eerste_hashes_gekraakt}. Je hebt MD5 en SHA-1 met een woordenlijst gekraakt.' },
+      ],
+    },
+
+    {
+      title: 'Level 3 — Eerst herkennen, dan kraken (SHA-256)',
+      content: `
+        <p>Een echte kraker begint met één vraag: <strong>wat voor hash is dit eigenlijk?</strong> Je moet het juiste
+        algoritme kiezen, anders klopt geen enkele gok. Bekijk deze hash:</p>
+
+        <pre><code>a61a19d1f7b2c1e7f5387ab67f59d798060128c43338d9504a6fd51e3de1a0bb</code></pre>
+
+        <p>Tel de tekens: het zijn er <strong>64</strong>. Dat wijst op <strong>SHA-256</strong> (SHA-2-familie, 256 bits).
+        Dit is precies wat een tool als <em>hash-id</em> doet: aan de lengte en de vorm het waarschijnlijke type bepalen.
+        SHA-256 is een sterk hash-algoritme, maar <strong>zonder salt</strong> blijft elke losse gok snel te berekenen —
+        dus een woordenlijstaanval werkt nog steeds.</p>
+
+        <p>De hash-kraker hieronder staat al op <strong>SHA-256</strong>. Start de woordenlijstaanval. Het wachtwoord is een
+        dag van de week. Kraak het en noteer het als je antwoord.</p>
+
+        <div class="callout info">
+          <strong>Waarom eerst herkennen?</strong> Zou je deze 64-teken-hash als MD5 proberen te kraken, dan vergelijk je
+          32-teken-MD5's met een 64-teken-doel — dat matcht nooit. Het juiste type kiezen is stap één.
+        </div>
+      `,
+      lab: {
+        type: 'hashcrack',
+        algo: 'sha256',
+        hash: 'a61a19d1f7b2c1e7f5387ab67f59d798060128c43338d9504a6fd51e3de1a0bb',
+        wordlist: ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'weekend', 'vakantie'],
+      },
+      questions: [
+        { q: 'Welk hash-algoritme is dit, gezien de 64 hex-tekens?', options: ['MD5', 'SHA-1', 'SHA-256', 'NTLM'], answer: 2, explain: '64 hex-tekens = 256 bits = SHA-256 (SHA-2-familie).' },
+        { q: 'Wat is het gekraakte wachtwoord?', answer: ['maandag'], hint: 'Kies SHA-256 en start de aanval; het is een dag van de week.', explain: 'De SHA-256-hash a61a19d1... hoort bij het wachtwoord "maandag".' },
+        { q: 'Waarom helpt het type herkennen vóór je begint?', options: ['Omdat je anders het verkeerde algoritme vergelijkt en nooit een match krijgt', 'Omdat het sneller typt', 'Omdat SHA-256 geheim is', 'Dat helpt niet'], answer: 0, explain: 'Alleen met het juiste algoritme kunnen jouw gok-hashes gelijk zijn aan de doel-hash.' },
+      ],
+    },
+
+    {
+      title: 'Level 4 — NTLM: context beslist',
+      content: `
+        <p>Nu wordt herkennen écht belangrijk. Bekijk deze hash:</p>
+
+        <pre><code>2b2ac2d1c7c8fda6cea80b5fad7563aa</code></pre>
+
+        <p>Het zijn <strong>32 hex-tekens</strong>. Een hash-id-tool zal nu <strong>twee</strong> opties noemen: dit kan
+        <strong>MD5</strong> zijn, maar ook <strong>NTLM</strong> — beide zijn 128 bits en dus 32 hex-tekens. De lengte
+        alleen kan het verschil niet maken. Wat beslist, is de <strong>context</strong>.</p>
+
+        <p>Deze hash komt uit de <strong>SAM-database van een Windows-machine</strong>. Windows slaat lokale wachtwoorden op
+        als NTLM (dat is MD4 van het wachtwoord in UTF-16LE). Zie je dus een 32-teken-hash uit een Windows-bron, dan kies je
+        <strong>NTLM</strong>, niet MD5. NTLM is net zo snel en ongesalt als MD5, dus ook hier werkt een woordenlijst prima.</p>
+
+        <p>De hash-kraker hieronder staat op <strong>algoritme NTLM</strong> (zie "Doel-hash (NTLM)" bovenaan). Start de
+        woordenlijstaanval. Het wachtwoord is een alledaags apparaat. Kraak het en noteer het.</p>
+
+        <div class="callout warn">
+          <strong>Onthoud:</strong> MD5 en NTLM zijn aan de hash niet te onderscheiden. De herkomst (een <code>/etc/shadow</code>,
+          een database-dump, een Windows-SAM) vertelt je welke je moet kiezen.
+        </div>
+
+        <div class="callout info">
+          <strong>Vlag verdiend (levels 3-4):</strong> je herkent nu het type én gebruikt de context om de juiste keuze te maken.
+          Noteer de vlag <code>JVT{types_herkend}</code>.
+        </div>
+      `,
+      lab: {
+        type: 'hashcrack',
+        algo: 'ntlm',
+        hash: '2b2ac2d1c7c8fda6cea80b5fad7563aa',
+        wordlist: ['laptop', 'computer', 'windows', 'server', 'netwerk', 'toetsenbord', 'printer', 'welkom'],
+      },
+      questions: [
+        { q: 'Een 32 hex-teken-hash uit een Windows-SAM: welk type kies je?', options: ['SHA-256', 'NTLM', 'SHA-1', 'bcrypt'], answer: 1, explain: 'Windows slaat lokale wachtwoorden op als NTLM. Bij 32 hex uit Windows kies je NTLM, niet MD5.' },
+        { q: 'Wat is het gekraakte wachtwoord?', answer: ['computer'], hint: 'Kies NTLM en start de aanval; het is een alledaags apparaat.', explain: 'De NTLM-hash 2b2ac2d1... hoort bij het wachtwoord "computer".' },
+        { q: 'Je hebt nu ook SHA-256 en NTLM aangepakt. Welke vlag hoort bij dit level-paar? (JVT{types_herkend})', answer: ['JVT{types_herkend}'], hint: 'De vlag staat letterlijk in de vraag.', explain: 'Netjes: JVT{types_herkend}. Je herkent nu het type én gebruikt de context om de juiste keuze te maken.' },
+      ],
+    },
+
+    {
+      title: 'Level 5 — Brute-force: als geen woordenlijst werkt',
+      content: `
+        <p>Soms staat een wachtwoord in <strong>geen enkele</strong> woordenlijst, omdat het geen woord is maar een
+        willekeurige korte reeks. Dan helpt alleen <strong>brute-force</strong>: systematisch alle combinaties proberen
+        binnen een tekenset en lengte (de <strong>masker-modus</strong>). Dat werkt alleen bij <em>korte</em> wachtwoorden —
+        en dat is precies de les.</p>
+
+        <p>De MD5-hash van deze uitdaging is:</p>
+
+        <pre><code>64aa5d2db669b3d98196fb2d1f1a2c6f</code></pre>
+
+        <p>Het wachtwoord is <strong>3 tekens lang</strong> en bestaat uit <strong>kleine letters en cijfers</strong>
+        (a–z en 0–9). Zo'n random combinatie vind je niet via een woordenlijst. Doe daarom dit in de hash-kraker hieronder:</p>
+        <ol>
+          <li>Klik bovenaan op <strong>Brute-force (masker)</strong>.</li>
+          <li>Zet de tekenset op <strong>a–z</strong> én <strong>0–9</strong>.</li>
+          <li>Zet de maximale lengte op <strong>3 tekens</strong>.</li>
+          <li>Klik op <strong>Start kraken</strong> en lees het gevonden wachtwoord af.</li>
+        </ol>
+
+        <div class="callout tip">
+          <strong>Let op:</strong> het doelwoord staat voor de volledigheid óók in de woordenlijst, zodat de tool altijd
+          sluit. Maar in het echt zou zo'n willekeurige reeks dáár niet in staan — daarom oefen je hier bewust met de
+          <strong>masker-modus</strong>. Merk op hoe de "zoekruimte" explodeert zodra je de lengte verhoogt: dat laat zien
+          waarom lengte je beste bescherming is.
+        </div>
+      `,
+      lab: {
+        type: 'hashcrack',
+        algo: 'md5',
+        hash: '64aa5d2db669b3d98196fb2d1f1a2c6f',
+        wordlist: ['welkom', 'qwerty', 'admin', 'q4z', 'geheim', 'letmein'],
+      },
+      questions: [
+        { q: 'Wat is het gekraakte wachtwoord (3 tekens, a-z en 0-9)?', answer: ['q4z'], hint: 'Zet de masker-modus aan: tekenset a-z + 0-9, lengte 3, en start.', explain: 'Brute-force over a-z0-9 met lengte 3 vindt "q4z" (MD5 64aa5d2d...).' },
+        { q: 'Wanneer is brute-force (masker) de aangewezen methode?', options: ['Als het wachtwoord kort is en niet in een woordenlijst staat', 'Altijd, het is het snelst', 'Alleen bij SHA-256', 'Nooit'], answer: 0, explain: 'Brute-force werkt alleen praktisch bij korte wachtwoorden; bij lange explodeert de zoekruimte.' },
+        { q: 'Wat maakt een wachtwoord het best bestand tegen brute-force?', options: ['Een hoofdletter vooraan', 'Lengte (meer tekens)', 'Het op MD5 opslaan', 'Een korte reeks cijfers'], answer: 1, explain: 'Elke extra tekenpositie vermenigvuldigt de zoekruimte; lengte is veruit de sterkste factor.' },
+      ],
+    },
+
+    {
+      title: 'Level 6 — Salt: het einde van de rainbow table',
+      content: `
+        <p>Finale. Tot nu toe waren alle hashes <strong>ongesalt</strong>: hetzelfde wachtwoord geeft altijd dezelfde hash.
+        Daardoor werken <strong>rainbow tables</strong> — enorme vooraf berekende tabellen van hash naar wachtwoord. Je zoekt
+        de hash gewoon op. Een <strong>salt</strong> maakt daar een einde aan.</p>
+
+        <p>Een salt is een unieke, willekeurige toevoeging per wachtwoord, die vóór het hashen wordt gezet. Hier is de salt
+        <code>Xy7</code> en wordt <strong>vooraan</strong> geplakt, dus de server bewaart <code>md5(salt + wachtwoord)</code>:</p>
+
+        <pre><code>md5("Xy7" + wachtwoord) = 329f3abf574738de33a01f7c630b1fb7</code></pre>
+
+        <p>Omdat de salt mee-gehasht is, komt deze hash in geen enkele rainbow table voor: die tabellen zijn gemaakt voor
+        <em>kale</em> wachtwoorden. De hash-kraker hieronder weet de salt al (je ziet "salt=Xy7" bovenaan) en zet hem vóór elk
+        woord. Start de woordenlijstaanval. Het wachtwoord is hetzelfde zwakke woord uit level 1 — de salt verbergt dat je
+        dat aan de hash niet meer ziet. Kraak het en noteer het.</p>
+
+        <div class="callout info">
+          <strong>Belangrijk:</strong> een salt stopt rainbow tables en zorgt dat twee mensen met hetzelfde wachtwoord
+          tóch verschillende hashes krijgen. Maar een salt maakt het hashen niet trager. Echte bescherming komt van een
+          <strong>traag, gesalt</strong> algoritme zoals bcrypt, scrypt of Argon2.
+        </div>
+
+        <div class="callout tip">
+          <strong>Slotvlag verdiend (levels 5-6):</strong> van MD5 tot NTLM, brute-force en gesalte hashes — je hebt ze
+          alle zes gekraakt. Noteer de slotvlag <code>JVT{hash_meester}</code>.
+        </div>
+      `,
+      lab: {
+        type: 'hashcrack',
+        algo: 'md5',
+        salt: 'Xy7',
+        saltPos: 'prefix',
+        hash: '329f3abf574738de33a01f7c630b1fb7',
+        wordlist: ['welkom', 'admin', 'dojo', 'zomer2024', 'voetbal', 'geheim', 'liefde'],
+      },
+      questions: [
+        { q: 'Wat is het gekraakte wachtwoord?', answer: ['welkom'], hint: 'De tool zet de salt Xy7 al vooraan; start de woordenlijstaanval. Het is hetzelfde woord als in level 1.', explain: 'md5("Xy7" + "welkom") = 329f3abf... — het wachtwoord is "welkom".' },
+        { q: 'Waarom breekt een salt rainbow tables?', options: ['Omdat de hash dan langer wordt', 'Omdat de tabellen voor kale wachtwoorden zijn gemaakt en de salt per wachtwoord uniek is', 'Omdat MD5 dan trager wordt', 'Dat doet het niet'], answer: 1, explain: 'Rainbow tables bevatten hashes van wachtwoorden zonder salt; met een unieke salt komt geen enkele hash in zo\'n tabel voor.' },
+        { q: 'Je hebt alle zes de hashes gekraakt. Welke slotvlag verdien je? (JVT{hash_meester})', answer: ['JVT{hash_meester}'], hint: 'De vlag staat letterlijk in de vraag.', explain: 'Gefeliciteerd: JVT{hash_meester}. Van MD5 tot NTLM, brute-force en gesalte hashes — je hebt ze alle zes gekraakt.' },
+      ],
+    },
   ],
 });
 

@@ -133,13 +133,50 @@ lab: { type: 'cyberchef', input: 'SlZUe2Jhc2U2NF9pc19nZWVuX2VuY3J5cHRpZX0=' }
 Bewerkingen: Base64 en Hex (coderen/decoderen), Binair (coderen/decoderen), ROT13, Caesar (verschuiving n),
 URL (coderen/decoderen), Omkeren, XOR (sleutel), MD5, SHA-1 en SHA-256. Ze kunnen achter elkaar worden toegepast.
 
-### `hashcrack`: woordenlijstaanval nabootsen
+### `hashcrack`: wachtwoord-hash kraken (woordenlijst, regels & brute-force)
 
 ```js
-lab: { type: 'hashcrack', algo: 'md5', hash: '<hex-hash>', salt: '', wordlist: ['welkom', 'wachtwoord123', ...] }
+lab: {
+  type: 'hashcrack',
+  algo: 'md5',          // 'md5' | 'sha1' | 'sha256' | 'ntlm' (Windows, = MD4 van UTF-16LE) | 'md4'
+  hash: '<hex-hash>',
+  salt: '',             // optioneel
+  saltPos: 'prefix',    // 'prefix' => hash(salt+woord) (standaard) | 'suffix' => hash(woord+salt)
+  wordlist: ['welkom', 'zomer2024', ...],
+}
 ```
-De leerling start een woordenlijstaanval en kan eigen gokken toevoegen. Algoritmen: `md5`, `sha1`, `sha256`.
-Met een `salt` wordt `hash(salt + woord)` berekend. **Bereken de hash zelf met Node** (`require('crypto')`) en controleer die.
+De leerling kiest een **modus**:
+- **Woordenlijst**: de lijst aflopen, met eigen gokken erbij. Daarbovenop zijn er **regels (mangling)** aan te zetten:
+  eerste letter hoofdletter, l33t (a→@ e→3 o→0 s→$ i→1), `+ cijfer 0–99`, `+ jaar 1990–2026`, `+ leesteken`.
+- **Brute-force (masker)**: kies een tekenset (a–z/A–Z/0–9/symbolen) en een lengte (1–4). De zoekruimte is afgekapt op
+  ~800.000 pogingen, juist om te laten voelen waarom lengte explodeert. Het lab toont live pogingen en hashes/seconde.
+
+**Belangrijk voor de validator:** er moet minstens één woord in `wordlist` staan dat de hash echt kraakt (met de juiste
+`algo`/`salt`/`saltPos`), anders volgt een waarschuwing. Voor een taak die via regels of masker bedoeld is: zet het
+doelwachtwoord tóch in de wordlist (de validator is tevreden) en beschrijf in de tekst dat de leerling het via de
+regels/het masker vindt. **Bereken en controleer hashes met de validator** (die ondersteunt ook `ntlm`/`md4` en `saltPos`)
+of met Node (`require('crypto')` voor md5/sha1/sha256).
+
+### `hashid`: het hashtype herkennen
+
+```js
+lab: { type: 'hashid', value: '<hash>' }   // value optioneel (startwaarde)
+```
+Herkent op lengte en vorm o.a. MD5, NTLM/MD4 (beide 32 hex — dubbelzinnig, context beslist), SHA-1/224/256/384/512,
+bcrypt (`$2a/$2b/$2y$`), md5crypt (`$1$`), sha256/512crypt (`$5$`/`$6$`), Argon2, LDAP `{SSHA}`/`{SHA}`, en herkent
+Base64-codering of een `hash:salt`-formaat. Markeert trage/gesalte typen als "moeilijk te kraken". Ideaal vóór een
+`hashcrack`-taak: eerst herkennen, dan de juiste aanval kiezen.
+
+### `cipher`: klassieke cijfers kraken (Caesar/XOR/Vigenère/Atbash)
+
+```js
+lab: { type: 'cipher', text: '<versleutelde tekst of hex>' }
+```
+Methodes: **Caesar/ROT** (toont alle 26 verschuivingen plus een automatische "beste gok" via frequentiescore),
+**XOR (1 byte)** (brute-forcet alle 256 sleutels, top-kandidaten gesorteerd; leest hex-invoer automatisch),
+**Vigenère** (ontsleutelt met een ingevulde sleutel), **Atbash** en **Omkeren**. De automatische gok scoort op
+Nederlandse/Engelse letterfrequentie en veelvoorkomende woorden (incl. `jvt{`). **Reken je ciphertext zelf na**: een
+vlag die pas ná ontsleutelen verschijnt, zet je met `encoded: true` op de vraag.
 
 ### `password`: sterkte en kraaktijd van een wachtwoord
 

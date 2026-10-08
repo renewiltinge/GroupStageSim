@@ -4,26 +4,26 @@
    ====================================================================== */
 
 :root {
-  --bg: #0b1020;
-  --bg-2: #0e1428;
-  --surface: #141c33;
-  --surface-2: #1b2544;
-  --surface-3: #243156;
-  --border: #2a3657;
-  --text: #e8ecf8;
-  --muted: #9aa6c8;
-  --faint: #6b779c;
-  --accent: #39d98a;
-  --accent-2: #2bb673;
-  --accent-soft: rgba(57, 217, 138, 0.14);
-  --accent-ink: #052016;
-  --link: #6db5ff;
-  --good: #39d98a;
-  --bad: #ff6b6b;
-  --warn: #ffbe4d;
-  --info: #6db5ff;
-  --danger: #ff6b6b;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --bg: #0e1218;
+  --bg-2: #11161d;
+  --surface: #151b23;
+  --surface-2: #1b222c;
+  --surface-3: #222b37;
+  --border: #272f3b;
+  --text: #d7dde6;
+  --muted: #8b97a6;
+  --faint: #5c6775;
+  --accent: #6cb79a;
+  --accent-2: #579a80;
+  --accent-soft: rgba(108, 183, 154, 0.11);
+  --accent-ink: #07130e;
+  --link: #87a9cc;
+  --good: #6cb79a;
+  --bad: #d18a8a;
+  --warn: #cdac6f;
+  --info: #87a9cc;
+  --danger: #d18a8a;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.26);
   --radius: 14px;
   --radius-sm: 9px;
   --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
@@ -45,16 +45,16 @@
   --text: #16203a;
   --muted: #566288;
   --faint: #8591b2;
-  --accent: #10b06a;
-  --accent-2: #0b8f55;
-  --accent-soft: rgba(16, 176, 106, 0.12);
+  --accent: #2f9e74;
+  --accent-2: #26855f;
+  --accent-soft: rgba(47, 158, 116, 0.12);
   --accent-ink: #ffffff;
-  --link: #1766c7;
-  --good: #10b06a;
-  --bad: #d64545;
-  --warn: #b7791f;
-  --info: #1766c7;
-  --danger: #d64545;
+  --link: #2767b8;
+  --good: #2f9e74;
+  --bad: #c25151;
+  --warn: #a9741f;
+  --info: #2767b8;
+  --danger: #c25151;
   --shadow: 0 10px 30px rgba(20, 30, 60, 0.12);
   color-scheme: light;
 }
@@ -93,11 +93,10 @@ body {
   margin: 0;
   font-family: var(--sans);
   background:
-    radial-gradient(1100px 600px at 85% -10%, var(--accent-soft), transparent 60%),
-    radial-gradient(900px 500px at -10% 0%, rgba(109, 181, 255, 0.10), transparent 55%),
+    radial-gradient(1200px 700px at 88% -15%, var(--accent-soft), transparent 55%),
     var(--bg);
   color: var(--text);
-  line-height: 1.6;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -150,7 +149,7 @@ kbd {
 .brand .logo {
   width: 34px; height: 34px; border-radius: 9px;
   display: grid; place-items: center; font-size: 1.1rem;
-  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+  background: var(--accent);
   color: var(--accent-ink); box-shadow: var(--shadow);
 }
 .brand small { color: var(--muted); font-weight: 600; font-size: 0.72rem; display: block; margin-top: -3px; }
@@ -178,7 +177,7 @@ kbd {
   cursor: pointer;
 }
 .xp-pill .lvl {
-  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+  background: var(--accent);
   color: var(--accent-ink); border-radius: 999px; padding: 2px 9px; font-size: 0.78rem;
 }
 
@@ -191,7 +190,7 @@ kbd {
   transition: transform .08s, border-color .15s, background .15s;
 }
 .btn:hover { transform: translateY(-1px); border-color: var(--accent); }
-.btn.primary { background: linear-gradient(145deg, var(--accent), var(--accent-2)); color: var(--accent-ink); border-color: transparent; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
 .btn.ghost { background: transparent; }
 .btn.small { padding: 6px 11px; font-size: 0.82rem; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -199,7 +198,7 @@ kbd {
 /* ---------- Hero ---------- */
 .hero { padding: 46px 0 10px; }
 .hero h1 { font-size: 2.4rem; margin: 0 0 10px; }
-.hero h1 .g { background: linear-gradient(110deg, var(--accent), var(--link)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero h1 .g { color: var(--accent); }
 .hero p.lead { color: var(--muted); font-size: 1.1rem; max-width: 640px; margin: 0 0 20px; }
 .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
 
@@ -221,7 +220,7 @@ kbd {
 .section-head .meta { color: var(--muted); font-size: 0.85rem; }
 .section-desc { color: var(--muted); margin: 2px 0 14px 42px; max-width: 760px; }
 .pathbar { height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin: 0 0 20px 42px; max-width: 760px; }
-.pathbar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .5s; }
+.pathbar > i { display: block; height: 100%; background: var(--accent); transition: width .5s; }
 
 /* ---------- Room cards ---------- */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; }
@@ -249,7 +248,7 @@ kbd {
 .tag.diff-Gemiddeld { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, var(--border)); }
 .tag.diff-Moeilijk { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, var(--border)); }
 .card .progress { height: 5px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
-.card .progress > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .4s; }
+.card .progress > i { display: block; height: 100%; background: var(--accent); transition: width .4s; }
 .card .foot { display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--muted); }
 .card .done-badge {
   position: absolute; top: 12px; right: 12px; font-size: 0.72rem; font-weight: 800;
@@ -294,6 +293,9 @@ kbd {
 
 .task { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 26px; margin-bottom: 22px; scroll-margin-top: 76px; }
 .task > h2 { margin-top: 0; display: flex; align-items: center; gap: 10px; }
+.task .body { line-height: 1.72; }
+.task .body p { margin: 0 0 0.95em; max-width: 72ch; }
+.task .body li { margin: 3px 0; }
 .task .body > :first-child { margin-top: 0; }
 .task .body img { max-width: 100%; }
 .task .body table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 0.9rem; }
@@ -415,7 +417,7 @@ kbd {
 
 /* sqli */
 .sqlform { max-width: 420px; }
-.sqlquery { background: #0a0e1c; color: #9ef5c8; padding: 10px 12px; border-radius: 8px; font-family: var(--mono); font-size: 0.82rem; margin: 10px 0; word-break: break-all; }
+.sqlquery { background: #0a0e1c; color: #8ec7ab; padding: 10px 12px; border-radius: 8px; font-family: var(--mono); font-size: 0.82rem; margin: 10px 0; word-break: break-all; }
 :root[data-theme="light"] .sqlquery { background: #0f1526; }
 
 /* toggle */

@@ -18,7 +18,7 @@
 
   // small sync hashers (voor hashcrack & cyberchef) ----------------------
   const Hash = {
-    md5: md5, sha1: sha1, sha256: sha256,
+    md5: md5, sha1: sha1, sha256: sha256, md4: md4, ntlm: ntlm,
   };
 
   // =====================================================================
@@ -371,48 +371,268 @@
   });
 
   // =====================================================================
-  //  HASHCRACK
+  //  HASHCRACK — woordenlijst + regels + brute-force (masker)
   // =====================================================================
   CS.registerLab('hashcrack', function (container, cfg) {
-    const algo = cfg.algo || 'md5';
+    const algo = (cfg.algo || 'md5').toLowerCase();
     const salt = cfg.salt || '';
+    const saltPos = cfg.saltPos || 'prefix'; // 'prefix' => hash(salt+pw), 'suffix' => hash(pw+salt)
     const target = String(cfg.hash).toLowerCase();
-    const list = (cfg.wordlist || []).slice();
+    const baseList = (cfg.wordlist || []).slice();
+    const hashFn = Hash[algo] || Hash.md5;
+    function hashWord(w) { return hashFn(saltPos === 'suffix' ? w + salt : salt + w); }
+
     const wrap = el('div', { class: 'lab-pad' });
     wrap.append(el('div', { html: '<strong>Doel-hash (' + algo.toUpperCase() + (salt ? ', salt=&quot;' + esc(salt) + '&quot;' : '') + '):</strong>' }));
-    wrap.append(el('div', { class: 'lab-out', text: target }));
-    wrap.append(el('label', { text: 'Woordenlijst (' + list.length + ' woorden) — of voeg eigen gok toe' }));
+    wrap.append(el('div', { class: 'lab-out', style: 'word-break:break-all', text: target }));
+
+    // --- modus-keuze ---
+    let mode = 'dict';
+    const modeRow = el('div', { class: 'chip-row', style: 'margin-top:10px' });
+    const dictPane = el('div', {}), bfPane = el('div', { class: 'hide' });
+    const mDict = el('span', { class: 'chip on', text: '📖 Woordenlijst' });
+    const mBf = el('span', { class: 'chip', text: '🔡 Brute-force (masker)' });
+    mDict.addEventListener('click', () => { mode = 'dict'; mDict.classList.add('on'); mBf.classList.remove('on'); dictPane.classList.remove('hide'); bfPane.classList.add('hide'); });
+    mBf.addEventListener('click', () => { mode = 'bf'; mBf.classList.add('on'); mDict.classList.remove('on'); bfPane.classList.remove('hide'); dictPane.classList.add('hide'); });
+    modeRow.append(mDict, mBf);
+    wrap.append(modeRow);
+
+    // --- woordenlijst-paneel ---
+    dictPane.append(el('label', { text: 'Woordenlijst — voeg eigen gokken toe' }));
     const addRow = el('div', { class: 'ans-row' });
     const guess = el('input', { type: 'text', placeholder: 'eigen woord…', style: 'flex:1' });
-    addRow.append(guess, el('button', { class: 'btn small', text: 'Voeg toe', onclick: () => { if (guess.value.trim()) { list.push(guess.value.trim()); guess.value = ''; renderList(); } } }));
-    wrap.append(addRow);
+    const list = baseList.slice();
     const listBox = el('div', { class: 'chip-row' });
-    wrap.append(listBox);
-    const runBtn = el('button', { class: 'btn primary', text: '▶ Start woordenlijstaanval', style: 'margin-top:10px' });
-    wrap.append(runBtn);
-    const result = el('div', { class: 'lab-out', style: 'margin-top:10px' });
-    wrap.append(result);
-
-    function hashWord(w) { return Hash[algo](salt + w); }
     function renderList() { listBox.innerHTML = ''; list.forEach((w) => listBox.append(el('span', { class: 'chip', text: w }))); }
-    renderList();
+    addRow.append(guess, el('button', { class: 'btn small', text: 'Voeg toe', onclick: () => { if (guess.value.trim()) { list.push(guess.value.trim()); guess.value = ''; renderList(); } } }));
+    dictPane.append(addRow, listBox);
+    // regels (mangling)
+    dictPane.append(el('label', { text: 'Regels (mangling) — rek de lijst op, zoals Hashcat/John' }));
+    const rules = { cap: false, leet: false, digits: false, bang: false, year: false };
+    const ruleRow = el('div', { class: 'chip-row' });
+    const ruleDefs = [['cap', 'Eerste letter hoofd'], ['leet', 'l33t (a→@ e→3 o→0 s→$)'], ['digits', '+ cijfer 0–99'], ['year', '+ jaar 1990–2026'], ['bang', '+ leesteken ! ? @ #']];
+    ruleDefs.forEach(([k, label]) => { const c = el('span', { class: 'chip', text: label, onclick: () => { rules[k] = !rules[k]; c.classList.toggle('on', rules[k]); updateCount(); } }); ruleRow.append(c); });
+    dictPane.append(ruleRow);
+    const ruleCount = el('div', { class: 'found-note' });
+    dictPane.append(ruleCount);
+
+    function leet(w) { return w.replace(/a/gi, '@').replace(/e/gi, '3').replace(/o/gi, '0').replace(/s/gi, '$').replace(/i/gi, '1'); }
+    function* candidates() {
+      for (const base of list) {
+        const forms = new Set([base]);
+        if (rules.cap) forms.add(base.charAt(0).toUpperCase() + base.slice(1));
+        if (rules.leet) { Array.from(forms).forEach((f) => forms.add(leet(f))); }
+        const stems = Array.from(forms);
+        for (const s of stems) {
+          yield s;
+          if (rules.digits) for (let d = 0; d <= 99; d++) yield s + d;
+          if (rules.year) for (let y = 1990; y <= 2026; y++) yield s + y;
+          if (rules.bang) for (const p of ['!', '?', '@', '#', '123', '!!']) yield s + p;
+        }
+      }
+    }
+    function countCandidates() { let n = 0; for (const _ of candidates()) { n++; if (n > 1e6) break; } return n; }
+    function updateCount() { ruleCount.textContent = '≈ ' + countCandidates().toLocaleString('nl-NL') + ' kandidaten uit ' + list.length + ' basiswoorden'; }
+
+    // --- brute-force-paneel ---
+    const charsets = { lower: 'abcdefghijklmnopqrstuvwxyz', upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', digits: '0123456789', symbols: '!@#$%&*' };
+    const bfSel = { lower: true, upper: false, digits: true, symbols: false };
+    bfPane.append(el('label', { text: 'Tekenset' }));
+    const csRow = el('div', { class: 'chip-row' });
+    [['lower', 'a–z'], ['upper', 'A–Z'], ['digits', '0–9'], ['symbols', '!@#$…']].forEach(([k, label]) => { const c = el('span', { class: 'chip' + (bfSel[k] ? ' on' : ''), text: label, onclick: () => { bfSel[k] = !bfSel[k]; c.classList.toggle('on', bfSel[k]); bfInfo(); } }); csRow.append(c); });
+    bfPane.append(csRow);
+    bfPane.append(el('label', { text: 'Maximale lengte' }));
+    const lenSel = el('select', {}, [1, 2, 3, 4].map((n) => el('option', { value: n, text: n + ' tekens' })));
+    lenSel.value = '3';
+    bfPane.append(lenSel);
+    const bfNote = el('div', { class: 'found-note' });
+    bfPane.append(bfNote);
+    const BF_CAP = 800000;
+    function bfCharset() { return Object.keys(charsets).filter((k) => bfSel[k]).map((k) => charsets[k]).join(''); }
+    function bfTotal() { const cs = bfCharset().length, L = +lenSel.value; let t = 0; for (let i = 1; i <= L; i++) t += Math.pow(cs, i); return t; }
+    function bfInfo() { const t = bfTotal(); bfNote.innerHTML = 'Zoekruimte: <strong>' + t.toLocaleString('nl-NL') + '</strong> combinaties' + (t > BF_CAP ? ' — <span style="color:var(--warn)">te groot, er worden er maximaal ' + BF_CAP.toLocaleString('nl-NL') + ' geprobeerd. Dit laat juist zien waarom lengte zo belangrijk is.</span>' : '.'); }
+    lenSel.addEventListener('change', bfInfo);
+
+    wrap.append(dictPane, bfPane);
+    const runBtn = el('button', { class: 'btn primary', text: '▶ Start kraken', style: 'margin-top:12px' });
+    const stat = el('div', { class: 'found-note', style: 'margin-top:8px' });
+    const result = el('div', { class: 'lab-out', style: 'margin-top:8px' });
+    wrap.append(runBtn, stat, result);
+
+    let running = false;
+    function finish(found, cand, tried, t0) {
+      running = false; runBtn.disabled = false; runBtn.textContent = '▶ Start kraken';
+      const secs = Math.max((performance.now() - t0) / 1000, 0.001);
+      stat.textContent = tried.toLocaleString('nl-NL') + ' pogingen · ' + Math.round(tried / secs).toLocaleString('nl-NL') + ' hashes/s · ' + secs.toFixed(1) + 's';
+      result.innerHTML = '';
+      if (found != null) result.append(el('div', { html: '<strong>🔓 Gekraakt! Wachtwoord: <code>' + esc(found) + '</code></strong>', style: 'color:var(--good)' }));
+      else result.append(el('div', { text: '✗ Niet gekraakt binnen de geprobeerde kandidaten. Kies een grotere lijst, zet regels aan, of verleng het masker.', style: 'color:var(--bad)' }));
+    }
     runBtn.addEventListener('click', () => {
-      result.textContent = ''; let i = 0; runBtn.disabled = true;
-      const step = () => {
-        if (i >= list.length) { result.append(el('div', { text: '✗ Niet gekraakt. Voeg meer woorden toe.', style: 'color:var(--bad)' })); runBtn.disabled = false; return; }
-        const w = list[i];
-        const h = hashWord(w);
-        const line = el('div', { class: 'resp' });
-        const hit = h === target;
-        line.textContent = 'proberen "' + w + '" → ' + h.slice(0, 24) + '… ' + (hit ? '✓ TREFFER' : '✗');
-        if (hit) line.style.color = 'var(--good)';
-        result.append(line);
-        if (hit) { result.append(el('div', { html: '<strong>🔓 Wachtwoord gevonden: <code>' + esc(w) + '</code></strong>', style: 'margin-top:6px;color:var(--good)' })); runBtn.disabled = false; return; }
-        i++; setTimeout(step, 110);
+      if (running) return; running = true; runBtn.disabled = true; runBtn.textContent = '… bezig';
+      result.innerHTML = ''; stat.textContent = '';
+      const t0 = performance.now();
+      let tried = 0, found = null;
+      let gen;
+      if (mode === 'dict') { gen = candidates(); }
+      else {
+        const cs = bfCharset();
+        if (!cs) { running = false; runBtn.disabled = false; runBtn.textContent = '▶ Start kraken'; result.append(el('div', { class: 'callout warn', text: 'Kies minstens één tekenset.' })); return; }
+        const L = +lenSel.value;
+        gen = (function* () {
+          const idx = [];
+          for (let len = 1; len <= L; len++) {
+            idx.length = len; idx.fill(0);
+            while (true) {
+              yield idx.map((i) => cs[i]).join('');
+              let p = len - 1;
+              while (p >= 0) { idx[p]++; if (idx[p] < cs.length) break; idx[p] = 0; p--; }
+              if (p < 0) break;
+            }
+          }
+        })();
+      }
+      const chunk = () => {
+        const budget = 6000; let n = 0;
+        while (n < budget) {
+          const nx = gen.next();
+          if (nx.done) { finish(found, null, tried, t0); return; }
+          const w = nx.value; tried++; n++;
+          if (hashWord(w) === target) { found = w; finish(found, null, tried, t0); return; }
+          if (mode === 'bf' && tried >= BF_CAP) { finish(found, null, tried, t0); return; }
+          if (tried > 2e6) { finish(found, null, tried, t0); return; }
+        }
+        stat.textContent = tried.toLocaleString('nl-NL') + ' pogingen…';
+        setTimeout(chunk, 0);
       };
-      step();
+      chunk();
     });
-    container.append(shell('<b>Hash-kraker</b> — woordenlijstaanval (lab)', wrap, false));
+    renderList(); updateCount(); bfInfo();
+    container.append(shell('<b>Hash-kraker</b> — woordenlijst, regels en brute-force (lab)', wrap, false));
+  });
+
+  // =====================================================================
+  //  HASHID — herken het hashtype
+  // =====================================================================
+  CS.registerLab('hashid', function (container, cfg) {
+    const wrap = el('div', { class: 'lab-pad' });
+    wrap.append(el('label', { text: 'Plak een hash om het type te herkennen' }));
+    const inp = el('input', { type: 'text', placeholder: 'bv. 5f4dcc3b5aa765d61d8327deb882cf99' }); inp.value = cfg.value || '';
+    wrap.append(inp);
+    const out = el('div', {});
+    wrap.append(out);
+    function identify(h) {
+      h = h.trim();
+      const res = [];
+      const isHex = /^[a-f0-9]+$/i.test(h);
+      if (/^\$2[aby]\$\d\d\$/.test(h)) res.push(['bcrypt', 'Blowfish-gebaseerd, met kostenfactor. Traag met opzet — zeer lastig te kraken.', true]);
+      else if (/^\$6\$/.test(h)) res.push(['sha512crypt ($6$)', 'Linux /etc/shadow, met salt en vele rondes.', true]);
+      else if (/^\$5\$/.test(h)) res.push(['sha256crypt ($5$)', 'Linux /etc/shadow, met salt en vele rondes.', true]);
+      else if (/^\$1\$/.test(h)) res.push(['md5crypt ($1$)', 'Oud Unix-formaat met salt. Verouderd.', true]);
+      else if (/^\$argon2/i.test(h)) res.push(['Argon2', 'Moderne, geheugenharde functie. Aanbevolen voor wachtwoorden.', true]);
+      else if (/^\{SSHA\}/i.test(h)) res.push(['SSHA (LDAP)', 'Salted SHA-1 in Base64, veel in directory-servers.', true]);
+      else if (/^\{SHA\}/i.test(h)) res.push(['SHA-1 (LDAP {SHA})', 'Base64-gecodeerde SHA-1, zonder salt.', false]);
+      else if (isHex) {
+        const n = h.length;
+        if (n === 32) { res.push(['MD5', 'Snel en zonder salt → kwetsbaar voor woordenlijst- en brute-force-aanvallen.', false]); res.push(['NTLM', 'Windows-wachtwoordhash (MD4 van UTF-16LE). Even snel, geen salt.', false]); res.push(['MD4', 'Verouderd, zeer snel.', false]); }
+        else if (n === 40) res.push(['SHA-1', 'Verouderd (botsingen bekend). Zonder salt snel te kraken.', false]);
+        else if (n === 56) res.push(['SHA-224', 'SHA-2-familie.', false]);
+        else if (n === 64) { res.push(['SHA-256', 'SHA-2-familie. Zonder salt nog steeds snel per hash.', false]); res.push(['SHA3-256 / BLAKE2', 'Zelfde lengte, andere functie.', false]); }
+        else if (n === 96) res.push(['SHA-384', 'SHA-2-familie.', false]);
+        else if (n === 128) res.push(['SHA-512', 'SHA-2-familie.', false]);
+        else if (n === 16) res.push(['Mogelijk CRC/half-MD5', 'Korte hex — vaak een checksum, geen veilige hash.', false]);
+        else res.push(['Onbekende hex-lengte (' + n + ')', 'Komt niet overeen met een bekende hash.', false]);
+      } else if (/^[A-Za-z0-9+/]+={0,2}$/.test(h) && h.length % 4 === 0) {
+        res.push(['Base64-gecodeerd', 'Dit is codering, geen hash. Decodeer het eerst (zie CyberChef).', false]);
+      } else if (h.includes(':') && /^[a-f0-9]+:/i.test(h)) {
+        res.push(['hash:salt of user:hash', 'Een samengesteld formaat — splits op de dubbele punt en herken elk deel apart.', false]);
+      } else res.push(['Onherkend', 'Geen patroon herkend. Controleer op spaties of knip-/plakfouten.', false]);
+      return res;
+    }
+    function render() {
+      out.innerHTML = '';
+      if (!inp.value.trim()) return;
+      const res = identify(inp.value);
+      res.forEach(([name, note, strong]) => {
+        out.append(el('div', { class: 'callout ' + (strong ? 'tip' : 'info'), html: '<strong>' + esc(name) + '</strong>' + (strong ? ' 🛡️ <em>(traag / gesalt — moeilijk te kraken)</em>' : '') + '<br>' + esc(note) }));
+      });
+      out.append(el('div', { class: 'found-note', text: 'Lengte: ' + inp.value.trim().length + ' tekens. Let op: lengte alleen is niet bewijzend — meerdere functies delen dezelfde lengte.' }));
+    }
+    inp.addEventListener('input', render);
+    render();
+    container.append(shell('<b>Hash-herkenner</b> — welk type is dit?', wrap, false));
+  });
+
+  // =====================================================================
+  //  CIPHER — klassieke cijfers kraken (Caesar/XOR/Vigenère/Atbash)
+  // =====================================================================
+  CS.registerLab('cipher', function (container, cfg) {
+    const wrap = el('div', { class: 'lab-pad' });
+    wrap.append(el('label', { text: 'Versleutelde tekst' }));
+    const inp = el('textarea', { rows: '3', spellcheck: 'false' }); inp.value = cfg.text || '';
+    wrap.append(inp);
+    const methodRow = el('div', { class: 'chip-row' });
+    const methods = [['caesar', 'Caesar / ROT (alle 26)'], ['xor', 'XOR (1 byte, brute-force)'], ['vigenere', 'Vigenère (met sleutel)'], ['atbash', 'Atbash'], ['reverse', 'Omkeren']];
+    let method = 'caesar';
+    methods.forEach(([k, label]) => { const c = el('span', { class: 'chip' + (k === method ? ' on' : ''), text: label, onclick: () => { method = k; Array.from(methodRow.children).forEach((x) => x.classList.remove('on')); c.classList.add('on'); render(); } }); methodRow.append(c); });
+    wrap.append(methodRow);
+    const keyRow = el('div', { class: 'ans-row hide' });
+    const keyInp = el('input', { type: 'text', placeholder: 'Vigenère-sleutel, bv. dojo', style: 'flex:1' });
+    keyRow.append(keyInp);
+    wrap.append(keyRow);
+    keyInp.addEventListener('input', render);
+    const out = el('div', {});
+    wrap.append(out);
+
+    function shiftText(s, n) { return s.replace(/[a-z]/gi, (c) => { const b = c <= 'Z' ? 65 : 97; return String.fromCharCode((c.charCodeAt(0) - b + n) % 26 + b); }); }
+    // Nederlands/Engels-achtige score: veelvoorkomende letters, spaties en woorden, en JVT{
+    function score(s) {
+      const low = s.toLowerCase(); let sc = 0;
+      for (const ch of low) { if (' etaoinshrdlu'.includes(ch)) sc += 2; else if (ch >= 'a' && ch <= 'z') sc += 0.3; else if (ch === ' ') sc += 1; else if (ch < ' ') sc -= 3; else sc -= 0.2; }
+      [' de ', ' het ', ' een ', ' en ', ' van ', ' the ', ' and ', 'jvt{', 'flag', 'wachtwoord', 'geheim'].forEach((w) => { if (low.includes(w)) sc += 25; });
+      return sc;
+    }
+    function atbash(s) { return s.replace(/[a-z]/gi, (c) => { const b = c <= 'Z' ? 65 : 97; return String.fromCharCode(b + 25 - (c.charCodeAt(0) - b)); }); }
+    function vigenere(s, key, dec) { if (!key) return s; let ki = 0; return s.replace(/[a-z]/gi, (c) => { const b = c <= 'Z' ? 65 : 97; const k = key[ki % key.length].toLowerCase().charCodeAt(0) - 97; ki++; const off = dec ? (26 - k) : k; return String.fromCharCode((c.charCodeAt(0) - b + off) % 26 + b); }); }
+    function render() {
+      keyRow.classList.toggle('hide', method !== 'vigenere');
+      out.innerHTML = '';
+      const s = inp.value;
+      if (!s) return;
+      if (method === 'caesar') {
+        const rows = [];
+        for (let n = 0; n <= 25; n++) { const dec = shiftText(s, (26 - n) % 26); rows.push({ n, dec, sc: score(dec) }); }
+        const best = rows.slice().sort((a, b) => b.sc - a.sc)[0];
+        out.append(el('div', { class: 'callout tip', html: '🔓 <strong>Beste gok: ROT' + best.n + '</strong> (verschuiving ' + best.n + ')<br><code>' + esc(best.dec.slice(0, 160)) + '</code>' }));
+        const box = el('div', { class: 'logview', style: 'max-height:260px' });
+        rows.forEach((r) => { const ln = el('div', { class: 'ln' }); ln.append(el('span', { class: 'n', text: 'ROT' + r.n }), el('span', { text: r.dec, style: r === best ? 'color:#8ec7ab' : '' })); box.append(ln); });
+        out.append(box);
+      } else if (method === 'xor') {
+        const bytes = []; const u = unescape(encodeURIComponent(s)); for (let i = 0; i < u.length; i++) bytes.push(u.charCodeAt(i) & 0xff);
+        // als invoer hex lijkt, lees als hex
+        let data = bytes;
+        if (/^[0-9a-f\s]+$/i.test(s.trim()) && s.replace(/\s/g, '').length % 2 === 0) { data = s.trim().split(/\s+/).join('').match(/.{2}/g).map((h) => parseInt(h, 16)); }
+        const cands = [];
+        for (let k = 0; k < 256; k++) { const dec = data.map((b) => String.fromCharCode(b ^ k)).join(''); cands.push({ k, dec, sc: score(dec) }); }
+        cands.sort((a, b) => b.sc - a.sc);
+        out.append(el('div', { class: 'callout tip', html: '🔓 <strong>Beste sleutel: 0x' + cands[0].k.toString(16).padStart(2, '0') + ' (' + cands[0].k + ')</strong><br><code>' + esc(cands[0].dec.slice(0, 160)) + '</code>' }));
+        out.append(el('label', { text: 'Top 6 kandidaten' }));
+        const box = el('div', { class: 'logview', style: 'max-height:200px' });
+        cands.slice(0, 6).forEach((c) => { const ln = el('div', { class: 'ln' }); ln.append(el('span', { class: 'n', text: '0x' + c.k.toString(16).padStart(2, '0') }), el('span', { text: c.dec.slice(0, 120) })); box.append(ln); });
+        out.append(box);
+      } else if (method === 'vigenere') {
+        out.append(el('label', { text: 'Ontsleuteld (met sleutel "' + esc(keyInp.value || '') + '")' }));
+        out.append(el('div', { class: 'lab-out', text: vigenere(s, keyInp.value.replace(/[^a-z]/gi, ''), true) }));
+        out.append(el('div', { class: 'found-note', text: 'Tip: ken je de sleutellengte niet? Zoek herhalende stukken (Kasiski) of probeer korte woorden. Deze tool ontsleutelt met de sleutel die je invult.' }));
+      } else if (method === 'atbash') {
+        out.append(el('div', { class: 'lab-out', text: atbash(s) }));
+      } else if (method === 'reverse') {
+        out.append(el('div', { class: 'lab-out', text: s.split('').reverse().join('') }));
+      }
+    }
+    inp.addEventListener('input', render);
+    render();
+    container.append(shell('<b>Cijfer-kraker</b> — klassieke versleuteling ontcijferen', wrap, false));
   });
 
   // =====================================================================
@@ -811,7 +1031,7 @@
       const line = el('div', { class: 'ln' });
       line.append(
         el('span', { style: 'color:#7f8db5;flex:none', text: off.toString(16).padStart(8, '0') }),
-        el('span', { style: 'color:#9ef5c8;white-space:pre', text: ' ' + hexPad + ' ' }),
+        el('span', { style: 'color:#8ec7ab;white-space:pre', text: ' ' + hexPad + ' ' }),
         el('span', { style: 'color:#d6e2ff;white-space:pre', text: ascii }),
       );
       dump.append(line);
@@ -878,7 +1098,7 @@
           el('span', { style: 'flex:none;width:58px;color:#7f8db5', text: String(p.time) }),
           el('span', { style: 'flex:none;width:112px', text: p.src }),
           el('span', { style: 'flex:none;width:112px', text: p.dst }),
-          el('span', { style: 'flex:none;width:52px;color:#9ef5c8', text: p.proto }),
+          el('span', { style: 'flex:none;width:52px;color:#8ec7ab', text: p.proto }),
           el('span', { style: 'flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis', text: p.info }),
         );
         table.append(row);
@@ -1174,7 +1394,7 @@
     function row(name, d, extra) {
       const f = fmt(d);
       const r = el('div', { class: 'logview', style: 'max-height:none;padding:8px 10px;margin:6px 0' });
-      r.append(el('div', { html: '<strong style="color:#9ef5c8">' + esc(name) + '</strong>' + (extra ? ' <span style="color:#7f8db5">' + esc(extra) + '</span>' : '') }));
+      r.append(el('div', { html: '<strong style="color:#8ec7ab">' + esc(name) + '</strong>' + (extra ? ' <span style="color:#7f8db5">' + esc(extra) + '</span>' : '') }));
       if (f) { r.append(el('div', { text: f.iso + '  (UTC)' })); if (f.nl) r.append(el('div', { style: 'color:#9aa6c8', text: f.nl + '  (NL)' })); }
       else r.append(el('div', { style: 'color:#7f8db5', text: '— geen plausibele datum —' }));
       return r;
@@ -1562,7 +1782,7 @@
         const row = el('div', { class: 'ln', style: 'cursor:pointer;align-items:baseline' });
         const star = el('span', { style: 'flex:none;width:18px;color:' + (marks[i] ? 'var(--warn)' : '#566288'), text: marks[i] ? '⭐' : '☆', onclick: (ev) => { ev.stopPropagation(); marks[i] = !marks[i]; render(); } });
         row.append(star,
-          el('span', { style: 'flex:none;width:150px;color:#9ef5c8', text: e.t }),
+          el('span', { style: 'flex:none;width:150px;color:#8ec7ab', text: e.t }),
           el('span', { style: 'flex:none;width:60px;color:#7f8db5', text: delta }),
           el('span', { style: 'flex:none;width:92px;color:#c9a6ff', text: e.src || '' }),
           el('span', { style: 'flex:1;min-width:0', html: (e.host ? '<span style="color:#7f8db5">' + esc(e.host) + (e.user ? '\\' + esc(e.user) : '') + '</span> ' : '') + esc(e.desc || '') }));
@@ -1682,8 +1902,48 @@
   function caesar(s, n) { return s.replace(/[a-z]/gi, (c) => { const base = c <= 'Z' ? 65 : 97; return String.fromCharCode((c.charCodeAt(0) - base + n % 26 + 26) % 26 + base); }); }
   function xorStr(s, key) { if (!key) return s; let o = ''; for (let i = 0; i < s.length; i++) o += String.fromCharCode(s.charCodeAt(i) ^ key.charCodeAt(i % key.length)); return o; }
 
+  // ---- MD4 (voor NTLM-demonstratie) -------------------------------------
+  function md4(str) {
+    function rl(x, c) { return (x << c) | (x >>> (32 - c)); }
+    function add(a, b) { return (a + b) & 0xffffffff; }
+    const u = unescape(encodeURIComponent(str)); const bytes = [];
+    for (let i = 0; i < u.length; i++) bytes.push(u.charCodeAt(i) & 0xff);
+    return md4FromBytes(bytes);
+  }
+  function md4FromBytes(bytes) {
+    const add = (a, b) => (a + b) & 0xffffffff;
+    const rol = (x, s) => ((x << s) | (x >>> (32 - s))) & 0xffffffff;
+    const F = (x, y, z) => (x & y) | (~x & z);
+    const G = (x, y, z) => (x & y) | (x & z) | (y & z);
+    const H = (x, y, z) => x ^ y ^ z;
+    const msg = bytes.slice(); const bitLen = msg.length * 8;
+    msg.push(0x80); while (msg.length % 64 !== 56) msg.push(0);
+    for (let i = 0; i < 8; i++) msg.push((Math.floor(bitLen / Math.pow(2, 8 * i))) & 0xff);
+    let A = 0x67452301, B = 0xefcdab89, C = 0x98badcfe, D = 0x10325476;
+    for (let off = 0; off < msg.length; off += 64) {
+      const X = [];
+      for (let i = 0; i < 16; i++) X[i] = (msg[off + i * 4] | (msg[off + i * 4 + 1] << 8) | (msg[off + i * 4 + 2] << 16) | (msg[off + i * 4 + 3] << 24)) >>> 0;
+      let a = A, b = B, c = C, d = D;
+      const ff = (a, b, c, d, k, s) => rol(add(add(a, F(b, c, d)), X[k]), s);
+      const gg = (a, b, c, d, k, s) => rol(add(add(add(a, G(b, c, d)), X[k]), 0x5a827999), s);
+      const hh = (a, b, c, d, k, s) => rol(add(add(add(a, H(b, c, d)), X[k]), 0x6ed9eba1), s);
+      // Ronde 1 (k = 0..15, shifts 3,7,11,19)
+      for (let k = 0; k < 16; k += 4) { a = ff(a, b, c, d, k, 3); d = ff(d, a, b, c, k + 1, 7); c = ff(c, d, a, b, k + 2, 11); b = ff(b, c, d, a, k + 3, 19); }
+      // Ronde 2 (k = 0,4,8,12,1,..., shifts 3,5,9,13)
+      for (let j = 0; j < 4; j++) { a = gg(a, b, c, d, j, 3); d = gg(d, a, b, c, j + 4, 5); c = gg(c, d, a, b, j + 8, 9); b = gg(b, c, d, a, j + 12, 13); }
+      // Ronde 3 (k = 0,8,4,12,2,..., shifts 3,9,11,15)
+      const r3 = [0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15];
+      for (let i = 0; i < 16; i += 4) { a = hh(a, b, c, d, r3[i], 3); d = hh(d, a, b, c, r3[i + 1], 9); c = hh(c, d, a, b, r3[i + 2], 11); b = hh(b, c, d, a, r3[i + 3], 15); }
+      A = add(A, a); B = add(B, b); C = add(C, c); D = add(D, d);
+    }
+    const le = (n) => { let s = ''; for (let i = 0; i < 4; i++) s += ((n >>> (i * 8)) & 0xff).toString(16).padStart(2, '0'); return s; };
+    return le(A) + le(B) + le(C) + le(D);
+  }
+  // NTLM = MD4(UTF-16LE(wachtwoord))
+  function ntlm(str) { const bytes = []; for (let i = 0; i < str.length; i++) { const code = str.charCodeAt(i); bytes.push(code & 0xff, (code >>> 8) & 0xff); } return md4FromBytes(bytes); }
+
   // Expose encoders globally voor content indien nodig
-  CS.enc = { b64encode, b64decode, toHex, fromHex, caesar, xorStr, md5, sha1, sha256 };
+  CS.enc = { b64encode, b64decode, toHex, fromHex, caesar, xorStr, md5, sha1, sha256, md4, ntlm };
 
   // ---- MD5 (geverifieerde klassieke implementatie) ----------------------
   function md5(str) {

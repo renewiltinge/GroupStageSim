@@ -46,12 +46,15 @@ De bouwstenen van beveiliging.
 2. **Wachtwoorden en authenticatie** — sterke wachtwoorden, hashes kraken, MFA & passkeys.
 3. **Social engineering & phishing** — de menselijke factor, met een phishing-inbox om te oefenen.
 4. **Kwetsbaarheden & CVSS** — van CVE tot patch, met een interactieve CVSS-calculator, EPSS en de KEV-catalogus.
+5. **Klassieke cijfers kraken** — Caesar, Vigenère en XOR ontcijferen met een cijfer-kraker.
 
 ### ⚔️ Offensief (red team)
 Denken als een aanvaller — altijd in een veilig lab.
 1. **OWASP Top 10** — de tien grootste webrisico's (editie 2025).
 2. **Verkenning & scannen** — reconnaissance en nmap.
 3. **Webhacking: SQL-injectie** — kwetsbaarheden zelf uitbuiten.
+4. **Wachtwoorden kraken** — woordenlijst, regels (mangling) en brute-force (maskers) op MD5/SHA/NTLM.
+5. **Crack the Hash — de uitdaging** — een oplopende reeks hashes om zelf te herkennen en te kraken.
 
 ### 🛡️ Defensief (blue team)
 Denken als een verdediger.
@@ -89,7 +92,9 @@ Alle labs draaien **volledig in je browser** — veilig, offline, zonder dat er 
 |-----|---------------------|
 | 🖥️ **Terminal** | Een nagebootste Linux-shell (en PowerShell) met een echt bestandssysteem, `ls/cat/grep/find/base64/...` en pipes. |
 | 🧪 **CyberChef** | Coderen, decoderen en hashen (Base64, hex, ROT13, XOR, MD5/SHA-…), met een recept dat je zelf opbouwt. |
-| 🔓 **Hash-kraker** | Een woordenlijstaanval nabootsen op een echte hash. |
+| 🔓 **Hash-kraker** | Hashes kraken met een woordenlijst, **regels (mangling)** of **brute-force (maskers)** — op MD5, SHA-1/256 en **NTLM**, met en zonder salt. Toont live snelheid. |
+| 🧭 **Hash-herkenner** | Het hashtype herkennen (MD5, NTLM, SHA, bcrypt, sha512crypt, …) vóór je gaat kraken. |
+| 🗝️ **Cijfer-kraker** | Klassieke versleuteling ontcijferen: Caesar/ROT (auto), single-byte XOR (brute-force), Vigenère en Atbash. |
 | 🔑 **Wachtwoord-analyse** | Live de sterkte en kraaktijd van een wachtwoord zien. |
 | 🎣 **Phishing-inbox** | Rode vlaggen zoeken in nep-e-mails. |
 | 📊 **Logviewer** | Logbestanden filteren (tekst én regex) om een aanval te vinden. |

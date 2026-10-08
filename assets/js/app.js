@@ -540,7 +540,7 @@
     const doneRooms = ROOMS.filter(roomDone).length;
     const body = el('div', {});
     body.append(el('p', { html: '<strong>Level ' + L.lvl + '</strong> · ' + STATE.xp + ' XP totaal' }));
-    body.append(el('div', { class: 'meter' }, el('i', { style: 'width:' + Math.round((L.into / L.need) * 100) + '%;background:linear-gradient(90deg,var(--accent),var(--accent-2))' })));
+    body.append(el('div', { class: 'meter' }, el('i', { style: 'width:' + Math.round((L.into / L.need) * 100) + '%;background:var(--accent)' })));
     body.append(el('p', { class: 'found-note', text: L.into + ' / ' + L.need + ' XP tot level ' + (L.lvl + 1) }));
     body.append(el('ul', {}, [
       el('li', { text: doneRooms + ' van ' + ROOMS.length + ' rooms voltooid' }),
@@ -733,7 +733,9 @@
   // =======================================================================
   const TOOLBOX = [
     { type: 'cyberchef', icon: '🧪', name: 'CyberChef', desc: 'Coderen, decoderen en hashen (Base64, hex, ROT13, XOR, MD5/SHA-…).', cfg: { input: 'JVT{probeer_mij}' } },
-    { type: 'hashcrack', icon: '🔓', name: 'Hash-kraker', desc: 'Een woordenlijstaanval nabootsen op een hash.', cfg: { algo: 'md5', hash: '5f4dcc3b5aa765d61d8327deb882cf99', wordlist: ['123456', 'welkom', 'password', 'qwerty', 'geheim'] } },
+    { type: 'hashcrack', icon: '🔓', name: 'Hash-kraker', desc: 'Woordenlijst, regels (mangling) of brute-force (masker) — op MD5/SHA/NTLM.', cfg: { algo: 'md5', hash: '5f4dcc3b5aa765d61d8327deb882cf99', wordlist: ['123456', 'welkom', 'password', 'qwerty', 'geheim', 'letmein'] } },
+    { type: 'hashid', icon: '🧭', name: 'Hash-herkenner', desc: 'Welk hashtype is dit? Herkent MD5, NTLM, SHA, bcrypt en meer.', cfg: { value: '$2y$10$N9qo8uLOickgx2ZMRZoMy.MH/rq8qjHjhHj' } },
+    { type: 'cipher', icon: '🗝️', name: 'Cijfer-kraker', desc: 'Caesar/ROT, XOR, Vigenère en Atbash ontcijferen.', cfg: { text: 'Kl nlolptl cshn pz QCA{jhlzhy_pz_thrrlspqr}' } },
     { type: 'password', icon: '🔑', name: 'Wachtwoord-analyse', desc: 'Live de sterkte en kraaktijd van een wachtwoord zien.', cfg: {} },
     { type: 'subnet', icon: '🧮', name: 'Subnet-calculator', desc: 'Subnetten uitrekenen en oefenvragen genereren.', cfg: {} },
     { type: 'hexviewer', icon: '🔢', name: 'Hex-viewer', desc: 'Rauwe bytes lezen: magic bytes en verstopte strings.', cfg: { filename: 'voorbeeld.bin', hex: '89 50 4E 47 0D 0A 1A 0A 4A 56 54 7B 68 65 78 5F 6B 69 6A 6B 65 72 7D' } },
