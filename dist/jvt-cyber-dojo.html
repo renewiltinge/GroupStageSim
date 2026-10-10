@@ -7519,6 +7519,396 @@ CS.registerRoom({
 
 </script>
 <script>
+/* Room: Rainbow tables & waarom salt wint */
+CS.registerRoom({
+  id: 'rainbow-tables-salt',
+  path: 'security-kern',
+  order: 6,
+  title: 'Rainbow tables & waarom salt wint',
+  icon: '🌈',
+  difficulty: 'Gemiddeld',
+  minutes: 55,
+  summary: 'Begrijp de precomputatie-aanval (tijd-geheugen-afweging), zie met een rainbow table waarom onvergezouten hashes direct op te zoeken zijn, en leer hoe salt, peper en trage hashes dat breken.',
+  objectives: [
+    'Uitleggen wat een precomputatie-aanval is en welke tijd-geheugen-afweging eraan ten grondslag ligt',
+    'Het verschil benoemen tussen een simpele opzoektabel en een echte rainbow table (reductiefuncties en ketens)',
+    'Met een rainbow table een onvergezouten MD5-hash direct opzoeken',
+    'Uitleggen waarom een per-gebruiker unieke, willekeurige salt precomputatie onbruikbaar maakt',
+    'Peper, trage hashes (bcrypt/scrypt/Argon2) en de werkfactor herkennen en uitleggen',
+    'Beschrijven hoe moderne wachtwoordopslag (Argon2id + salt + peper) en wachtwoordbeleid samen verdedigen',
+  ],
+  tasks: [
+    {
+      title: 'Taak 1 — De precomputatie-aanval: tijd ruilen voor geheugen',
+      content: `
+        <p>Je weet uit eerdere rooms dat een hash <strong>eenrichting</strong> is: je kunt hem niet terugrekenen, alleen
+        gokken, hashen en vergelijken. Een gewone woordenlijst- of brute-force-aanval doet dat telkens opnieuw. Stel je
+        buit duizend hashes uit een datalek: dan hash je je hele woordenlijst duizend keer, één keer per hash. Dat voelt
+        als dubbel werk — en dat is het ook.</p>
+
+        <p>De <strong>precomputatie-aanval</strong> draait dat om. Het idee: doe het dure rekenwerk <em>één keer vooraf</em>
+        en bewaar het resultaat. Je hasht een gigantische verzameling kandidaat-wachtwoorden op voorhand en slaat de
+        paren <em>hash → wachtwoord</em> op. Krijg je later een hash in handen, dan hoef je niet meer te kraken: je
+        <strong>zoekt hem gewoon op</strong>. Opzoeken is bijna onmiddellijk.</p>
+
+        <h3>De tijd-geheugen-afweging</h3>
+        <p>Dit is een klassieke <strong>tijd-geheugen-afweging</strong> (time-memory tradeoff). Je investeert vooraf veel
+        rekentijd én veel opslag, en krijgt daarvoor in de plaats dat elke latere aanval razendsnel is. Je ruilt dus
+        <em>tijd</em> (tijdens de aanval) in tegen <em>geheugen</em> (opslag van de tabel). De simpele variant hiervan is
+        een platte <strong>opzoektabel</strong>: letterlijk een enorm bestand met voor elk bedacht wachtwoord zijn hash.
+        Eerlijk is eerlijk — die opzoektabel is juist het probleem: alle onvergezouten MD5's van alle wachtwoorden tot
+        acht tekens opslaan kost al snel vele terabytes. Puur opzoeken is dan onbetaalbaar qua opslag.</p>
+
+        <h3>Wat een echte rainbow table slimmer doet: ketens</h3>
+        <p>Een <strong>rainbow table</strong> (bedacht door Philippe Oechslin in 2003, voortbouwend op het werk van
+        Hellman) lost dat opslagprobleem op met <strong>ketens</strong>. In plaats van elk paar los te bewaren, bouw je
+        een keten op door af te wisselen:</p>
+        <ol>
+          <li>Begin met een wachtwoord en <strong>hash</strong> het.</li>
+          <li>Pas op die hash een <strong>reductiefunctie</strong> toe: die zet de hash om in een nieuw, geldig
+          kandidaat-wachtwoord.</li>
+          <li>Hash dat weer, reduceer weer, honderden of duizenden keren.</li>
+          <li>Bewaar van de hele keten <strong>alleen het beginwoord en het eindresultaat</strong>.</li>
+        </ol>
+
+        <figure class="diagram">
+          <svg viewBox="0 0 700 140" role="img" aria-label="Keten: afwisselend hashen en reduceren; alleen begin en eind worden bewaard">
+            <rect x="8" y="46" width="96" height="34" rx="6" fill="var(--accent-soft)" stroke="currentColor" />
+            <text x="56" y="67" fill="currentColor" font-size="13" text-anchor="middle">welkom</text>
+            <line x1="104" y1="63" x2="168" y2="63" stroke="currentColor" />
+            <text x="136" y="40" fill="currentColor" font-size="11" text-anchor="middle">hash</text>
+            <rect x="168" y="46" width="150" height="34" rx="6" fill="none" stroke="var(--muted)" />
+            <text x="243" y="67" fill="currentColor" font-size="12" text-anchor="middle">a1b2c3d4…</text>
+            <line x1="318" y1="63" x2="382" y2="63" stroke="currentColor" />
+            <text x="350" y="40" fill="currentColor" font-size="11" text-anchor="middle">reduce</text>
+            <rect x="382" y="46" width="96" height="34" rx="6" fill="var(--accent-soft)" stroke="currentColor" />
+            <text x="430" y="67" fill="currentColor" font-size="13" text-anchor="middle">tafel12</text>
+            <line x1="478" y1="63" x2="542" y2="63" stroke="currentColor" />
+            <text x="510" y="38" fill="currentColor" font-size="11" text-anchor="middle">hash → reduce …</text>
+            <rect x="542" y="46" width="150" height="34" rx="6" fill="none" stroke="var(--good)" />
+            <text x="617" y="67" fill="currentColor" font-size="12" text-anchor="middle">eind-woord</text>
+            <text x="8" y="116" fill="currentColor" font-size="12">Opgeslagen: alleen (welkom, eind-woord). De tussenstappen reken je bij het opzoeken opnieuw uit.</text>
+          </svg>
+          <figcaption>Eén keten: afwisselend hashen en reduceren. Alleen begin en eind gaan de opslag in — dat is de
+          tijd-geheugen-afweging in actie.</figcaption>
+        </figure>
+
+        <p>Zoek je later een onbekende hash op, dan pas je er zelf de reductie- en hashstappen op toe tot je een
+        opgeslagen eindwoord raakt; daarna reken je díe keten vanaf het begin opnieuw uit om het wachtwoord te vinden.
+        Zo bewaar je maar twee woorden per keten in plaats van duizenden — veel minder opslag, tegen wat extra rekenwerk
+        bij het opzoeken. Dat is de afweging, nu de andere kant op bijgesteld.</p>
+
+        <div class="callout info"><strong>Waarom "rainbow"?</strong> Een naïeve keten gebruikt steeds dezelfde
+        reductiefunctie, waardoor ketens in elkaar overlopen (botsen) en veel wachtwoorden missen. Oechslin gebruikt per
+        positie een <em>andere</em> reductiefunctie — in diagrammen met verschillende kleuren getekend, vandaar
+        "regenboog". Let op: een reductiefunctie is géén inverse van de hash (die bestaat niet). Het is gewoon een functie
+        die een hash afbeeldt op íéts in de verzameling mogelijke wachtwoorden.</div>
+
+        <div class="callout warn"><strong>Eerlijk blijven:</strong> het lab in de volgende taak gebruikt de simpele
+        opzoektabel-variant (hash → woord, direct opzoeken). Dat is het makkelijkst te laten zien. Een echte rainbow table
+        is de gecomprimeerde, kettingvariant hierboven. Het eindresultaat is hetzelfde: zonder salt is kraken vervangen
+        door opzoeken.</div>
+      `,
+      questions: [
+        { q: 'Wat ruil je bij een precomputatie-aanval tegen elkaar in?', options: ['Rekentijd tijdens de aanval tegen opslag (geheugen) vooraf', 'Geld tegen snelheid', 'Nauwkeurigheid tegen snelheid', 'CPU tegen netwerkbandbreedte'], answer: 0, explain: 'Je investeert vooraf in rekentijd en opslag; daardoor is elke latere aanval bijna gratis qua tijd. Dat is de tijd-geheugen-afweging.' },
+        { q: 'Hoe heet de functie die een hash afbeeldt op een nieuw kandidaat-wachtwoord (en die dus GEEN inverse van de hash is)?', answer: ['reductiefunctie', 'reductie', 'reduction function', 'reductie-functie'], hint: 'Ze "reduceert" een hash terug naar iets in de verzameling wachtwoorden.', explain: 'De reductiefunctie zet een hash om in een geldig kandidaat-wachtwoord. Ze draait de hash niet om — dat kan niet — maar maakt de keten mogelijk.' },
+        { q: 'Wat bewaart een echte rainbow table per keten?', options: ['Alleen het beginwoord en het eindresultaat', 'Elke hash en elk woord in de keten', 'Alleen de hashes, niet de woorden', 'De reductiefunctie zelf'], answer: 0, explain: 'Alleen begin en eind worden opgeslagen; de tussenstappen reken je bij het opzoeken opnieuw uit. Zo bespaar je enorm veel opslag.' },
+        { q: 'Ik begrijp dat een echte rainbow table ketens met reductiefuncties gebruikt, en dat een platte opzoektabel de simpele, opslag-zware variant is.', noAnswer: true },
+      ],
+    },
+
+    {
+      title: 'Taak 2 — Het rainbow-lab: zoek een onvergezouten hash op',
+      content: `
+        <p>Tijd om het te voelen. In het lab hieronder staat een kleine, vooraf berekende tabel: links de MD5-hash,
+        rechts het wachtwoord. Dit is precies de simpele opzoektabel-variant uit taak 1 — alleen veel korter, zodat je
+        hem in één oogopslag overziet. In het echt zou zo'n tabel miljarden rijen tellen.</p>
+
+        <h3>Opzoeken, niet kraken</h3>
+        <p>Neem de hash <code>371620aa75830b1388b63305b0d42f06</code>. Dat is de onvergezouten MD5 van een heel gewoon
+        wachtwoord. Plak hem in het opzoekveld en klik op <strong>Opzoeken</strong>. Er wordt niets gegokt of gekraakt:
+        de tool kijkt simpelweg of de hash in de tabel staat en geeft meteen het bijbehorende wachtwoord terug. Dat is de
+        hele kracht (en het hele gevaar) van precomputatie: voor onvergezouten hashes is kraken teruggebracht tot een
+        opzoekactie van een fractie van een seconde.</p>
+
+        <p>Onder het opzoekveld zie je een blauw kader dat alvast vooruitwijst naar de volgende taak. Daar staat dezelfde
+        tekst, maar dan één keer <em>zonder</em> salt en één keer <em>met</em> salt. Let op hoe compleet anders de twee
+        hashes zijn — precies dát is waarom salt de hele tabel waardeloos maakt. We gaan er in taak 3 dieper op in.</p>
+
+        <div class="callout tip"><strong>Tip:</strong> probeer ook eens een hash die níét in de tabel staat (verzin er een,
+        of plak de gesalte hash <code>329f3abf574738de33a01f7c630b1fb7</code>). Je ziet dan "niet in de tabel" — want
+        opzoeken werkt alleen als de hash er echt in voorkomt. Geen tabel, geen cadeau.</div>
+
+        <h3>Je beloning</h3>
+        <details><summary>Toon de vlag (pas openen nadat je het wachtwoord hebt opgezocht)</summary>
+          <p>Je verdiende vlag: <code>JVT{rainbow_zoekt_direct}</code>. Onthoud het gevoel: voor een onvergezouten,
+          snelle hash hoef je niet te kraken — je zoekt gewoon op.</p>
+        </details>
+      `,
+      lab: {
+        type: 'rainbow',
+        algo: 'md5',
+        wordlist: ['welkom', 'zomer2024', 'admin', 'voetbal', 'liefde', 'qwerty', 'computer', 'maandag'],
+        target: '371620aa75830b1388b63305b0d42f06',
+        saltExample: { word: 'welkom', salt: 'Xy7' },
+      },
+      questions: [
+        { q: 'Zoek de hash 371620aa75830b1388b63305b0d42f06 op. Welk wachtwoord hoort erbij?', answer: ['welkom'], hint: 'Plak de hash in het opzoekveld en klik op Opzoeken; de tabel geeft het meteen.', explain: 'De onvergezouten MD5 van "welkom" is 371620aa75830b1388b63305b0d42f06 — direct terug te vinden in de tabel.' },
+        { q: 'Waarom is het opzoeken "direct" en voelt het niet als kraken?', options: ['Omdat het rekenwerk al vooraf is gedaan en als hash → woord is opgeslagen', 'Omdat MD5 omkeerbaar is', 'Omdat de hash wordt ontsleuteld met een sleutel', 'Omdat de tabel het wachtwoord raadt'], answer: 0, explain: 'Alle hashes zijn vooraf berekend en opgeslagen. Opzoeken is daardoor een simpele lookup, geen gokwerk.' },
+        { q: 'Plak de gesalte hash 329f3abf574738de33a01f7c630b1fb7. Wordt die in de tabel gevonden?', answer: ['nee', 'niet', 'niet gevonden', 'niet in de tabel'], hint: 'Deze hash is berekend met een salt; de tabel is dat niet.', explain: 'Nee — de gesalte hash staat niet in de voorberekende tabel, dus opzoeken faalt. Dat is de brug naar taak 3.' },
+        { q: 'Wat is de vlag die je hier verdient?', answer: ['JVT{rainbow_zoekt_direct}'], hint: 'Staat in het inklapbare blok onderaan de taak.', explain: 'JVT{rainbow_zoekt_direct} bevestigt dat je een onvergezouten hash rechtstreeks hebt opgezocht.' },
+      ],
+    },
+
+    {
+      title: 'Taak 3 — Salt: per gebruiker, uniek en willekeurig',
+      content: `
+        <p>Je zag het in taak 2: een onvergezouten hash is zo opgezocht. De tegenmaatregel is verrassend simpel en heet
+        <strong>salt</strong>. Een salt is een stukje willekeurige data dat je vóór het hashen aan het wachtwoord plakt.
+        In plaats van <code>hash(wachtwoord)</code> bewaar je <code>hash(salt + wachtwoord)</code>, samen met het salt
+        zelf. Bij het inloggen plak je hetzelfde salt er weer voor, hasht, en vergelijkt.</p>
+
+        <h3>Drie eisen aan een goede salt</h3>
+        <ul>
+          <li><strong>Per gebruiker uniek:</strong> elke gebruiker (of elke wachtwoord-invoer) krijgt zijn eigen salt. Zo
+          krijgen twee mensen met hetzelfde wachtwoord tóch twee totaal verschillende hashes. Een aanvaller ziet dus niet
+          meer wie hetzelfde wachtwoord deelt, en kan één treffer niet hergebruiken.</li>
+          <li><strong>Willekeurig (random):</strong> gegenereerd met een veilige toevalsbron, niet afgeleid van de
+          gebruikersnaam of een teller. Voorspelbare salts kun je alsnog voorberekenen.</li>
+          <li><strong>Lang genoeg:</strong> meestal 16 bytes of meer, zodat geen twee gebruikers per ongeluk hetzelfde
+          salt krijgen.</li>
+        </ul>
+
+        <h3>Waarom dit precomputatie breekt</h3>
+        <p>Een rainbow table (of opzoektabel) is berekend <em>zonder</em> jouw salt. Door het unieke salt verschuift elke
+        hash naar een plek die in geen enkele kant-en-klare tabel voorkomt. De aanvaller kan niet één tabel tegen al je
+        gebruikers tegelijk inzetten; hij zou voor <em>elk</em> salt een compleet nieuwe tabel moeten bouwen. Daarmee is
+        de hele tijd-geheugen-afweging onderuitgehaald: precomputatie loont niet meer. Salt maakt kraken niet onmogelijk
+        (een enkel zwak wachtwoord blijft kraakbaar), maar het dwingt de aanvaller terug naar traag, per-hash gokken.</p>
+
+        <h3>Zie het in het lab</h3>
+        <p>In het lab staat de hash <code>21232f297a57a5a743894a0e4a801fc3</code> alvast ingevuld: de onvergezouten MD5
+        van <code>admin</code>. Die wordt direct gevonden. Plak daarna de gesalte variant
+        <code>633c923b634754ecb6ef73b3308c3418</code> — dat is <code>md5("s4lt" + "admin")</code>. Zelfde wachtwoord,
+        maar hij staat <em>niet</em> in de tabel. Het blauwe kader onderin laat de twee hashes naast elkaar zien.</p>
+
+        <div class="callout info"><strong>Veelgestelde vraag: moet een salt geheim zijn?</strong> Nee. Een salt mag gerust
+        openbaar naast de hash in de database staan. Zijn kracht zit niet in geheimhouding, maar in <em>uniciteit</em>:
+        het verbreekt hergebruik van voorberekende tabellen. (Een geheim dat je wél apart houdt, heet peper — dat is taak
+        4.)</div>
+
+        <h3>Je beloning</h3>
+        <details><summary>Toon de vlag (pas openen nadat je beide hashes hebt opgezocht)</summary>
+          <p>Je verdiende vlag: <code>JVT{salt_breekt_de_tabel}</code>. Eén uniek salt per gebruiker en de hele
+          precomputatie-aanval valt in duigen.</p>
+        </details>
+      `,
+      lab: {
+        type: 'rainbow',
+        algo: 'md5',
+        wordlist: ['admin', 'welkom', 'zomer2024', 'voetbal', 'liefde', 'qwerty', 'computer', 'dojo'],
+        target: '21232f297a57a5a743894a0e4a801fc3',
+        saltExample: { word: 'admin', salt: 's4lt' },
+      },
+      questions: [
+        { q: 'Wat maakt een goede salt? Kies de beste omschrijving.', options: ['Per gebruiker uniek en willekeurig gegenereerd', 'Voor iedereen hetzelfde, zolang hij maar lang is', 'Afgeleid van de gebruikersnaam', 'Geheim gehouden en nooit opgeslagen'], answer: 0, explain: 'Uniek per gebruiker en willekeurig: dat is wat voorberekende tabellen waardeloos maakt.' },
+        { q: 'Twee gebruikers kiezen hetzelfde wachtwoord. Wat doet een unieke salt met hun opgeslagen hashes?', options: ['Die worden toch verschillend', 'Die worden identiek', 'Die worden korter', 'Dat maakt geen verschil'], answer: 0, explain: 'Door het verschillende salt leveren identieke wachtwoorden verschillende hashes op — hergebruik en vergelijken wordt zinloos.' },
+        { q: 'Moet een salt geheim zijn?', options: ['Nee, een salt mag openbaar naast de hash staan; zijn kracht is uniciteit', 'Ja, anders is hij waardeloos', 'Alleen op Windows', 'Ja, en hij mag nooit worden opgeslagen'], answer: 0, explain: 'Een salt hoeft niet geheim te zijn. Hij breekt precomputatie door uniek te zijn, niet door geheim te zijn.' },
+        { q: 'Wat is de vlag die je hier verdient?', answer: ['JVT{salt_breekt_de_tabel}'], hint: 'Staat in het inklapbare blok onderaan de taak.', explain: 'JVT{salt_breekt_de_tabel} — een unieke salt per gebruiker haalt de precomputatie-aanval onderuit.' },
+      ],
+    },
+
+    {
+      title: 'Taak 4 — Peper en trage hashes: de werkfactor',
+      content: `
+        <p>Salt verslaat precomputatie, maar een aanvaller kan nog steeds per hash blijven gokken — en als de hash snel is
+        (MD5, SHA-1, NTLM), gaat dat alsnog miljarden keren per seconde. Tegen dát probleem helpen twee extra lagen:
+        <strong>peper</strong> en <strong>trage hashes</strong>.</p>
+
+        <h3>Peper: een geheim dat níét in de database staat</h3>
+        <p>Een <strong>peper</strong> (pepper) lijkt op een salt — je plakt hem ook aan het wachtwoord — maar met één
+        cruciaal verschil: de peper wordt <strong>niet</strong> in de database bewaard. Je houdt hem apart, bijvoorbeeld
+        in de applicatieconfiguratie, een omgevingsvariabele of een <strong>HSM</strong> (hardware security module). Het
+        gevolg: als alleen de database lekt (het meest voorkomende scenario), mist de aanvaller de peper en kan hij zelfs
+        met het juiste wachtwoord de hash niet reproduceren. Een peper is dus een server-side geheim dat bovenop salt een
+        extra drempel legt. Belangrijk verschil om te onthouden:</p>
+        <table>
+          <thead><tr><th></th><th>Salt</th><th>Peper</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Doel</strong></td><td>Precomputatie breken</td><td>Extra laag als de database lekt</td></tr>
+            <tr><td><strong>Uniek?</strong></td><td>Per gebruiker uniek</td><td>Vaak één geheim voor alle gebruikers</td></tr>
+            <tr><td><strong>Waar opgeslagen?</strong></td><td>Naast de hash in de database</td><td>Apart, buiten de database</td></tr>
+            <tr><td><strong>Geheim?</strong></td><td>Nee</td><td>Ja</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Trage hashes en de werkfactor</h3>
+        <p>De belangrijkste verdediging is een <strong>trage hash</strong>. MD5 en SHA-256 zijn ontworpen om snel te zijn —
+        prima voor bestandscontrole, ramp voor wachtwoorden. Trage hashes zijn juist <em>expres</em> traag gemaakt met een
+        instelbare <strong>werkfactor</strong> (cost). Hoger betekent meer rekenwerk per gok. Eén echte login merkt die
+        vertraging nauwelijks (een fractie van een seconde), maar een aanvaller die miljarden keren wil gokken loopt
+        volledig vast. De drie die je moet kennen:</p>
+        <ul>
+          <li><strong>bcrypt:</strong> begint met <code>$2a$</code>, <code>$2b$</code> of <code>$2y$</code>, gevolgd door
+          de werkfactor, bijvoorbeeld <code>$2b$12$...</code> (de 12 is de cost). Beproefd en wijdverbreid.</li>
+          <li><strong>scrypt:</strong> niet alleen traag, maar ook bewust <em>geheugen-intensief</em>, zodat speciale
+          kraak-hardware (GPU's, ASIC's) minder voordeel heeft.</li>
+          <li><strong>Argon2:</strong> winnaar van de Password Hashing Competition (2015) en de huidige aanrader. Je stelt
+          geheugen (<code>m</code>), iteraties (<code>t</code>) en parallelisme (<code>p</code>) in, bijvoorbeeld
+          <code>$argon2id$v=19$m=65536,t=3,p=4$...</code>. De variant <strong>Argon2id</strong> combineert bescherming
+          tegen zowel GPU- als side-channel-aanvallen.</li>
+        </ul>
+
+        <h3>Eerst herkennen</h3>
+        <p>Voor je iets probeert te kraken, moet je weten wát je voor je hebt. Trage, gesalte hashes dragen hun type vaak
+        in een <code>$</code>-prefix. In het lab staat een bcrypt-hash. Laat de tool het type herkennen en let op dat ze
+        hem als "moeilijk te kraken" markeert — dat is precies de bedoeling van een trage hash.</p>
+        <div class="callout tip"><strong>Tip:</strong> plak ter vergelijking ook eens
+        <code>$argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHQ$aBcDeFgHiJ</code> of een <code>$6$</code>-string (sha512crypt uit
+        <code>/etc/shadow</code>). Leer de prefixen herkennen: zie je een dollarteken met een versielabel, dan weet je dat
+        een kale woordenlijst op MD5-tempo hier niet gaat werken.</div>
+      `,
+      lab: { type: 'hashid', value: '$2b$12$R9h/cIPz0gi.URNNX3kh2OPST9PgBkqquzi.Ss7KIUgO2t0jWMUW' },
+      questions: [
+        { q: 'Wat is het belangrijkste verschil tussen salt en peper?', options: ['Een peper wordt apart bewaard (niet in de database); een salt staat naast de hash', 'Een peper is per gebruiker uniek en een salt niet', 'Een peper maakt het wachtwoord korter', 'Er is geen verschil'], answer: 0, explain: 'Salt staat (openbaar) naast de hash en is per gebruiker uniek; peper is een geheim dat je buiten de database houdt.' },
+        { q: 'Aan welk prefix herken je een bcrypt-hash?', answer: ['$2b$', '$2a$', '$2y$', '2b', '2a'], hint: 'Een dollarteken, een versielabel en daarna de werkfactor.', explain: 'bcrypt begint met $2a$, $2b$ of $2y$, gevolgd door de cost (bijv. $2b$12$).' },
+        { q: 'Wat doet een hogere werkfactor (cost) bij een trage hash?', options: ['Elke gok kost meer rekentijd, waardoor massaal kraken onbetaalbaar wordt', 'De hash wordt korter', 'Het wachtwoord wordt automatisch sterker', 'Inloggen wordt onmogelijk'], answer: 0, explain: 'Een hogere werkfactor vertraagt elke hashberekening. Voor één login verwaarloosbaar, voor miljarden gokken dodelijk.' },
+        { q: 'Welke trage hash won de Password Hashing Competition en is de huidige aanrader?', answer: ['argon2', 'argon2id', 'argon'], hint: 'De id-variant beschermt tegen GPU- én side-channel-aanvallen.', explain: 'Argon2 (en specifiek Argon2id) is sinds 2015 de aanbevolen keuze voor nieuwe systemen.' },
+      ],
+    },
+
+    {
+      title: 'Taak 5 — Zonder salt werkt een woordenlijst meteen',
+      content: `
+        <p>We hebben gezien waarom salt en trage hashes verdedigen. Laten we nu voelen wat er misgaat <em>zonder</em> die
+        verdediging. Stel een dienst slaat wachtwoorden op als kale, onvergezouten MD5 — en die database lekt. Dan is niet
+        alleen precomputatie mogelijk; zelfs een gewone <strong>woordenlijstaanval</strong> rolt er in een oogwenk
+        doorheen.</p>
+
+        <h3>Het dubbele probleem van "geen salt"</h3>
+        <p>Zonder salt gebeuren er twee nare dingen tegelijk:</p>
+        <ul>
+          <li>Een aanvaller kan één voorberekende tabel tegen <em>alle</em> hashes tegelijk inzetten (taak 1-3).</li>
+          <li>En omdat elke gebruiker met hetzelfde wachtwoord dezelfde hash heeft, hoeft hij een populair wachtwoord maar
+          één keer te hashen om het bij <em>iedereen</em> te herkennen die het gebruikt. Hij hasht zijn woordenlijst dus
+          maar één keer en vergelijkt met de hele database in één klap.</li>
+        </ul>
+        <p>Met een per-gebruiker unieke salt verdwijnen beide voordelen: de aanvaller moet zijn woordenlijst opnieuw hashen
+        voor <em>elk</em> salt apart. Precies dat extra werk, vermenigvuldigd met een trage hash, is wat verdediging zo
+        effectief maakt.</p>
+
+        <h3>Aan de slag</h3>
+        <p>In het lab staat een onvergezouten MD5-hash en een korte woordenlijst — net als bij een echte dump, alleen
+        veel korter. Start de woordenlijstaanval en laat de tool de lijst aflopen. De hash is zo gekraakt, want hij is
+        onvergezouten én van een alledaags wachtwoord. Denk er bij elke treffer aan: was deze hash met een unieke salt én
+        een trage hash opgeslagen, dan had deze aanval geen schijn van kans gehad.</p>
+
+        <div class="callout danger"><strong>De les:</strong> "we hashen de wachtwoorden toch?" is geen verdediging als het
+        om een kale, snelle, onvergezouten hash gaat. MD5 zonder salt is in de praktijk nauwelijks beter dan platte tekst.</div>
+
+        <h3>Je beloning</h3>
+        <details><summary>Toon de vlag (pas openen nadat je het wachtwoord hebt gekraakt)</summary>
+          <p>Je verdiende vlag: <code>JVT{zonder_salt_valt_het}</code>. Geen salt plus een snelle hash is een open deur —
+          voor opzoeken én voor een woordenlijst.</p>
+        </details>
+      `,
+      lab: {
+        type: 'hashcrack',
+        algo: 'md5',
+        hash: 'd9898c6cad232125606d4ceea5a35e41',
+        salt: '',
+        wordlist: ['123456', 'welkom', 'qwerty', 'liefde', 'voetbal', 'admin', 'maandag', 'computer'],
+      },
+      questions: [
+        { q: 'Start de woordenlijstaanval. Welk wachtwoord hoort bij de hash?', answer: ['voetbal'], hint: 'Laat de tool de hele lijst aflopen; één woord geeft precies dezelfde MD5.', explain: 'De onvergezouten MD5 van "voetbal" is d9898c6cad232125606d4ceea5a35e41 — een klassieke woordenlijst-treffer.' },
+        { q: 'Waarom helpt een per-gebruiker unieke salt juist hier als verdediging?', options: ['De aanvaller kan één woordenlijst niet meer tegen alle hashes tegelijk gebruiken; hij moet per salt opnieuw hashen', 'De salt maakt het wachtwoord geheim', 'De salt versleutelt de database', 'De salt maakt MD5 trager'], answer: 0, explain: 'Door de unieke salt levert hetzelfde wachtwoord bij iedereen een andere hash op, dus de aanvaller moet per hash opnieuw rekenen.' },
+        { q: 'Waarom is een kale, onvergezouten MD5 nauwelijks beter dan platte tekst?', options: ['MD5 is snel en zonder salt werken opzoeken én woordenlijsten direct', 'MD5 is omkeerbaar met een sleutel', 'Omdat MD5 te kort is om op te slaan', 'Dat klopt niet, MD5 is juist veilig'], answer: 0, explain: 'Een snelle, onvergezouten hash valt zowel voor precomputatie als voor een simpele woordenlijstaanval — een open deur.' },
+        { q: 'Wat is de vlag die je hier verdient?', answer: ['JVT{zonder_salt_valt_het}'], hint: 'Staat in het inklapbare blok onderaan de taak.', explain: 'JVT{zonder_salt_valt_het} — zonder salt en met een snelle hash valt het wachtwoord meteen.' },
+      ],
+    },
+
+    {
+      title: 'Taak 6 — Moderne opslag en wachtwoordbeleid',
+      content: `
+        <p>Je kent nu alle bouwstenen. Tijd om ze samen te voegen tot het recept dat een modern systeem gebruikt — en tot
+        het beleid dat je gebruikers helpt sterke wachtwoorden te kiezen. Verdedigen betekent twee dingen tegelijk
+        wegnemen waar de aanvaller op leunt: <em>snelheid</em> en <em>voorspelbaarheid</em>.</p>
+
+        <h3>Het recept voor het systeem</h3>
+        <ul>
+          <li><strong>Trage hash met hoge werkfactor:</strong> gebruik <strong>Argon2id</strong> (aanrader), of anders
+          <strong>bcrypt</strong>/<strong>scrypt</strong>. Stel de parameters zo hoog als je hardware en gewenste
+          responstijd toelaten, en verhoog ze mee met snellere hardware.</li>
+          <li><strong>Per-gebruiker unieke, willekeurige salt:</strong> bij bcrypt en Argon2 zit dit standaard ingebouwd
+          en wordt het salt in de hashstring opgenomen. Zo breek je precomputatie.</li>
+          <li><strong>Eventueel een peper:</strong> een server-side geheim buiten de database, als extra laag voor het
+          geval alleen de database lekt.</li>
+          <li><strong>Beperk online gokken:</strong> rate limiting en account-lockout tegen het inlogscherm, los van hoe
+          je opslaat.</li>
+        </ul>
+        <p>Kort samengevat: <strong>Argon2id + unieke salt + (optioneel) peper</strong>. Dat is waar je naartoe wilt.</p>
+
+        <h3>Het beleid voor de gebruiker</h3>
+        <ul>
+          <li><strong>Lengte verslaat alles.</strong> De zoekruimte groeit exponentieel met de lengte; een lange
+          wachtwoordzin (passphrase) van vier of meer willekeurige woorden is zowel te onthouden als ondoenlijk te
+          brute-forcen.</li>
+          <li><strong>Uniek per account</strong>, bewaard in een <strong>wachtwoordmanager</strong>, zodat één lek niet al
+          je accounts meesleept.</li>
+          <li><strong>MFA aan</strong> op je belangrijkste accounts: zelfs een gekraakt wachtwoord is dan niet genoeg.</li>
+          <li><strong>Lekcontrole:</strong> blokkeer wachtwoorden die in bekende datalekken voorkomen (bijvoorbeeld via
+          Have I Been Pwned).</li>
+          <li><strong>Géén verplichte periodieke wijziging.</strong> Het oude advies om elke maand te wijzigen is
+          achterhaald: het leidt tot zwakkere, voorspelbare varianten. NCSC en NIST raden aan alleen te wijzigen bij een
+          (vermoeden van een) lek.</li>
+        </ul>
+
+        <div class="callout tip"><strong>Probeer het in het lab:</strong> typ eerst een kort, voorspelbaar wachtwoord en
+        bekijk de geschatte kraaktijd. Maak het daarna fors langer met een paar extra woorden en zie de schatting omslaan
+        van "seconden" naar "onhaalbaar". Zo voel je terug waarom lengte, salt en trage hashes elkaar versterken.</div>
+
+        <h3>Afsluiting</h3>
+        <p>Je kunt nu uitleggen wat een precomputatie-aanval is, waarom een platte opzoektabel en een echte rainbow table
+        met ketens hetzelfde doel dienen, en vooral: waarom salt wint. Een unieke salt breekt precomputatie, een peper
+        legt daar een geheim bovenop, en een trage hash met hoge werkfactor maakt elke gok duur. Combineer dat met lengte,
+        uniciteit, MFA en lekcontrole, en je hebt wachtwoordopslag die stand houdt. Gebruik deze kennis verantwoord:
+        kraken oefen je alleen op je eigen hashes, op oefenhashes, of binnen een getekende opdracht.</p>
+        <div class="callout info"><strong>Verder lezen?</strong> De OWASP Password Storage Cheat Sheet geeft concrete
+        parameters voor Argon2, bcrypt en scrypt, en het NCSC heeft praktisch wachtwoordadvies.</div>
+      `,
+      lab: { type: 'password' },
+      questions: [
+        { q: 'Wat is de aanbevolen moderne opslagmethode voor wachtwoorden?', options: ['Argon2id met een unieke salt (en eventueel een peper)', 'MD5 met een salt', 'SHA-256 zonder salt', 'Platte tekst met een back-up'], answer: 0, explain: 'Argon2id met per-gebruiker salt (en optioneel peper) combineert traagheid, salting en moderne bescherming.' },
+        { q: 'Welke eigenschap van een wachtwoord verslaat precomputatie en brute force het sterkst?', answer: ['lengte', 'de lengte', 'langer'], hint: 'De zoekruimte groeit exponentieel met dit kenmerk.', explain: 'Lengte: elk extra teken vermenigvuldigt de zoekruimte, waardoor zelfs vooraf berekenen onbetaalbaar wordt.' },
+        { q: 'Welk ouderwets wachtwoordadvies raden NCSC en NIST tegenwoordig af?', options: ['Wachtwoorden verplicht elke maand wijzigen', 'Wachtwoorden uniek per account maken', 'Een wachtwoordmanager gebruiken', 'MFA aanzetten'], answer: 0, explain: 'Verplichte periodieke wijziging leidt tot zwakkere, voorspelbare varianten. Wijzig alleen bij een (vermoeden van een) lek.' },
+        { q: 'Ik kan uitleggen waarom een unieke salt, een peper, een trage hash én voldoende lengte samen een rainbow table en brute force verslaan.', noAnswer: true },
+      ],
+    },
+  ],
+  terms: [
+    { term: 'Precomputatie-aanval', def: 'Hashes van veel kandidaat-wachtwoorden vooraf berekenen en opslaan, zodat kraken later een simpele opzoekactie wordt.' },
+    { term: 'Tijd-geheugen-afweging', def: 'Vooraf rekentijd en opslag investeren om tijdens de aanval tijd te besparen; de kern van rainbow tables.' },
+    { term: 'Opzoektabel', def: 'De simpele variant van precomputatie: een platte lijst van hash naar wachtwoord; snel maar enorm in opslag.' },
+    { term: 'Rainbow table', def: 'Gecomprimeerde precomputatie-tabel die met ketens en reductiefuncties veel opslag bespaart; nutteloos tegen gesalte hashes.' },
+    { term: 'Reductiefunctie', def: 'Functie die een hash afbeeldt op een nieuw kandidaat-wachtwoord; geen inverse van de hash, maar maakt ketens mogelijk.' },
+    { term: 'Keten (chain)', def: 'Afwisselend hashen en reduceren in een rainbow table, waarvan alleen begin en eind worden opgeslagen.' },
+    { term: 'Salt', def: 'Per-gebruiker unieke, willekeurige waarde die vóór het hashen wordt toegevoegd; mag openbaar zijn en breekt precomputatie.' },
+    { term: 'Peper (pepper)', def: 'Server-side geheim dat apart van de database wordt bewaard, als extra laag bovenop salt.' },
+    { term: 'Trage hash', def: 'Wachtwoord-hash die bewust rekenkracht kost (bcrypt, scrypt, Argon2) om massaal gokken onbetaalbaar te maken.' },
+    { term: 'Werkfactor (cost)', def: 'Instelbare traagheid van een trage hash; hoger betekent meer rekentijd per gok.' },
+    { term: 'bcrypt', def: 'Beproefde trage hash met instelbare werkfactor; te herkennen aan het prefix $2a$/$2b$/$2y$.' },
+    { term: 'Argon2id', def: 'Winnaar van de Password Hashing Competition (2015) en huidige aanrader; instelbaar op geheugen, iteraties en parallelisme.' },
+  ],
+  resources: [
+    { title: 'Wikipedia — Rainbow table (precomputatie en ketens)', url: 'https://en.wikipedia.org/wiki/Rainbow_table' },
+    { title: 'OWASP — Password Storage Cheat Sheet', url: 'https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html' },
+    { title: 'Wikipedia — Argon2', url: 'https://en.wikipedia.org/wiki/Argon2' },
+    { title: 'NCSC — Nationaal Cyber Security Centrum', url: 'https://www.ncsc.nl/' },
+  ],
+});
+
+</script>
+<script>
 /* Room: OWASP Top 10 (editie 2025) */
 CS.registerRoom({
   id: 'owasp-top-10',
@@ -9321,6 +9711,680 @@ CS.registerRoom({
         { q: 'Je hebt alle zes de hashes gekraakt. Welke slotvlag verdien je? (JVT{hash_meester})', answer: ['JVT{hash_meester}'], hint: 'De vlag staat letterlijk in de vraag.', explain: 'Gefeliciteerd: JVT{hash_meester}. Van MD5 tot NTLM, brute-force en gesalte hashes — je hebt ze alle zes gekraakt.' },
       ],
     },
+  ],
+});
+
+</script>
+<script>
+/* Room: Reverse engineering — crackmes kraken */
+
+// Hex-dump voor het hexviewer-lab (taak 2): een ELF-binary (magic 7F 45 4C 46) met
+// leesbare strings in de ASCII-kolom: een hardcoded sleutel (OpenSesam2026) en de
+// verstopte vlag JVT{hex_in_ascii}. Gegenereerd en gecontroleerd met Node.
+const CRACKME_HEX =
+  '7F 45 4C 46 02 01 01 00 00 00 00 00 00 00 00 00 20 20 56 6F 65 72 20 64 65 20 73 6C ' +
+  '65 75 74 65 6C 20 69 6E 3A 20 20 20 73 6C 65 75 74 65 6C 3D 4F 70 65 6E 53 65 73 61 ' +
+  '6D 32 30 32 36 20 20 20 20 54 6F 65 67 61 6E 67 20 67 65 77 65 69 67 65 72 64 20 20 ' +
+  '20 20 76 6C 61 67 3D 4A 56 54 7B 68 65 78 5F 69 6E 5F 61 73 63 69 69 7D 20 20 00 00';
+
+CS.registerRoom({
+  id: 'reverse-engineering',
+  path: 'offensief',
+  order: 7,
+  title: 'Reverse engineering: crackmes kraken',
+  icon: '🔃',
+  difficulty: 'Moeilijk',
+  minutes: 70,
+  summary: 'Leer een programma van binnen begrijpen zonder de broncode: lees controlefuncties, zoek sleutels in strings en hex, en kraak vier crackmes van oplopende moeilijkheid — met de wet en de ethiek stevig vooraan.',
+  objectives: [
+    'Uitleggen wat reverse engineering is en wanneer het wél en niet mag (eigen binaries, CTF, toestemming; art. 138ab Sr; auteursrecht en licenties)',
+    'Statische en dynamische analyse onderscheiden en de juiste tool kiezen',
+    'Leesbare strings en bytes (hex) gebruiken om hardcoded sleutels en vlaggen te vinden',
+    'Een controlefunctie lezen en er de juiste invoer uit afleiden',
+    'Crackmes kraken via omkeren, tekenrekenkunde, XOR en gecombineerde segmentcontroles',
+    'Het verschil tussen een keygen en een patch benoemen en verantwoord met je kennis omgaan',
+  ],
+  tasks: [
+    {
+      title: 'Taak 1 — Wat is reverse engineering (en mag het eigenlijk)?',
+      content: `
+        <p><strong>Reverse engineering</strong> (letterlijk "omgekeerd ontwerpen") is het ontleden van een afgewerkt product om te begrijpen hoe het van binnen werkt — zonder dat je het oorspronkelijke ontwerp of de broncode hebt. Een automonteur die een onbekende motor uit elkaar haalt om te snappen hoe hij draait, doet aan reverse engineering. In security doen wij hetzelfde met software: we bestuderen een <em>binary</em> (een gecompileerd programma) om te zien welke beslissingen hij neemt.</p>
+
+        <h3>Waarom dit een topvaardigheid is</h3>
+        <ul>
+          <li><strong>Malware begrijpen:</strong> aanvallers leveren geen broncode mee. Wil je weten wat een virus doet, dan moet je de machinecode lezen (zie de room over malware-analyse).</li>
+          <li><strong>Kwetsbaarheden vinden:</strong> door een programma te ontleden ontdek je fouten die van buitenaf onzichtbaar zijn.</li>
+          <li><strong>Protocollen en bestandsformaten snappen</strong> als er geen documentatie bestaat.</li>
+        </ul>
+
+        <h3>Een crackme: oefenstof met opzet</h3>
+        <p>In deze room oefen je met <strong>crackmes</strong>: kleine programmaatjes die met opzet zijn gemaakt om gekraakt te worden. Een crackme vraagt om een sleutel of wachtwoord en laat je alleen door als je de juiste invoer vindt. Jij leest de <em>controle</em> (de functie die "ja" of "nee" zegt) en leidt daaruit de juiste sleutel af. Een <strong>keygenme</strong> gaat een stap verder: daar schrijf je zelf een programmaatje (een <em>keygen</em>) dat geldige sleutels maakt.</p>
+
+        <div class="callout danger"><strong>De wet — lees dit goed:</strong>
+          <ul>
+            <li><strong>Computervredebreuk (art. 138ab Sr):</strong> binnendringen in een systeem dat niet van jou is, is strafbaar. Een licentiecontrole omzeilen op software van een ander, op een systeem van een ander, kan daar onder vallen.</li>
+            <li><strong>Auteursrecht en licenties:</strong> software is auteursrechtelijk beschermd. De licentievoorwaarden (de EULA) verbieden vaak uitdrukkelijk reverse engineering. Het <em>decompileren</em> of kraken van andermans software kan dus verboden zijn, ook al staat het bestand "gewoon" op jouw schijf. De wet staat reverse engineering slechts in enge uitzonderingen toe (bijvoorbeeld om twee programma's te laten samenwerken — interoperabiliteit — onder strikte voorwaarden).</li>
+            <li><strong>Kopieerbeveiliging kraken</strong> om software illegaal te verspreiden is apart strafbaar en heeft niets met leren te maken.</li>
+          </ul>
+        </div>
+
+        <div class="callout tip"><strong>Waar het wél mag:</strong> op je <strong>eigen</strong> binaries en code, op speciaal daarvoor gemaakte <strong>crackme's en CTF-opdrachten</strong> (zoals de labs in deze room en platforms als crackmes.one en microcorruption), en met <strong>uitdrukkelijke, schriftelijke toestemming</strong> van de eigenaar. Dat is precies de ethische lijn die door de hele Dojo loopt: aanvalstechnieken oefen je alleen in je eigen lab of met toestemming.</div>
+
+        <p>De techniek is neutraal; de context bepaalt of het mag. Houd die vraag — "mag ik dit bestand hiervoor gebruiken?" — altijd vooraan.</p>
+      `,
+      questions: [
+        { q: 'Wat is reverse engineering?', options: ['Software sneller maken', 'Een afgewerkt programma ontleden om te begrijpen hoe het werkt, zonder de broncode', 'Een back-up terugzetten', 'Een programma vertalen naar het Nederlands'], answer: 1, explain: 'Reverse engineering is het van binnenuit begrijpen van een product (hier: een binary) zonder het oorspronkelijke ontwerp.' },
+        { q: 'Welk wetsartikel gaat over computervredebreuk (binnendringen in andermans systeem)?', answer: ['art. 138ab sr', '138ab', 'artikel 138ab sr', 'art 138ab sr', '138ab sr'], hint: 'Hetzelfde artikel dat in de web- en malware-rooms terugkomt.', explain: 'Art. 138ab Sr stelt computervredebreuk strafbaar; het omzeilen van beveiliging op andermans systeem kan eronder vallen.' },
+        { q: 'Op welk materiaal mag je reverse engineering vrij oefenen?', options: ['Elke app op je telefoon', 'Betaalde software van je werkgever', 'Je eigen binaries, crackme\'s/CTF-opdrachten en software met uitdrukkelijke toestemming', 'Alles wat op je eigen schijf staat'], answer: 2, explain: 'Eigen code, speciaal gemaakte crackme\'s/CTF en materiaal met schriftelijke toestemming — dat is de veilige, legale oefenruimte.' },
+        { q: 'Waarom kan het reverse-engineeren van andermans software verboden zijn, ook al staat het op jouw schijf?', options: ['Omdat het te veel stroom kost', 'Vanwege auteursrecht en licentievoorwaarden (de EULA) die het vaak verbieden', 'Dat is nooit verboden', 'Omdat de schijf kapot kan gaan'], answer: 1, explain: 'Software is auteursrechtelijk beschermd en de licentie verbiedt reverse engineering vaak; de wet staat het maar in enge uitzonderingen toe.' },
+      ],
+    },
+
+    {
+      title: 'Taak 2 — Statisch vs. dynamisch, en je eerste tool: strings & hex',
+      content: `
+        <p>Net als bij malware-analyse zijn er twee grote benaderingen om een binary te onderzoeken. Je gebruikt ze allebei.</p>
+
+        <h3>Statische analyse — kijken zonder draaien</h3>
+        <p>Bij <strong>statische analyse</strong> bestudeer je het bestand <em>zonder het uit te voeren</em>. Je bekijkt de bytes, de leesbare tekst en — met een <strong>disassembler</strong> (zoals in radare2 of Ghidra) — de machine-instructies, of met een <strong>decompiler</strong> een ruwe benadering van de broncode. Veilig, want er draait niets.</p>
+
+        <h3>Dynamische analyse — draaien en meekijken</h3>
+        <p>Bij <strong>dynamische analyse</strong> voer je het programma uit met een <strong>debugger</strong> en kijk je stap voor stap wat het doet: welke waarden het vergelijkt, welke tak het kiest. Dit onthult gedrag dat statisch lastig te zien is, maar is riskanter bij echt kwaadaardige code — doe dat alleen geïsoleerd (zie de room <em>Malware-analyse: de basis</em> voor de veiligheidsregels: wegwerp-VM, snapshot, geen netwerk).</p>
+
+        <div class="callout info"><strong>Vuistregel:</strong> begin statisch (snel en veilig een beeld), ga daarna dynamisch als je het precieze gedrag wilt zien. Voor de crackmes in deze room is statisch lezen genoeg — je krijgt de controlefunctie gewoon te lezen.</div>
+
+        <h3>De simpelste statische tool: <code>strings</code></h3>
+        <p>Programma's bevatten vaak <strong>leesbare tekst</strong>: foutmeldingen, menu's, en soms — tot vreugde van de analist — een <em>hardcoded</em> wachtwoord of een vlag die de programmeur er per ongeluk in liet staan. Het hulpmiddel <code>strings</code> trekt alle leesbare reeksen uit een binary. Zie je daar meteen de sleutel, dan hoef je niets te kraken.</p>
+
+        <h3>Nog een niveau dieper: de rauwe bytes (hex)</h3>
+        <p>Met een <strong>hex-editor</strong> lees je de ruwe bytes. De eerste bytes verraden het bestandstype (de "magic bytes"): een ELF-binary voor Linux begint met <code>7F 45 4C 46</code> (als tekst: <code>.ELF</code>), een Windows-executable met <code>4D 5A</code> (<code>MZ</code>). De ASCII-kolom rechts toont dezelfde bytes als tekst — daar spring je zo op leesbare strings.</p>
+
+        <p>Hieronder zie je de hex-dump van <code>crackme0.bin</code>. Doe twee dingen: (1) bepaal aan de eerste bytes wat voor bestand dit is, en (2) lees de ASCII-kolom rechts — er staat een hardcoded sleutel én een verstopte vlag in.</p>
+      `,
+      lab: {
+        type: 'hexviewer',
+        filename: 'crackme0.bin',
+        hex: CRACKME_HEX,
+      },
+      questions: [
+        { q: 'Wat voor bestand is crackme0.bin, gezien de eerste bytes 7F 45 4C 46?', options: ['Een Windows-executable (MZ)', 'Een ELF-binary (Linux-executable)', 'Een PNG-afbeelding', 'Een ZIP-archief'], answer: 1, explain: '7F 45 4C 46 is ".ELF", de magic bytes van een Linux-executable (ELF-formaat).' },
+        { q: 'Welke hardcoded sleutel staat leesbaar in de ASCII-kolom (na "sleutel=")?', answer: ['OpenSesam2026', 'opensesam2026'], hint: 'Lees de rechterkolom; de programmeur liet de sleutel letterlijk in de binary staan.', explain: 'In de ASCII-weergave is sleutel=OpenSesam2026 leesbaar — een klassieke beginnersfout.' },
+        { q: 'Welke vlag staat verstopt in de ASCII-kolom (na "vlag=")?', answer: ['JVT{hex_in_ascii}'], encoded: true, hint: 'De vlag staat als losse bytes in het bestand, maar is in de ASCII-kolom gewoon te lezen.', explain: 'De bytes vormen in de ASCII-kolom de leesbare tekst JVT{hex_in_ascii}.' },
+      ],
+    },
+
+    {
+      title: 'Taak 3 — Een controlefunctie lezen + crackme 1 (omkeren)',
+      content: `
+        <p>Vaak staat de sleutel niet kant-en-klaar in de binary. Dan moet je de <strong>controlefunctie</strong> lezen: het stukje code dat bepaalt of jouw invoer goed of fout is. Kraken betekent hier niet "brute-force", maar <em>begrijpen</em>: je leest wat de functie met je invoer doet en rekent terug naar de invoer die "waar" oplevert.</p>
+
+        <h3>Hoe je een controle leest</h3>
+        <p>Een controle vergelijkt jouw invoer (na een paar bewerkingen) met een doelwaarde. Een piepklein voorbeeld:</p>
+        <pre><code>function check(invoer) {
+  return invoer + 1 === 5;
+}</code></pre>
+        <p>De functie is waar als <code>invoer + 1</code> gelijk is aan 5. Jij rekent terug: <code>invoer = 5 - 1 = 4</code>. Dat terugrekenen — de bewerking <em>omdraaien</em> — is de kern van elke crackme. Veelvoorkomende bewerkingen en hun omgekeerde:</p>
+        <table>
+          <thead><tr><th>Bewerking in de controle</th><th>Jij draait om met</th></tr></thead>
+          <tbody>
+            <tr><td>Tekst omkeren (reverse)</td><td>Nog een keer omkeren</td></tr>
+            <tr><td>Optellen / aftrekken bij tekencodes</td><td>Aftrekken / optellen</td></tr>
+            <tr><td>XOR met een constante</td><td>Nog een keer XOR met dezelfde constante</td></tr>
+            <tr><td>Opsplitsen in segmenten</td><td>Elk segment apart oplossen</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Crackme 1 — de omgekeerde sleutel</h3>
+        <p>Je eerste echte crackme. In het lab hieronder lees je de functie <code>check</code>. Ze draait jouw sleutel om (letter voor letter achterstevoren) en vergelijkt het resultaat met een vaste doelstring. Lees de doelstring en draai hem in je hoofd (of op papier) terug: wat je intypt, moet <em>omgekeerd</em> de doelstring zijn. Typ de juiste sleutel; bij succes verschijnt de vlag.</p>
+
+        <div class="callout tip"><strong>Tip:</strong> omkeren is zijn eigen omgekeerde. Draai je de doelstring om, dan heb je meteen de sleutel.</div>
+      `,
+      lab: {
+        type: 'crackme',
+        title: 'Crackme 1 — Omkeren',
+        intro: 'Lees de controle. Je sleutel wordt omgekeerd en vergeleken met een doelstring. Welke sleutel geeft toegang?',
+        source: `function check(sleutel) {
+  // De sleutel omgekeerd (letter voor letter achterstevoren)
+  // moet exact gelijk zijn aan deze doelstring:
+  return sleutel.split('').reverse().join('') === '6202ojod';
+}`,
+        check: (sleutel) => sleutel.split('').reverse().join('') === '6202ojod',
+        flag: 'JVT{omgekeerd_is_niet_veilig}',
+        reveal: 'Toegang verleend! Je draaide de doelstring om en vond de sleutel. Omkeren is nooit een echte beveiliging.',
+        hint: 'Draai de doelstring 6202ojod zelf om: lees hem van achter naar voren.',
+      },
+      questions: [
+        { q: 'Wat is de algemene truc om een crackme te kraken?', options: ['Heel snel typen', 'De bewerkingen in de controle omkeren en zo terugrekenen naar de juiste invoer', 'Het programma verwijderen', 'De computer opnieuw opstarten'], answer: 1, explain: 'Je leest wat de controle met je invoer doet en draait die bewerkingen om naar de invoer die "waar" oplevert.' },
+        { q: 'Kraak crackme 1. Welke sleutel geeft toegang?', answer: ['dojo2026'], hint: 'De doelstring is 6202ojod. Draai hem om.', explain: 'Omgekeerd is 6202ojod gelijk aan dojo2026 — dus dat is de sleutel.' },
+        { q: 'Welke vlag krijg je bij het kraken van crackme 1?', answer: ['JVT{omgekeerd_is_niet_veilig}'], hint: 'De vlag verschijnt in het lab zodra de juiste sleutel klopt.', explain: 'Bij succes toont het lab JVT{omgekeerd_is_niet_veilig}.' },
+      ],
+    },
+
+    {
+      title: 'Taak 4 — Crackme 2: tekenrekenkunde en een checksom',
+      content: `
+        <p>Een stap lastiger. Deze controle rekent niet met de tekst zelf, maar met de <strong>tekencodes</strong>. Elk teken heeft een getal: in de ASCII-tabel is <code>A</code> = 65, <code>a</code> = 97, <code>0</code> = 48, enzovoort. Met <code>charCodeAt</code> leest een programma die getallen uit, en daar kun je mee rekenen — bijvoorbeeld alle codes bij elkaar optellen tot een <strong>checksom</strong>.</p>
+
+        <h3>Het probleem van een checksom: niet uniek</h3>
+        <p>Een checksom alleen is een zwakke controle: heel veel verschillende teksten tellen op tot hetzelfde getal (<code>AB</code> en <code>BA</code> geven dezelfde som). Een slimme controle voegt daarom <strong>extra eisen</strong> toe, zodat er uiteindelijk nog maar één logische sleutel overblijft. Precies dat zie je in crackme 2. De controle eist:</p>
+        <ol>
+          <li>de sleutel is <strong>precies 9 tekens</strong> lang;</li>
+          <li>de sleutel <strong>begint met het woord</strong> <code>sleutel</code> (dat zijn de eerste 7 tekens);</li>
+          <li>de <strong>laatste twee tekens zijn gelijk</strong> aan elkaar;</li>
+          <li>de <strong>som van alle tekencodes</strong> is <code>876</code>.</li>
+        </ol>
+
+        <h3>Zo reken je het uit</h3>
+        <p>Omdat de eerste 7 tekens vastliggen (<code>sleutel</code>), kun je hun codes optellen: s=115, l=108, e=101, u=117, t=116, e=101, l=108, samen <strong>766</strong>. Dan blijft er voor de laatste twee tekens samen <code>876 − 766 = 110</code> over. Die twee tekens zijn gelijk, dus elk teken heeft code <code>110 / 2 = 55</code>. En tekencode 55 is... het cijfer <code>7</code>. De sleutel is dus <code>sleutel</code> gevolgd door <code>77</code>.</p>
+
+        <div class="callout tip"><strong>Tip:</strong> gebruik desnoods het CyberChef-lab of een ASCII-tabel om tekencodes op te zoeken. De redenering is: "wat ligt vast?" aftrekken van het doel, en de rest verdelen over wat nog vrij is.</div>
+
+        <p>Lees de functie in het lab na en typ de sleutel die aan álle vier de eisen voldoet.</p>
+      `,
+      lab: {
+        type: 'crackme',
+        title: 'Crackme 2 — Checksom met eisen',
+        intro: 'De controle rekent met tekencodes (charCodeAt). Vier eisen samen leiden naar precies één sleutel.',
+        source: `function check(sleutel) {
+  // 1) precies 9 tekens
+  if (sleutel.length !== 9) return false;
+  // 2) begint met het woord "sleutel"
+  if (!sleutel.startsWith('sleutel')) return false;
+  // 3) de laatste twee tekens zijn gelijk aan elkaar
+  if (sleutel.charCodeAt(7) !== sleutel.charCodeAt(8)) return false;
+  // 4) de som van alle tekencodes is 876
+  var som = 0;
+  for (var i = 0; i < sleutel.length; i++) som += sleutel.charCodeAt(i);
+  return som === 876;
+}`,
+        check: (sleutel) => {
+          if (sleutel.length !== 9) return false;
+          if (!sleutel.startsWith('sleutel')) return false;
+          if (sleutel.charCodeAt(7) !== sleutel.charCodeAt(8)) return false;
+          let som = 0;
+          for (let i = 0; i < sleutel.length; i++) som += sleutel.charCodeAt(i);
+          return som === 876;
+        },
+        flag: 'JVT{tekensom_gekraakt}',
+        reveal: 'Knap! Je rekende de twee ontbrekende tekens terug uit de checksom. Een som alleen is nooit genoeg beveiliging.',
+        hint: 'De eerste 7 tekens "sleutel" zijn samen 766. Er blijft 110 over voor twee gelijke tekens: elk code 55.',
+      },
+      questions: [
+        { q: 'Waarom is een checksom (som van tekencodes) op zichzelf een zwakke controle?', options: ['Omdat sommen altijd 0 zijn', 'Omdat veel verschillende teksten dezelfde som kunnen geven (niet uniek)', 'Omdat optellen te traag is', 'Omdat het alleen met cijfers werkt'], answer: 1, explain: 'Verschillende teksten delen vaak dezelfde som; daarom zijn extra eisen nodig om de sleutel uniek te maken.' },
+        { q: 'Kraak crackme 2. Welke sleutel voldoet aan alle vier de eisen?', answer: ['sleutel77'], hint: 'Begin met "sleutel", twee gelijke eindtekens, totaalsom 876. De eerste 7 tekens zijn samen 766.', explain: 'Er blijft 110 over voor twee gelijke tekens (elk code 55 = "7"), dus sleutel77.' },
+        { q: 'Welke vlag hoort bij crackme 2?', answer: ['JVT{tekensom_gekraakt}'], hint: 'Die verschijnt in het lab na de juiste sleutel.', explain: 'Bij succes toont het lab JVT{tekensom_gekraakt}.' },
+      ],
+    },
+
+    {
+      title: 'Taak 5 — Crackme 3: XOR met een constante',
+      content: `
+        <p>XOR (exclusieve of) is de lievelingsbewerking van elke crackme-maker, omdat hij een mooie eigenschap heeft: <strong>XOR is zijn eigen omgekeerde</strong>. Versleutel je een byte met XOR en een sleutelbyte, dan krijg je het origineel terug door nog een keer te XOR'en met diezelfde sleutelbyte. In formules: <code>(x XOR k) XOR k = x</code>.</p>
+
+        <h3>Hoe XOR hier werkt</h3>
+        <p>De controle in crackme 3 neemt elk teken van jouw sleutel, pakt de tekencode (<code>charCodeAt</code>) en XOR't die met de constante <code>0x2a</code> (dat is hexadecimaal voor 42). De resulterende getallen worden met komma's aan elkaar geplakt en vergeleken met een vaste reeks bytes. Jij ziet dus de <em>versleutelde</em> bytes en moet terug naar de leesbare sleutel.</p>
+
+        <h3>Terugrekenen</h3>
+        <p>Omdat XOR zijn eigen omgekeerde is, doe je simpelweg hetzelfde terug: XOR elke doelbyte opnieuw met <code>0x2a</code> (42) en zet het resultaat om naar een teken. De doelbytes zijn:</p>
+        <pre><code>77, 79, 66, 79, 67, 71, 30, 24</code></pre>
+        <p>Neem de eerste: <code>77 XOR 42 = 103</code>, en tekencode 103 is <code>g</code>. Doe dat voor alle acht bytes en je leest de sleutel. Dit kun je met de hand doen, maar het <strong>XOR-onderdeel van het CyberChef-lab</strong> (of de <code>cipher</code>-tool) doet het ook voor je als je de constante 0x2a invult.</p>
+
+        <div class="callout info"><strong>Waarom gebruiken makers XOR?</strong> Het is supersnel en verbergt de sleutel voor een simpele <code>strings</code>-zoektocht: in de binary staan alleen de versleutelde bytes, niet de leesbare tekst. Maar voor wie de constante kent, is het zo weer terug te draaien — echte beveiliging is het niet.</div>
+
+        <p>Lees de functie in het lab, draai de XOR terug en typ de sleutel.</p>
+      `,
+      lab: {
+        type: 'crackme',
+        title: 'Crackme 3 — XOR met 0x2a',
+        intro: 'Elke tekencode wordt ge-XOR\'d met 0x2a (42). Draai het terug: XOR nog eens met 42 en lees de sleutel.',
+        source: `function check(sleutel) {
+  // Elk teken wordt met 0x2a (42) ge-XOR'd; de reeks bytes
+  // moet daarna exact gelijk zijn aan deze doelreeks:
+  var doel = '77,79,66,79,67,71,30,24';
+  return [...sleutel].map(function (c) {
+    return c.charCodeAt(0) ^ 0x2a;
+  }).join(',') === doel;
+}`,
+        check: (sleutel) => [...sleutel].map((c) => c.charCodeAt(0) ^ 0x2a).join(',') === '77,79,66,79,67,71,30,24',
+        flag: 'JVT{xor_terug_gedraaid}',
+        reveal: 'Top! Je XOR\'de de bytes terug met 42. Omdat XOR zijn eigen omgekeerde is, was de "versleuteling" zo weer open.',
+        hint: 'XOR elke doelbyte opnieuw met 42: 77^42=103 ("g"), 79^42=101 ("e"), ... Zet elke uitkomst om naar een teken.',
+      },
+      questions: [
+        { q: 'Welke bijzondere eigenschap van XOR maakt het terugdraaien makkelijk?', options: ['XOR verdubbelt de waarde', 'XOR is zijn eigen omgekeerde: nog eens XOR met dezelfde sleutel geeft het origineel', 'XOR werkt alleen op nullen', 'XOR versleutelt onbreekbaar'], answer: 1, explain: '(x XOR k) XOR k = x, dus met dezelfde constante draai je XOR meteen terug.' },
+        { q: 'Kraak crackme 3. Welke sleutel geeft toegang?', answer: ['geheim42'], hint: 'XOR elke doelbyte met 42 en zet om naar tekens: 77->g, 79->e, 66->h, ...', explain: 'De doelbytes ge-XOR\'d met 42 vormen de tekst geheim42.' },
+        { q: 'Welke vlag hoort bij crackme 3?', answer: ['JVT{xor_terug_gedraaid}'], hint: 'Die verschijnt na de juiste sleutel in het lab.', explain: 'Bij succes toont het lab JVT{xor_terug_gedraaid}.' },
+      ],
+    },
+
+    {
+      title: 'Taak 6 — Crackme 4: een echte licentiesleutel (meerdere segmenten)',
+      content: `
+        <p>De eindbaas. Echte licentiesleutels hebben vaak de vorm <code>XXXX-XXXX-XXXX</code>: meerdere blokken, met per blok een eigen controle. Crackme 4 werkt net zo. De controle splitst jouw sleutel op de koppeltekens (<code>-</code>) in drie segmenten van elk 4 tekens, en toetst elk segment met een <em>andere</em> techniek die je in deze room al hebt geleerd. Alle drie moeten kloppen.</p>
+
+        <h3>De drie controles</h3>
+        <ul>
+          <li><strong>Segment A — omkeren:</strong> omgekeerd moet segment A gelijk zijn aan <code>1TVJ</code>. (Je kent de truc uit crackme 1: draai <code>1TVJ</code> om.)</li>
+          <li><strong>Segment B — tekenrekenkunde:</strong> elk teken plus 1 (volgende tekencode) moet samen <code>s4w4</code> geven. Draai het om: trek bij elk teken van <code>s4w4</code> er 1 af.</li>
+          <li><strong>Segment C — XOR:</strong> elk teken ge-XOR'd met <code>0x10</code> (16) moet de bytereeks <code>124, 113, 99, 100</code> geven. Draai het om: XOR elke byte opnieuw met 16 en lees het teken.</li>
+        </ul>
+
+        <h3>Aanpak: verdeel en heers</h3>
+        <p>Een gecombineerde controle ziet er intimiderend uit, maar valt uiteen in <strong>losse, bekende puzzels</strong>. Los elk segment apart op en plak ze met koppeltekens aan elkaar:</p>
+        <ol>
+          <li>Segment A: <code>1TVJ</code> omgekeerd.</li>
+          <li>Segment B: elk teken van <code>s4w4</code> één tekencode terug. Bijvoorbeeld <code>s</code> (115) wordt <code>r</code> (114); <code>4</code> (52) wordt <code>3</code> (51).</li>
+          <li>Segment C: XOR <code>124, 113, 99, 100</code> elk met 16. Bijvoorbeeld <code>124 XOR 16 = 108</code> = <code>l</code>.</li>
+        </ol>
+
+        <div class="callout tip"><strong>Tip:</strong> dit is precies wat profs doen bij een grote binary: een enge controle opknippen in deelproblemen die je stuk voor stuk oplost. Werk netjes per segment en controleer tussendoor.</div>
+
+        <p>Lees de functie in het lab, los de drie segmenten op en voer de volledige sleutel <code>A-B-C</code> in.</p>
+      `,
+      lab: {
+        type: 'crackme',
+        title: 'Crackme 4 — Licentiesleutel A-B-C',
+        intro: 'Drie segmenten van 4 tekens, gescheiden door -. Elk segment heeft een eigen controle (omkeren, +1, XOR 0x10). Alle drie moeten kloppen.',
+        source: `function check(sleutel) {
+  var delen = sleutel.split('-');
+  if (delen.length !== 3) return false;
+  var a = delen[0], b = delen[1], c = delen[2];
+  if (a.length !== 4 || b.length !== 4 || c.length !== 4) return false;
+  // Segment A: omgekeerd moet '1TVJ' zijn
+  if (a.split('').reverse().join('') !== '1TVJ') return false;
+  // Segment B: elk teken +1 (volgende tekencode) moet 's4w4' zijn
+  if (b.split('').map(function (ch) {
+    return String.fromCharCode(ch.charCodeAt(0) + 1);
+  }).join('') !== 's4w4') return false;
+  // Segment C: elk teken ge-XOR'd met 0x10 moet deze bytes geven
+  if ([...c].map(function (ch) {
+    return ch.charCodeAt(0) ^ 0x10;
+  }).join(',') !== '124,113,99,100') return false;
+  return true;
+}`,
+        check: (sleutel) => {
+          const delen = sleutel.split('-');
+          if (delen.length !== 3) return false;
+          const a = delen[0], b = delen[1], c = delen[2];
+          if (a.length !== 4 || b.length !== 4 || c.length !== 4) return false;
+          if (a.split('').reverse().join('') !== '1TVJ') return false;
+          if (b.split('').map((ch) => String.fromCharCode(ch.charCodeAt(0) + 1)).join('') !== 's4w4') return false;
+          if ([...c].map((ch) => ch.charCodeAt(0) ^ 0x10).join(',') !== '124,113,99,100') return false;
+          return true;
+        },
+        flag: 'JVT{meerdere_segmenten}',
+        reveal: 'Meesterlijk! Je knipte een enge, gecombineerde controle op in drie losse puzzels en loste ze stuk voor stuk op.',
+        hint: 'A = 1TVJ omgekeerd. B = elk teken van s4w4 min 1. C = 124,113,99,100 elk XOR 16. Plak met koppeltekens: A-B-C.',
+      },
+      questions: [
+        { q: 'Wat is de slimme aanpak bij een controle met meerdere segmenten?', options: ['Willekeurig gokken tot het lukt', 'Elk segment als een losse, bekende puzzel apart oplossen (verdeel en heers)', 'Alleen het eerste segment oplossen', 'De koppeltekens weglaten'], answer: 1, explain: 'Een gecombineerde controle valt uiteen in losse deelproblemen; los ze stuk voor stuk op en voeg ze samen.' },
+        { q: 'Kraak crackme 4. Welke volledige sleutel (A-B-C) geeft toegang?', answer: ['JVT1-r3v3-last'], hint: 'A = 1TVJ omgekeerd = JVT1. B = s4w4 elk teken -1 = r3v3. C = 124,113,99,100 elk XOR 16 = last.', explain: 'De segmenten JVT1, r3v3 en last voldoen elk aan hun eigen controle; samen: JVT1-r3v3-last.' },
+        { q: 'Welke vlag hoort bij crackme 4?', answer: ['JVT{meerdere_segmenten}'], hint: 'Die verschijnt na de juiste sleutel in het lab.', explain: 'Bij succes toont het lab JVT{meerdere_segmenten}.' },
+      ],
+    },
+
+    {
+      title: 'Taak 7 — Keygen vs. patch, en verantwoord met je kennis omgaan',
+      content: `
+        <p>Je hebt vier crackmes gekraakt door de controle te <em>begrijpen</em>. In het echt zijn er grofweg twee manieren om een licentie- of sleutelcontrole te omzeilen — en het verschil ertussen zegt veel over hoe goed je het programma snapt.</p>
+
+        <h3>De keygen — de "nette" manier</h3>
+        <p>Een <strong>keygen</strong> (key generator) is een programmaatje dat <em>geldige</em> sleutels maakt. Je hebt dan de controle zó goed begrepen dat je zelf sleutels kunt produceren die slagen — zonder het programma zelf aan te raken. In crackme 2 deed je dit eigenlijk al met de hand: je <em>berekende</em> een geldige sleutel uit de regels. Een keygen is dat, geautomatiseerd. Het is de koningsdiscipline van reverse engineering: het bewijst dat je het algoritme volledig doorhebt.</p>
+
+        <h3>Patchen — het slot eruit zagen</h3>
+        <p><strong>Patchen</strong> betekent dat je de binary zelf aanpast: je verandert de machinecode zodat de controle altijd "goed" zegt (bijvoorbeeld een sprong-instructie omdraaien, of de hele controle vervangen door "return true"). Je omzeilt het slot in plaats van de sleutel te vinden. Dat is vaak sneller, maar grover: je verspreidt dan een <em>gewijzigde</em> versie van andermans programma.</p>
+
+        <table>
+          <thead><tr><th></th><th>Keygen</th><th>Patch</th></tr></thead>
+          <tbody>
+            <tr><td>Wat je aanpast</td><td>Niets aan de binary — je maakt sleutels</td><td>De binary zelf (de code)</td></tr>
+            <tr><td>Wat het bewijst</td><td>Je snapt het hele algoritme</td><td>Je vond één plek om te omzeilen</td></tr>
+            <tr><td>Resultaat</td><td>Geldige sleutels</td><td>Een gewijzigd programma</td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout danger"><strong>De ethische grens — nog één keer scherp:</strong> keygens en patches maken voor <strong>commerciële software van een ander</strong> om die gratis te gebruiken of te verspreiden is <strong>illegaal</strong> (auteursrecht, en soms het omzeilen van kopieerbeveiliging en art. 138ab Sr). De techniek die je hier leerde, oefen je uitsluitend op <strong>je eigen binaries, crackme's/CTF-opdrachten en materiaal met uitdrukkelijke toestemming</strong>. Vind je bij geautoriseerd onderzoek een echt lek, dan meld je dat verantwoord (Coordinated Vulnerability Disclosure), je buit het niet uit.</div>
+
+        <h3>Hoe je verder groeit</h3>
+        <ul>
+          <li>Oefen op <strong>crackmes.one</strong> (duizenden legale crackme's van makkelijk tot gemeen) en <strong>microcorruption</strong> (een verslavende embedded-RE-CTF in de browser).</li>
+          <li>Leer een echte disassembler/decompiler: <strong>radare2</strong> (open source) of <strong>Ghidra</strong>.</li>
+          <li>Herken dat elke crackme hier een echte techniek uit grote binaries in het klein was: strings lezen, controles terugrekenen, segmenten opdelen.</li>
+        </ul>
+
+        <div class="callout tip"><strong>Laatste woord:</strong> reverse engineering is pure nieuwsgierigheid — "hoe werkt dit?" — gecombineerd met discipline over waar je die nieuwsgierigheid loslaat. Houd beide vast, dan wordt dit een van je krachtigste vaardigheden.</div>
+      `,
+      questions: [
+        { q: 'Wat is het verschil tussen een keygen en een patch?', options: ['Een keygen maakt geldige sleutels; een patch wijzigt de binary zelf om de controle te omzeilen', 'Een keygen is illegaal, een patch nooit', 'Er is geen verschil', 'Een patch maakt sleutels, een keygen verwijdert het programma'], answer: 0, explain: 'Een keygen genereert geldige sleutels (algoritme volledig begrepen); patchen verandert de code zodat de controle altijd slaagt.' },
+        { q: 'Wat bewijst het maken van een werkende keygen over je begrip van het programma?', options: ['Niets bijzonders', 'Dat je het volledige controle-algoritme begrijpt', 'Dat je snel kunt typen', 'Dat het programma kapot is'], answer: 1, explain: 'Een keygen kan alleen wie het hele algoritme doorgrondt; het is de koningsdiscipline van RE.' },
+        { q: 'Op welk materiaal pas je deze kraaktechnieken toe?', answer: ['eigen binaries', 'crackmes', 'met toestemming', 'eigen code', 'ctf'], hint: 'Eigen code, speciaal gemaakte oefenstof, of met uitdrukkelijke toestemming.', explain: 'Alleen op je eigen binaries, crackme\'s/CTF en materiaal met uitdrukkelijke toestemming — nooit op andermans software om die te misbruiken.' },
+        { q: 'Ik begrijp dat keygens/patches voor andermans commerciële software illegaal zijn en dat ik deze kennis alleen ethisch en legaal gebruik.', noAnswer: true },
+      ],
+    },
+  ],
+
+  terms: [
+    { term: 'Reverse engineering', def: 'Een afgewerkt product (hier: een binary) ontleden om te begrijpen hoe het werkt, zonder de broncode.' },
+    { term: 'Binary', def: 'Een gecompileerd, uitvoerbaar programma in machinecode (bijv. een .exe of een ELF-bestand).' },
+    { term: 'Crackme', def: 'Een klein programma dat met opzet is gemaakt om legaal te oefenen met het kraken van een sleutel- of licentiecontrole.' },
+    { term: 'Keygenme', def: 'Een crackme-variant waarbij je zelf een keygen moet schrijven die geldige sleutels genereert.' },
+    { term: 'Controlefunctie', def: 'Het stukje code dat bepaalt of de ingevoerde sleutel goed of fout is; die lees en keer je om.' },
+    { term: 'Statische analyse', def: 'Een binary onderzoeken zonder hem uit te voeren: bytes, strings en (gedisassembleerde) code lezen.' },
+    { term: 'Dynamische analyse', def: 'Een binary uitvoeren met een debugger en stap voor stap het gedrag observeren.' },
+    { term: 'Disassembler', def: 'Tool die machinecode omzet naar leesbare assembly-instructies (bijv. radare2, Ghidra).' },
+    { term: 'Decompiler', def: 'Tool die machinecode omzet naar een ruwe benadering van hogere-taal-broncode (bijv. C).' },
+    { term: 'strings', def: 'Hulpmiddel dat alle leesbare tekstreeksen uit een binary trekt; verraadt soms hardcoded sleutels.' },
+    { term: 'XOR', def: 'Exclusieve-of-bewerking; zijn eigen omgekeerde: (x XOR k) XOR k = x. Populair in zwakke "versleuteling".' },
+    { term: 'Keygen', def: 'Programma dat geldige sleutels maakt op basis van het begrepen controle-algoritme, zonder de binary te wijzigen.' },
+    { term: 'Patchen', def: 'De binary zelf aanpassen zodat de controle altijd slaagt (het slot omzeilen in plaats van de sleutel vinden).' },
+  ],
+
+  resources: [
+    { title: 'crackmes.one — legale crackme\'s om op te oefenen', url: 'https://crackmes.one/' },
+    { title: 'Microcorruption — embedded reverse-engineering CTF in de browser', url: 'https://microcorruption.com/' },
+    { title: 'radare2 — open-source reverse-engineering framework', url: 'https://github.com/radareorg/radare2' },
+    { title: 'Ghidra — open-source disassembler/decompiler (NSA)', url: 'https://github.com/NationalSecurityAgency/ghidra' },
+  ],
+});
+
+</script>
+<script>
+/* Room: Decoderen & multi-decode (CTF) */
+CS.registerRoom({
+  id: 'decoderen-ctf',
+  path: 'offensief',
+  order: 8,
+  title: 'Decoderen & multi-decode (CTF)',
+  icon: '✨',
+  difficulty: 'Gemiddeld',
+  minutes: 55,
+  summary: 'Herken en pel laag na laag codering af — Base64, Base32, hex, binair, ROT13 en Morse — en leer hoe je in een echte CTF een onbekende blob aanpakt met de multi-decoder en CyberChef.',
+  objectives: [
+    'Uitleggen waarom codering (encoding) geen versleuteling is en dus geen beveiliging biedt',
+    'Base64, Base32, hex, binair en Morse herkennen aan hun vorm en tekenset',
+    'Een gelaagde codering "afpellen" in de juiste volgorde met CyberChef en de multi-decoder',
+    'Een met ROT13 verstopte vlag binnen een Base32-laag terugvinden',
+    'Een systematische aanpak kiezen voor een onbekende blob: magic bytes, frequenties, de multi-decoder en CyberChef',
+  ],
+  tasks: [
+    {
+      title: 'Taak 1 — Codering is geen versleuteling (snelle herhaling)',
+      content: `
+        <p>Welkom bij de decodeer-room. In een CTF (Capture The Flag) kom je voortdurend data tegen die er op het
+        eerste gezicht onleesbaar uitziet: een reeks letters en cijfers, een blok nullen en enen, of een rij punten en
+        streepjes. Vaak is dat geen echte versleuteling, maar <strong>codering</strong> — en codering draai je zonder
+        sleutel gewoon terug. Voor we gaan oefenen, halen we de drie begrippen die iedereen door elkaar haalt kort op.</p>
+
+        <ul>
+          <li><strong>Coderen (encoding):</strong> data in een ander formaat zetten, <em>zonder sleutel</em>. Denk aan
+          Base64, hex, binair of Morse. Iedereen die het schema kent, draait het terug. Dit beschermt niets — het is
+          bedoeld voor transport, niet voor geheimhouding.</li>
+          <li><strong>Versleutelen (encryptie):</strong> data vertrouwelijk maken met een <em>sleutel</em>. Zonder de
+          juiste sleutel blijft de ciphertext onleesbaar.</li>
+          <li><strong>Hashen:</strong> een eenrichtings-vingerafdruk maken die je niet kunt terugrekenen. Voor
+          integriteit en wachtwoordopslag, niet om later "uit te pakken".</li>
+        </ul>
+
+        <div class="callout warn">
+          <strong>Veelgemaakte fout:</strong> "Deze tekst is Base64, dus veilig opgeslagen." Nee. Base64 is
+          <em>codering</em>. Vind je ergens een Base64-string, dan is de inhoud letterlijk één klik verwijderd van
+          leesbaar. Behandel gecodeerde data nooit als beschermd.
+        </div>
+
+        <p>In de rest van deze room leer je codering juist herkennen en terugdraaien. We gebruiken twee soorten
+        gereedschap: de <strong>multi-decoder</strong> (die automatisch laag na laag probeert af te pellen, zoals de
+        "Magic"-functie van CyberChef) en <strong>CyberChef</strong> zelf (waar je een <em>recept</em> van bewerkingen
+        met de hand bouwt). In een echte CTF wissel je constant tussen die twee: eerst de automaat laten raden, en bij
+        een hardnekkige blob zelf een recept bouwen.</p>
+
+        <div class="callout danger">
+          <strong>Ethiek:</strong> oefen deze technieken alleen op materiaal dat <em>voor jou bedoeld is</em> — de labs
+          hieronder, CTF-uitdagingen of je eigen data. Andermans data ontcijferen zonder toestemming kan strafbaar zijn
+          (computervredebreuk, art. 138ab Sr).
+        </div>
+      `,
+      questions: [
+        { q: 'Wat heb je nodig om een Base64-string terug te draaien naar de oorspronkelijke tekst?', options: ['Niets bijzonders — alleen kennis van het schema, er is geen sleutel', 'Een geheime sleutel die alleen de afzender heeft', 'Een certificaat van een CA'], answer: 0, explain: 'Codering heeft geen sleutel; iedereen die weet dat het Base64 is, draait het meteen terug.' },
+        { q: 'Welke van deze drie is NIET omkeerbaar?', options: ['Base64-codering', 'AES-encryptie (met sleutel)', 'Hashing (SHA-256)'], answer: 2, explain: 'Een hash is eenrichtingsverkeer; uit de hash krijg je de invoer niet terug. Codering en encryptie zijn wel omkeerbaar.' },
+        { q: 'Ik begrijp dat ik deze decodeer-technieken alleen oefen op materiaal dat voor mij bedoeld is (labs, CTF of eigen data).', noAnswer: true },
+      ],
+    },
+
+    {
+      title: 'Taak 2 — Base64: de klassieker herkennen en afpellen',
+      content: `
+        <p><strong>Base64</strong> is veruit de codering die je het vaakst tegenkomt. Het zet willekeurige bytes om in
+        een tekenset van 64 "veilige" tekens, zodat binaire data netjes door tekstkanalen (e-mail, URL's, JSON, tokens)
+        kan reizen. Die tekenset is: de hoofdletters <code>A-Z</code>, de kleine letters <code>a-z</code>, de cijfers
+        <code>0-9</code>, en de tekens <code>+</code> en <code>/</code>.</p>
+
+        <h3>Hoe herken je Base64?</h3>
+        <ul>
+          <li><strong>De tekenset:</strong> alleen letters, cijfers en soms <code>+</code> en <code>/</code>. Geen
+          spaties, geen leestekens als <code>!</code> of <code>?</code>.</li>
+          <li><strong>De lengte:</strong> Base64 verwerkt 3 bytes tot 4 tekens. De string is daarom bijna altijd een
+          veelvoud van 4 tekens lang.</li>
+          <li><strong>Padding:</strong> als de lengte niet precies uitkomt, vult Base64 aan met het teken
+          <code>=</code> (één of twee stuks) aan het eind. Zie je een string die eindigt op <code>=</code> of
+          <code>==</code>, dan is Base64 je eerste gok.</li>
+        </ul>
+
+        <p>Een voorbeeld: het woord <code>Man</code> (3 bytes) wordt in Base64 <code>TWFu</code> (4 tekens). Het woord
+        <code>Ma</code> (2 bytes) wordt <code>TWE=</code> — zie je de ene <code>=</code> als opvulling.</p>
+
+        <h3>De multi-decoder</h3>
+        <p>In plaats van handmatig gokken laat je de <strong>multi-decoder</strong> het werk doen. Die herkent de vorm,
+        probeert Base64 (en allerlei andere coderingen) en toont een "ketting" met het leesbare resultaat. De tool
+        herkent ook automatisch een vlag in het formaat <code>JVT{...}</code> en zet die bovenaan.</p>
+
+        <h3>Aan de slag</h3>
+        <p>In het lab staat een Base64-string. Laat de multi-decoder hem afpellen en lees de vlag. Let op dat de string
+        eindigt op <code>=</code> — een klassiek Base64-signaal.</p>
+      `,
+      lab: { type: 'multidecode', input: 'SlZUe2Jhc2U2NF9iYXNpc30=' },
+      questions: [
+        { q: 'Laat de multi-decoder de Base64-string in het lab afpellen. Wat is de vlag?', answer: ['JVT{base64_basis}'], encoded: true, hint: 'De tool herkent Base64 vanzelf; klik de leesbare ketting aan.', explain: 'Base64 is in één stap terug te draaien — precies waarom het geen beveiliging is.' },
+        { q: 'Welk teken gebruikt Base64 als opvulling (padding) aan het eind van een string?', answer: ['=', 'isgelijkteken', 'gelijkteken'], hint: 'Je ziet het soms één keer, soms twee keer, helemaal aan het eind.', explain: 'Het =-teken vult de laatste groep aan; het is een sterk herkenningspunt voor Base64.' },
+        { q: 'Welke tekens horen NIET thuis in een standaard Base64-string?', options: ['Spaties en leestekens zoals ! en ?', 'De hoofdletters A-Z', 'De cijfers 0-9'], answer: 0, explain: 'Base64 gebruikt alleen A-Z, a-z, 0-9, + en /, plus = als padding.' },
+      ],
+    },
+
+    {
+      title: 'Taak 3 — Pel de ui: gelaagde codering met CyberChef',
+      content: `
+        <p>In een CTF is één laagje codering zelden het hele verhaal. Vaak is data eerst gecodeerd, en dáárna nóg een
+        keer op een andere manier. Zoiets noemen we <strong>gelaagde codering</strong> — en het afpellen voelt als een
+        ui pellen: laag voor laag, tot de leesbare kern tevoorschijn komt.</p>
+
+        <h3>Volgorde is alles</h3>
+        <p>De gouden regel: je pelt af in de <strong>omgekeerde volgorde</strong> van hoe het is opgebouwd. Werd de
+        tekst eerst als Base64 gecodeerd en daarna als hex? Dan draai je eerst de hex terug en pas daarna de Base64.
+        Laatste erop, eerste eraf — net als een stapel borden.</p>
+
+        <p>De string in het lab is zo'n stapel. Het is <strong>hex</strong> (hexadecimaal: alleen de tekens
+        <code>0-9</code> en <code>a-f</code>, in paren van twee die elk één byte vormen). Draai je de hex terug, dan
+        krijg je... weer een Base64-string. En die Base64 bevat de vlag.</p>
+
+        <h3>Een recept bouwen in CyberChef</h3>
+        <p>Dit is het moment om <strong>CyberChef</strong> te gebruiken: daar bouw je zelf een <em>recept</em> door
+        bewerkingen onder elkaar te slepen. Ze worden van boven naar beneden toegepast. Voor deze opgave bouw je:</p>
+        <ol>
+          <li><strong>Hex decoderen</strong> (From Hex) — bovenaan, want dat is de buitenste laag.</li>
+          <li><strong>Base64 decoderen</strong> (From Base64) — eronder, voor de laag die daar tevoorschijn komt.</li>
+        </ol>
+        <div class="callout tip">
+          <strong>Tip:</strong> twijfel je over de volgorde? Zet één bewerking neer en kijk naar het tussenresultaat.
+          Ziet het er na "Hex decoderen" uit als nette Base64 (letters, cijfers, misschien een <code>=</code>), dan zit je
+          goed en plak je er de volgende bewerking onder. Zo pel je stap voor stap, met controle na elke laag.
+        </div>
+
+        <h3>Aan de slag</h3>
+        <p>Open het CyberChef-lab. De hex-string staat al in de invoer (de bytes staan met spaties uit elkaar, zodat
+        je de paren goed ziet). Bouw het recept <code>Hex decoderen</code> gevolgd door <code>Base64 decoderen</code>
+        en lees de vlag die eruit rolt.</p>
+      `,
+      lab: { type: 'cyberchef', input: '53 6c 5a 55 65 33 52 33 5a 57 56 66 62 47 46 6e 5a 57 35 39' },
+      questions: [
+        { q: 'Welke bewerking zet je in CyberChef bovenaan (pas je als eerste toe) op deze string?', answer: ['Hex decoderen', 'hex decoderen', 'hex', 'van hex', 'from hex'], hint: 'De string bestaat uit paren van 0-9 en a-f; dat is de buitenste laag.', explain: 'Je pelt in omgekeerde volgorde af: eerst de hex eraf, dan komt de Base64 tevoorschijn.' },
+        { q: 'Bouw het recept Hex decoderen -> Base64 decoderen. Wat is de vlag?', answer: ['JVT{twee_lagen}'], encoded: true, hint: 'Na "Hex decoderen" zie je een Base64-string; zet daar "Base64 decoderen" onder.', explain: 'Twee omkeerbare lagen stapelen maakt data niet geheim — het is nog steeds alleen codering.' },
+        { q: 'In welke volgorde pel je gelaagde codering af?', options: ['In omgekeerde volgorde van hoe het is opgebouwd — laatste erop, eerste eraf', 'Altijd eerst Base64, wat de volgorde ook was', 'De volgorde maakt niet uit, elk resultaat is goed'], answer: 0, explain: 'Coderen is een stapel: de laatst toegevoegde laag haal je als eerste weg.' },
+      ],
+    },
+
+    {
+      title: 'Taak 4 — Base32 + ROT13: een laag binnen een laag',
+      content: `
+        <p><strong>Base32</strong> is het minder bekende broertje van Base64. Het doet hetzelfde — bytes omzetten in
+        leesbare tekens — maar met een kleinere tekenset: de <strong>hoofdletters</strong> <code>A-Z</code> en de
+        cijfers <code>2-7</code>. Meer niet. Geen kleine letters, geen <code>0</code>, <code>1</code>, <code>8</code> of
+        <code>9</code>.</p>
+
+        <h3>Base32 of Base64?</h3>
+        <ul>
+          <li><strong>Base64:</strong> hoofdletters én kleine letters, alle cijfers, soms <code>+</code>/<code>/</code>.</li>
+          <li><strong>Base32:</strong> alléén hoofdletters en de cijfers <code>2</code> tot en met <code>7</code>.
+          Een string die volledig in hoofdletters staat zonder kleine letters en zonder een <code>0</code>, <code>1</code>,
+          <code>8</code> of <code>9</code> is een sterke aanwijzing voor Base32.</li>
+          <li>Base32 is ook iets langer voor dezelfde data (8 tekens per 5 bytes, tegen 4 per 3 bij Base64) en gebruikt
+          <code>=</code> als padding.</li>
+        </ul>
+
+        <h3>En dan nog een laagje: ROT13</h3>
+        <p>In deze opgave zit onder de Base32-laag niet meteen de vlag, maar nog een laag <strong>ROT13</strong>. ROT13
+        is een Caesarcijfer dat elke letter 13 plaatsen opschuift; het is zijn eigen omkering, dus één keer toepassen
+        draait het terug. Na het afpellen van Base32 zie je iets dat <em>bijna</em> op een vlag lijkt — maar de letters
+        kloppen niet. Bijvoorbeeld een stukje als <code>WIG{...}</code> in plaats van <code>JVT{...}</code>. Dat is het
+        signaal dat er nog een ROT13-laag overheen ligt.</p>
+
+        <div class="callout info">
+          <strong>Herkenningstruc:</strong> ziet een "vlag" er qua vorm goed uit (accolades, underscores) maar lijken de
+          letters verhaspeld? Probeer dan ROT13 of een andere Caesar-verschuiving. De multi-decoder doet dit automatisch
+          en toont per laag alle kandidaten, zodat je de leesbare ketting <code>Base32 -> ROT13 -> tekst</code> ziet
+          ontstaan.
+        </div>
+
+        <h3>Aan de slag</h3>
+        <p>In het lab staat een Base32-string (alles hoofdletters en cijfers 2-7). Laat de multi-decoder hem afpellen;
+        onder de Base32 vind je de ROT13-laag en daaronder de vlag.</p>
+      `,
+      lab: { type: 'multidecode', input: 'K5EUO63FMJTV64LOMFPTGMT5' },
+      questions: [
+        { q: 'Laat de multi-decoder de ketting Base32 -> ROT13 afpellen. Wat is de vlag?', answer: ['JVT{rot_dan_32}'], encoded: true, hint: 'Na Base32 lijkt de vlag verhaspeld; dat is de ROT13-laag. Volg de kandidaat met JVT{...}.', explain: 'De multi-decoder stapelt decoderingen tot er leesbare tekst (en een herkende vlag) uitkomt.' },
+        { q: 'Waaraan herken je Base32 in plaats van Base64?', options: ['Alleen hoofdletters A-Z en de cijfers 2-7, geen kleine letters', 'Het bevat juist veel kleine letters en het cijfer 0', 'Het bestaat uitsluitend uit nullen en enen'], answer: 0, explain: 'De beperkte tekenset (A-Z, 2-7) is het duidelijkste kenmerk van Base32.' },
+        { q: 'Je pelt een laag af en krijgt WIG{...} in plaats van JVT{...}. Wat is je volgende stap?', options: ['ROT13 (of een andere Caesar-verschuiving) proberen; de vorm klopt maar de letters zijn verschoven', 'Concluderen dat er geen vlag is', 'De string nog een keer als Base64 decoderen'], answer: 0, explain: 'Een vlag met kloppende vorm maar verhaspelde letters wijst op een letterverschuiving zoals ROT13.' },
+      ],
+    },
+
+    {
+      title: 'Taak 5 — Binair en Morse: terug naar de bouwstenen',
+      content: `
+        <p>Soms is de codering een stuk "lager niveau": je krijgt de data in <strong>binair</strong> (nullen en enen) of
+        zelfs in <strong>Morse</strong> (punten en streepjes). Allebei zijn ze prima met de multi-decoder of met de hand
+        terug te lezen.</p>
+
+        <h3>Binair: 8 bits per teken</h3>
+        <p>Computers slaan tekst op als getallen volgens de <strong>ASCII</strong>-tabel. Elk teken is één byte, oftewel
+        <strong>8 bits</strong>. De hoofdletter <code>J</code> is bijvoorbeeld decimaal 74, en dat is binair
+        <code>01001010</code>. Zie je een blok van nullen en enen in groepjes van acht, dan is het bijna zeker binaire
+        ASCII. Je leest het door elk groepje van 8 bits om te zetten naar het bijbehorende teken.</p>
+
+        <div class="callout tip">
+          <strong>Tip:</strong> tel de bits. Een nette binaire tekst is altijd een veelvoud van 8 bits lang (eventueel
+          met spaties tussen de bytes). Klopt dat niet, dan mis je misschien een stukje of is het geen 8-bits ASCII.
+        </div>
+
+        <h3>Morse: punten, streepjes en een schuine streep</h3>
+        <p>Morse codeert letters als korte (<code>.</code>) en lange (<code>-</code>) signalen. Tussen letters staat een
+        spatie; tussen woorden vaak een schuine streep <code>/</code>. De beroemde SOS is <code>... --- ...</code>. De
+        multi-decoder heeft een Morse-tabel aan boord en zet een reeks punten en streepjes meteen om naar tekst.</p>
+
+        <h3>Aan de slag</h3>
+        <p>Het lab staat ingesteld op een binaire string. Laat de multi-decoder hem omzetten naar tekst en lees de vlag.
+        Plak daarna de volgende Morse-code in hetzelfde lab om te oefenen met een andere codering:</p>
+        <pre><code>.... . .-.. .-.. --- / .-- . .-. . .-.. -..</code></pre>
+        <p>Noteer de twee woorden die daaruit komen (hoofdletters, met een spatie ertussen).</p>
+      `,
+      lab: { type: 'multidecode', input: '01001010 01010110 01010100 01111011 01100010 01101001 01101110 01100001 01101001 01110010 01011111 01101100 01100101 01100101 01110011 01100010 01100001 01100001 01110010 01111101' },
+      questions: [
+        { q: 'Zet de binaire string in het lab om naar tekst. Wat is de vlag?', answer: ['JVT{binair_leesbaar}'], encoded: true, hint: 'Elk groepje van 8 bits is één teken; de multi-decoder doet dit vanzelf.', explain: 'Binaire ASCII is gewoon codering: 8 bits per teken, zonder sleutel terug te lezen.' },
+        { q: 'Decodeer de Morse-code uit de taak. Welke twee woorden komen eruit?', answer: ['HELLO WERELD', 'hello wereld'], hint: '.... = H, . = E, .-.. = L ... en de / is een woordscheiding.', explain: 'De code luidt HELLO WERELD; de schuine streep scheidt de twee woorden.' },
+        { q: 'Uit hoeveel bits bestaat één teken in standaard (ASCII) binaire codering?', answer: ['8', 'acht', '8 bits'], hint: 'Eén byte.', explain: 'Eén teken = één byte = 8 bits; daarom is nette binaire tekst een veelvoud van 8 bits lang.' },
+      ],
+    },
+
+    {
+      title: 'Taak 6 — Een onbekende blob aanpakken in een echte CTF',
+      content: `
+        <p>Tot nu toe wist je telkens ongeveer wat je kreeg. In een echte CTF staat er alleen: "hier is een bestand" of
+        "decodeer dit". Dan heb je een <strong>systematische aanpak</strong> nodig. Hieronder een werkwijze die je bijna
+        altijd verder helpt.</p>
+
+        <h3>Stap 1 — Kijk naar de vorm en de tekenset</h3>
+        <p>De tekenset verraadt vaak de codering:</p>
+        <table>
+          <thead><tr><th>Zie je...</th><th>Denk aan...</th></tr></thead>
+          <tbody>
+            <tr><td>Alleen <code>0</code> en <code>1</code>, in groepjes van 8</td><td>Binair (ASCII)</td></tr>
+            <tr><td>Alleen <code>0-9</code> en <code>a-f</code>, in paren</td><td>Hex</td></tr>
+            <tr><td>Letters, cijfers, misschien <code>=</code> aan het eind</td><td>Base64</td></tr>
+            <tr><td>Alléén hoofdletters en <code>2-7</code></td><td>Base32</td></tr>
+            <tr><td>Punten, streepjes en <code>/</code></td><td>Morse</td></tr>
+            <tr><td>Verhaspelde letters, vorm van een vlag klopt wel</td><td>ROT13 / Caesar</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Stap 2 — Magic bytes bij een bestand</h3>
+        <p>Krijg je een echt bestand of een stuk rauwe bytes, kijk dan naar de eerste bytes: de <strong>magic bytes</strong>
+        (bestandssignatuur). Die vertellen je het bestandstype, ongeacht de extensie. Een paar om te onthouden:</p>
+        <ul>
+          <li><code>89 50 4E 47</code> — een PNG-afbeelding (de ASCII-tekens <code>.PNG</code>).</li>
+          <li><code>FF D8 FF</code> — een JPEG-afbeelding.</li>
+          <li><code>25 50 44 46</code> — een PDF (de tekens <code>%PDF</code>).</li>
+          <li><code>50 4B 03 04</code> — een ZIP-archief (de tekens <code>PK</code>).</li>
+        </ul>
+
+        <h3>Stap 3 — Laat een multi-decoder raden</h3>
+        <p>Heb je tekst die op codering lijkt, gooi hem dan in de <strong>multi-decoder</strong> (of CyberChef's
+        "Magic"). Die probeert automatisch allerlei lagen en scoort de resultaten op leesbaarheid. Vaak rolt de vlag er
+        in één klap uit, inclusief de gevonden ketting (bijvoorbeeld <code>Hex -> Base64 -> tekst</code>).</p>
+
+        <h3>Stap 4 — Zelf een recept bouwen in CyberChef</h3>
+        <p>Blijft de automaat steken, dan ga je met de hand aan de slag in <strong>CyberChef</strong>. Daar stapel je
+        bewerkingen, kijk je na elke stap naar het tussenresultaat, en probeer je gericht dingen als een XOR met een
+        sleutel of een Caesar-verschuiving. En vergeet de frequenties niet: als een cijfertekst nog steeds de
+        letterverdeling van gewone taal heeft (veel <code>e</code>'s), dan is het waarschijnlijk een simpele substitutie.</p>
+
+        <div class="callout tip">
+          <strong>Vuistregel:</strong> automaat eerst, handwerk daarna. De multi-decoder bespaart je de meeste tijd;
+          CyberChef geeft je de controle als het ingewikkeld wordt. Samen pakken ze bijna elke codeer-opgave.
+        </div>
+      `,
+      questions: [
+        { q: 'Je krijgt een blob die alleen uit nullen en enen bestaat, keurig in groepjes van acht. Wat is je eerste gok?', options: ['Binaire ASCII — elk groepje van 8 bits is één teken', 'Base32, want dat gebruikt ook cijfers', 'Een JPEG-afbeelding'], answer: 0, explain: 'Alleen 0 en 1 in groepjes van 8 is het handtekeningpatroon van binaire ASCII.' },
+        { q: 'Hoe heet de eerste paar bytes van een bestand waarmee je het bestandstype herkent, los van de extensie?', answer: ['magic bytes', 'magicbytes', 'bestandssignatuur', 'magic number'], hint: 'Bijvoorbeeld 89 50 4E 47 voor een PNG.', explain: 'Magic bytes (de bestandssignatuur) verraden het echte type, ook als de extensie liegt.' },
+        { q: 'Wat is in een CTF de slimste eerste zet bij een onbekende stuk gecodeerde tekst?', options: ['Een multi-decoder / CyberChef "Magic" laten raden, en pas daarna zelf een recept bouwen', 'Meteen beginnen met het brute-forcen van AES-sleutels', 'De tekst negeren omdat codering geen beveiliging is'], answer: 0, explain: 'De automaat pelt de meeste lagen gratis af; handmatig werk in CyberChef bewaar je voor de lastige gevallen.' },
+      ],
+    },
+  ],
+  terms: [
+    { term: 'Codering (encoding)', def: 'Data omzetten naar een ander formaat zonder sleutel (Base64, hex, binair, Morse); omkeerbaar door iedereen en dus geen beveiliging.' },
+    { term: 'Base64', def: 'Codering die bytes omzet in de tekenset A-Z, a-z, 0-9, + en /, met = als opvulling; verwerkt 3 bytes tot 4 tekens.' },
+    { term: 'Base32', def: 'Codering met de kleinere tekenset A-Z en 2-7 (alleen hoofdletters); langer dan Base64 en te herkennen aan het ontbreken van kleine letters.' },
+    { term: 'Hexadecimaal (hex)', def: 'Schrijfwijze van bytes met de tekens 0-9 en a-f; elke twee tekens vormen één byte.' },
+    { term: 'Binair', def: 'Data als nullen en enen; in ASCII is elk teken 8 bits (één byte), dus nette binaire tekst is een veelvoud van 8 bits lang.' },
+    { term: 'Morse', def: 'Codering van letters als korte (punt) en lange (streep) signalen, met een spatie tussen letters en vaak een / tussen woorden.' },
+    { term: 'ROT13', def: 'Caesarcijfer met verschuiving 13; zijn eigen omkering. Verraadt zich doordat de vorm van een vlag klopt maar de letters verhaspeld zijn.' },
+    { term: 'Gelaagde codering', def: 'Data die meerdere keren achter elkaar is gecodeerd; je pelt af in omgekeerde volgorde (laatste erop, eerste eraf).' },
+    { term: 'Multi-decoder', def: 'Gereedschap dat automatisch lagen codering probeert af te pellen en de leesbare ketting toont, zoals de "Magic"-functie van CyberChef.' },
+    { term: 'CyberChef', def: 'Webtool waarin je een recept van bewerkingen (decoderen, XOR, hashen) onder elkaar bouwt; ze worden van boven naar beneden toegepast.' },
+    { term: 'Magic bytes', def: 'De eerste bytes van een bestand (bestandssignatuur) die het type verraden, ongeacht de extensie, zoals 89 50 4E 47 voor PNG.' },
+    { term: 'Padding', def: 'Opvulling aan het eind van een Base64- of Base32-string met het teken =, om de laatste groep compleet te maken.' },
+  ],
+  resources: [
+    { title: 'CyberChef (officiële versie)', url: 'https://gchq.github.io/CyberChef/' },
+    { title: 'Wikipedia — Base64', url: 'https://en.wikipedia.org/wiki/Base64' },
+    { title: 'Wikipedia — Base32', url: 'https://en.wikipedia.org/wiki/Base32' },
+    { title: 'Wikipedia — List of file signatures (magic bytes)', url: 'https://en.wikipedia.org/wiki/List_of_file_signatures' },
   ],
 });
 
@@ -15798,6 +16862,367 @@ Oct  2 09:15:19 koffieklap sudo:   jan : TTY=pts/1 ; PWD=/home/jan ; USER=root ;
         { q: 'Wat is de belangrijkste ethische regel die je meeneemt?', options: ['Alleen hacken met toestemming of op je eigen lab', 'Nooit iets melden', 'Zo snel mogelijk beroemd worden', 'Alle technieken overal uitproberen'], answer: 0, explain: 'Toestemming of je eigen lab — en kwetsbaarheden netjes melden. Dat scheidt een security-professional van een crimineel.' },
         { q: 'Welke brede beginstappcertificering noemden we als goede basis?', answer: ['comptia security+', 'security+', 'comptia security plus'], hint: 'Een bekende leverancier-neutrale certificering.', explain: 'CompTIA Security+ is een veelgebruikte, brede basiscertificering.' },
         { q: 'Ik weet hoe ik verder kan leren en blijf dat ethisch doen.', noAnswer: true },
+      ],
+    },
+  ],
+});
+
+</script>
+<script>
+/* Room: Eindopdracht — Grote kraak-CTF "Operatie Sleutelbos" (capstone) */
+
+// --- Station 5: een buitgemaakt sessietoken (JWT, alg: none) ---
+// header = {"alg":"none","typ":"JWT"} , payload bevat role=admin en een vlag.
+const JWT_SLEUTELBOS =
+  'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.' +
+  'eyJzdWIiOiJtLmRla2tlciIsIm5hbWUiOiJNYXggRGVra2VyIiwicm9sZSI6ImFkbWluIiwiZGVwdCI6ImJlaGVlciIsImZsYWciOiJKVlR7dG9rZW5fZ2VsZXplbn0ifQ.';
+
+CS.registerRoom({
+  id: 'kraak-ctf',
+  path: 'eindopdracht',
+  order: 2,
+  title: 'Grote kraak-CTF: Operatie Sleutelbos',
+  icon: '🗝️',
+  difficulty: 'Moeilijk',
+  minutes: 75,
+  summary: 'De afsluitende kraak-CTF. Als geautoriseerd red-teamer werk je je door een buitgemaakte, volledig fictieve dump van Sleutelbos B.V. Je herkent en kraakt hashes, ontcijfert een onderschept bericht, pelt een gelaagde blob af, reverse-engineert een licentiecontrole en inspecteert een toegangstoken — en verzamelt onderweg zeven vlaggen.',
+  objectives: [
+    'Een hashtype herkennen en daarna de juiste kraakstrategie kiezen',
+    'Een klassiek cijfer (Caesar) en een gelaagde codering (hex + Base64) ontrafelen',
+    'Een licentiecontrole lezen en de geldige sleutel afleiden (reverse engineering)',
+    'Een JSON Web Token inspecteren: claims lezen en een zwakke configuratie benoemen',
+    'Een Windows NTLM-hash kraken en begrijpen waarom context het hashtype bepaalt',
+    'Alle stappen eerlijk en reproduceerbaar rapporteren binnen de grenzen van je opdracht',
+  ],
+  terms: [
+    { term: 'CTF', def: 'Capture The Flag: een oefening waarin je uitdagingen oplost en geheime codes (vlaggen) verzamelt.' },
+    { term: 'Vlag (flag)', def: 'Een unieke code die bewijst dat je een uitdaging oploste, hier in het formaat JVT{...}.' },
+    { term: 'Hashtype herkennen (hash-ID)', def: 'Aan lengte en vorm bepalen welk algoritme een hash maakte (32 hex = MD5/NTLM, 40 = SHA-1, 64 = SHA-256).' },
+    { term: 'Woordenlijstaanval (dictionary attack)', def: 'Elk woord uit een lijst waarschijnlijke wachtwoorden hashen en vergelijken met de doel-hash.' },
+    { term: 'Salt', def: 'Een unieke, willekeurige toevoeging per wachtwoord vóór het hashen; maakt vooraf berekende tabellen (rainbow tables) nutteloos.' },
+    { term: 'NTLM', def: 'Windows-wachtwoordhash (MD4 van het wachtwoord in UTF-16LE), 32 hex-tekens — net als MD5, dus de herkomst beslist welk type je kiest.' },
+    { term: 'Caesarcijfer (ROT)', def: 'Een klassiek cijfer dat elke letter een vast aantal plaatsen opschuift; met 25 mogelijke verschuivingen triviaal te kraken.' },
+    { term: 'Codering vs. encryptie', def: 'Codering (Base64, hex, ROT) is omkeerbaar zonder sleutel; encryptie vereist een geheime sleutel.' },
+    { term: 'Reverse engineering (crackme)', def: 'Uit de controlecode van een programma afleiden welke invoer wordt geaccepteerd — hier een licentiesleutel.' },
+    { term: 'JWT (JSON Web Token)', def: 'Een token van drie Base64-delen (header.payload.handtekening) dat een server gebruikt om een ingelogde gebruiker te herkennen.' },
+    { term: 'Claim', def: 'Een gegeven in de payload van een JWT, bijvoorbeeld sub (gebruiker), role (rol) of exp (verloopdatum).' },
+    { term: 'alg: none', def: 'Een JWT-header die zegt dat het token geen handtekening heeft; een ernstige zwakte, want dan kan iedereen de inhoud aanpassen.' },
+  ],
+  resources: [
+    { title: 'TryHackMe — oefen verder met echte CTF-rooms', url: 'https://tryhackme.com/' },
+    { title: 'Hashcat — de bekendste hash-kraker (modi, maskers, regels)', url: 'https://hashcat.net/' },
+    { title: 'CyberChef — coderen, decoderen en analyseren', url: 'https://gchq.github.io/CyberChef/' },
+    { title: 'jwt.io — JSON Web Tokens inspecteren en begrijpen', url: 'https://jwt.io/' },
+  ],
+  tasks: [
+    {
+      title: 'Taak 1 — De opdracht: Operatie Sleutelbos',
+      content: `
+        <p>Welkom bij je eindproef, red-teamer. <strong>Sleutelbos B.V.</strong> (volledig fictief) is een bedrijf dat
+        digitale sloten en toegangssystemen maakt. Ze huurden je in voor een <strong>geautoriseerde pentest</strong> van hun
+        testomgeving <code>10.10.70.0/24</code>, en je hebt die toegang netjes <em>op papier</em> gekregen. Dat papiertje is
+        cruciaal: zonder uitdrukkelijke, schriftelijke toestemming zou alles wat je hierna doet strafbaar zijn
+        (computervredebreuk, art. 138ab Sr).</p>
+
+        <p>Tijdens de opdracht heb je een eerste voet aan de grond gekregen en een <strong>dump</strong> geëxporteerd: een
+        mapje met buitgemaakte bestanden — wachtwoordhashes, een onderschept bericht, een configuratie-backup, een stukje
+        licentiesoftware en een sessietoken. In deze CTF werk je je stap voor stap door die dump heen. Alles erin is
+        <strong>verzonnen</strong> en staat in een afgeschermd lab.</p>
+
+        <p>Je verzamelt <strong>zeven vlaggen</strong> (formaat <code>JVT{...}</code>), één per station. Je gebruikt alles uit
+        de eerdere rooms: hashes herkennen en kraken, cijfers ontrafelen, codering afpellen, software reverse-engineeren en
+        tokens inspecteren. Houd, net als in het echt, een korte <strong>write-up</strong> bij: noteer per station wat je deed
+        en wat je vond. Dat is precies hoe je straks aan de klant rapporteert.</p>
+
+        <div class="callout danger"><strong>Ethiek, eerst:</strong> deze technieken oefen je uitsluitend in dit lab of op
+        systemen waarvoor je aantoonbaar toestemming hebt. Buiten je opdracht ben je geen pentester maar een inbreker.</div>
+      `,
+      questions: [
+        { q: 'Wat maakt deze pentest legaal in plaats van strafbaar?', options: ['Dat het bedrijf fictief is', 'De schriftelijke toestemming om deze omgeving te testen', 'Dat je maar zeven vlaggen zoekt', 'Dat je het snel doet'], answer: 1, explain: 'Schriftelijke toestemming (of je eigen lab) is de grens tussen een pentest en computervredebreuk (art. 138ab Sr).' },
+        { q: 'Hoeveel vlaggen ga je in deze CTF verzamelen?', answer: ['7', 'zeven'], hint: 'Eén per station; lees de opdracht.', explain: 'Zeven stations, zeven vlaggen — van de eerste gekraakte hash tot de eindvlag.' },
+        { q: 'Ik heb toestemming om 10.10.70.0/24 te testen en ga de dump station voor station uitwerken.', noAnswer: true },
+      ],
+    },
+
+    {
+      title: 'Station 1 — Toegang (deel A): herken de buitgemaakte hash',
+      content: `
+        <p>Het eerste bestand in de dump is <code>gebruikers.txt</code> met daarin een wachtwoord-hash van een
+        beheeraccount. Een goede kraker begint nooit met kraken, maar met één vraag: <strong>wat voor hash is dit
+        eigenlijk?</strong> Kies je het verkeerde algoritme, dan kan geen enkele gok ooit kloppen.</p>
+
+        <p>De hash luidt:</p>
+        <pre><code>a25ad97ab6b81c581cf22b2e994e69a48cb8a80d12a9a51e2d12db239a3a287c</code></pre>
+
+        <p>Gebruik de hash-identificatie hieronder (de hash staat er al in). Let op de twee aanwijzingen die een tool als
+        <em>hash-id</em> gebruikt: de <strong>lengte</strong> en de <strong>vorm</strong>. Tel de tekens: het zijn er
+        <strong>64</strong>. Dat is het kenmerk van <strong>SHA-256</strong> (256 bits = 32 bytes = 64 hex-tekens). Ter
+        vergelijking: 32 hex-tekens wijzen op MD5 of NTLM, 40 op SHA-1.</p>
+
+        <p>Merk ook op dat de tool meldt of het type <em>traag/gesalt</em> is. Deze hash is dat niet: het is een kale,
+        ongesalte SHA-256. SHA-256 is op zich een sterk algoritme, maar <strong>zonder salt</strong> blijft elke losse gok
+        razendsnel te berekenen — en dus werkt een woordenlijstaanval nog steeds. Dat buit je in deel B uit.</p>
+
+        <div class="callout tip"><strong>Tip:</strong> eerst herkennen, dan de aanval kiezen. Zou je deze 64-teken-hash als
+        MD5 proberen te kraken, dan vergelijk je 32-teken-MD5's met een 64-teken-doel — dat matcht per definitie nooit.</div>
+      `,
+      lab: { type: 'hashid', value: 'a25ad97ab6b81c581cf22b2e994e69a48cb8a80d12a9a51e2d12db239a3a287c' },
+      questions: [
+        { q: 'Welk hashtype is dit, gezien de 64 hex-tekens?', options: ['MD5', 'SHA-1', 'SHA-256', 'NTLM'], answer: 2, explain: '64 hex-tekens = 256 bits = SHA-256 (SHA-2-familie).' },
+        { q: 'Waarom is deze (ongesalte) hash kwetsbaar voor een woordenlijstaanval?', options: ['Omdat SHA-256 geheim is', 'Omdat elke losse gok razendsnel te berekenen is en er geen salt per wachtwoord is', 'Omdat de hash te lang is', 'Dat is hij niet'], answer: 1, explain: 'Zonder salt en met een snel algoritme kan een aanvaller enorme aantallen gokken per seconde proberen.' },
+      ],
+    },
+
+    {
+      title: 'Station 1 — Toegang (deel B): kraak de toegangshash',
+      content: `
+        <p>Je weet nu dat het om <strong>SHA-256</strong> gaat. Tijd om te kraken. De hash-kraker hieronder staat al op het
+        juiste algoritme (je ziet "Doel-hash (SHA256)" bovenaan) en bevat dezelfde hash als in deel A.</p>
+
+        <pre><code>a25ad97ab6b81c581cf22b2e994e69a48cb8a80d12a9a51e2d12db239a3a287c</code></pre>
+
+        <p>Start de <strong>woordenlijstaanval</strong>: de tool hasht elk woord uit de lijst en vergelijkt het met de
+        doel-hash. Lukt het niet meteen? Je mag <strong>eigen gokken toevoegen</strong> en de <strong>regels (mangling)</strong>
+        aanzetten om varianten te maken (hoofdletter vooraan, een cijfer of jaartal erachter) — precies zoals Hashcat en John
+        the Ripper dat doen. Het wachtwoord hier is een populaire gamer-bijnaam met een paar cijfers erachter.</p>
+
+        <p>Zodra je de hash kraakt, log je met dat wachtwoord in op het interne beheerportaal van Sleutelbos. Het dashboard
+        verwelkomt je en toont de eerste vlag: <strong>JVT{toegang_verleend}</strong>. Noteer zowel het gekraakte wachtwoord
+        als de vlag in je write-up.</p>
+
+        <div class="callout warn"><strong>Les voor de klant:</strong> MD5 én SHA-256 zijn razendsnel te berekenen. Wachtwoorden
+        hoor je op te slaan met een traag, gesalt algoritme zoals <strong>bcrypt</strong>, <strong>scrypt</strong> of
+        <strong>Argon2</strong>. Dat zet je straks in je rapport als aanbeveling.</div>
+      `,
+      lab: {
+        type: 'hashcrack',
+        algo: 'sha256',
+        hash: 'a25ad97ab6b81c581cf22b2e994e69a48cb8a80d12a9a51e2d12db239a3a287c',
+        wordlist: ['welkom', 'admin', 'ninja123', 'voetbal', 'zomer2024', 'qwerty', 'gamer', 'dojo'],
+      },
+      questions: [
+        { q: 'Wat is het gekraakte wachtwoord van het beheeraccount?', answer: ['ninja123'], hint: 'Start de woordenlijstaanval op SHA-256; het is een gamer-bijnaam met cijfers.', explain: 'De SHA-256-hash a25ad97a... hoort bij het wachtwoord "ninja123".' },
+        { q: 'Welke vlag toont het beheerportaal nadat je bent ingelogd?', answer: ['JVT{toegang_verleend}'], hint: 'Staat in de uitleg van deze taak, als beloning voor het kraken.', explain: 'Met het gekraakte wachtwoord krijg je toegang: JVT{toegang_verleend}.' },
+      ],
+    },
+
+    {
+      title: 'Station 2 — Het onderschepte bericht',
+      content: `
+        <p>In het portaal vind je een logje van een interne chat. Eén regel is "beveiligd" door de beheerder — maar in
+        werkelijkheid is het alleen maar <em>verschoven</em>. Dat is een <strong>Caesarcijfer</strong> (ROT): elke letter is
+        een vast aantal plaatsen opgeschoven. Het is een van de oudste cijfers die er bestaat, en met hooguit 25 mogelijke
+        verschuivingen volstrekt onveilig.</p>
+
+        <p>Het onderschepte bericht luidt:</p>
+        <pre><code>Kl nlolptl cshn pz QCA{jhlzhy_pz_thrrlspqr}</code></pre>
+
+        <p>Gebruik het cijfer-lab hieronder. Kies de methode <strong>Caesar/ROT</strong>: de tool toont alle 26 verschuivingen
+        tegelijk én zet er een automatische <strong>"beste gok"</strong> bij op basis van letterfrequentie. Zoek de
+        verschuiving waarbij er leesbaar Nederlands verschijnt. Je ziet dan een hele zin verschijnen, met daarin de vlag.</p>
+
+        <p>De juiste verschuiving hier is <strong>7</strong> (ROT7). Dat de tekst pas ná ontcijferen leesbaar wordt, is precies
+        waarom je bij de vlag-vraag <code>encoded</code> gebruikt: de vlag staat niet kant-en-klaar in de opdracht, je leidt
+        hem zelf af.</p>
+
+        <div class="callout info"><strong>Onthoud:</strong> een Caesarcijfer heeft geen echte sleutel die je moet raden — je
+        probeert gewoon alle 25 verschuivingen. Codering en zwakke cijfers zijn geen vervanging voor echte encryptie.</div>
+      `,
+      lab: { type: 'cipher', text: 'Kl nlolptl cshn pz QCA{jhlzhy_pz_thrrlspqr}' },
+      questions: [
+        { q: 'Welke verschuiving (ROT-getal) maakt het bericht leesbaar?', answer: ['7', 'rot7', 'rot 7', '7 plaatsen'], hint: 'Kijk bij welke verschuiving er leesbaar Nederlands staat; de "beste gok" helpt je.', explain: 'Met ROT7 wordt het bericht leesbaar: "De geheime vlag is JVT{...}".' },
+        { q: 'Wat is de vlag na het ontcijferen van het Caesar-bericht?', answer: ['JVT{caesar_is_makkelijk}'], encoded: true, hint: 'Pas ROT7 toe; de zin eindigt op de vlag.', explain: 'Ontcijferd staat er: "De geheime vlag is JVT{caesar_is_makkelijk}".' },
+      ],
+    },
+
+    {
+      title: 'Station 3 — De gelaagde configuratie-backup',
+      content: `
+        <p>De beheerder heeft ook een configuratie-backup "verstopt" door hem een paar keer door een encoder te halen. Dat is
+        een klassieke beginnersfout: meerdere lagen <strong>codering</strong> stapelen voelt veilig, maar is het niet. Er is
+        geen sleutel nodig om het terug te draaien — je hoeft alleen de lagen te herkennen en af te pellen.</p>
+
+        <p>De blob uit de backup is:</p>
+        <pre><code>536c5a55653352335a5756666247466e5a573539</code></pre>
+
+        <p>Alleen cijfers en de letters a–f, en een even aantal tekens: dat ruikt naar <strong>hexadecimaal</strong>. Pel je
+        die laag af, dan krijg je tekst die eruitziet als <strong>Base64</strong> (letters, cijfers, hoofd- en kleine letters).
+        Pel ook die af en de vlag verschijnt. De volgorde is dus: <strong>hex → Base64 → tekst</strong>.</p>
+
+        <p>Gebruik de multi-decoder hieronder. Die herkent automatisch het soort codering en toont een gevonden
+        <strong>"ketting"</strong> (bijvoorbeeld Hex → Base64 → tekst), plus per laag de kandidaten die je verder kunt
+        ontleden. Omdat de vlag pas na het decoderen zichtbaar is, zet je bij de vraag weer <code>encoded</code>.</p>
+
+        <div class="callout tip"><strong>Vuistregel:</strong> even aantal tekens met alleen 0–9 en a–f → hex. Eindigt iets op
+        <code>=</code> of ziet het eruit als willekeurige letters/cijfers → waarschijnlijk Base64. Twee lagen codering zijn nog
+        steeds geen encryptie.</div>
+      `,
+      lab: { type: 'multidecode', input: '536c5a55653352335a5756666247466e5a573539' },
+      questions: [
+        { q: 'In welke volgorde moet je de blob afpellen?', options: ['Base64, daarna hex', 'Hex, daarna Base64', 'ROT13, daarna hex', 'Alleen Base64'], answer: 1, explain: 'Eerst hex decoderen, dan Base64 — de auto-ketting toont Hex → Base64 → tekst.' },
+        { q: 'Wat is de vlag na het afpellen van beide lagen?', answer: ['JVT{twee_lagen}'], encoded: true, hint: 'Laat de multi-decoder de ketting Hex → Base64 vinden.', explain: 'Na hex en Base64 verschijnt JVT{twee_lagen}.' },
+      ],
+    },
+
+    {
+      title: 'Station 4 — De licentiecontrole (crackme)',
+      content: `
+        <p>In de dump zit ook een stukje software van Sleutelbos zelf: een <strong>licentiecontrole</strong>. Het programma
+        vraagt om een geldige licentiesleutel en laat alleen de juiste door. Jij hebt de broncode van de controle — dus je
+        hoeft niet te gokken, je kunt <strong>teruglezen</strong> welke sleutel wordt geaccepteerd. Dat heet reverse
+        engineering.</p>
+
+        <p>Bekijk de controlecode in het lab hieronder. Hij doet drie dingen: de sleutel moet beginnen met het voorvoegsel
+        <code>SLB-</code>, het deel daarna moet precies 10 tekens lang zijn, en dat deel moet — <em>achterstevoren gelezen</em>
+        — gelijk zijn aan een vaste doelstring. Draai je die doelstring in je hoofd om, dan heb je de code. Plak er het
+        voorvoegsel voor en je hebt de volledige sleutel.</p>
+
+        <p>Typ je sleutel in het lab. Het lab voert de <strong>echte</strong> controle uit op jouw invoer en meldt
+        "Toegang verleend" als het klopt, met de vlag <strong>JVT{licentie_gekraakt}</strong>. Noteer zowel de sleutel als de
+        vlag in je write-up.</p>
+
+        <div class="callout info"><strong>Waarom dit werkt:</strong> zodra de controle lokaal op jouw apparaat draait, kun je
+        hem lezen en omkeren. Echte licentiebescherming leunt daarom nooit alleen op een controle in de client — en al helemaal
+        niet op "de string achterstevoren".</div>
+      `,
+      lab: {
+        type: 'crackme',
+        title: 'Sleutelbos licentiecontrole v3',
+        intro: 'Lees de controle en leid de enige geldige licentiesleutel af. Formaat: SLB- gevolgd door 10 tekens.',
+        source: `// Licentiecontrole van Sleutelbos B.V.
+function check(sleutel) {
+  // 1) de sleutel moet beginnen met het voorvoegsel SLB-
+  if (!sleutel.startsWith('SLB-')) return false;
+  // 2) het deel na SLB- is precies 10 tekens lang
+  var code = sleutel.slice(4);
+  if (code.length !== 10) return false;
+  // 3) die code moet, achterstevoren gelezen, exact dit zijn:
+  var doel = 'sobletuels';
+  return code.split('').reverse().join('') === doel;
+}`,
+        check: (sleutel) => {
+          if (typeof sleutel !== 'string') return false;
+          if (!sleutel.startsWith('SLB-')) return false;
+          const code = sleutel.slice(4);
+          if (code.length !== 10) return false;
+          return code.split('').reverse().join('') === 'sobletuels';
+        },
+        flag: 'JVT{licentie_gekraakt}',
+        reveal: 'Toegang verleend. De doelstring "sobletuels" achterstevoren is "sleutelbos", dus de sleutel is SLB-sleutelbos.',
+        hint: 'Draai de doelstring "sobletuels" om en plak er SLB- voor.',
+      },
+      questions: [
+        { q: 'Welke volledige licentiesleutel accepteert de controle?', answer: ['SLB-sleutelbos'], hint: 'Voorvoegsel SLB-, daarna de doelstring "sobletuels" achterstevoren.', explain: '"sobletuels" omgedraaid is "sleutelbos"; met het voorvoegsel wordt dat SLB-sleutelbos.' },
+        { q: 'Welke vlag toont het lab bij een geldige sleutel?', answer: ['JVT{licentie_gekraakt}'], hint: 'Verschijnt bij "Toegang verleend".', explain: 'Een geldige sleutel levert de vlag JVT{licentie_gekraakt} op.' },
+        { q: 'Waarom kon je de sleutel afleiden zonder te gokken?', options: ['Omdat de controlecode zelf verklapt wat wordt geaccepteerd', 'Omdat de sleutel heel kort is', 'Omdat SLB- een geheim voorvoegsel is', 'Dat kon niet, je moest wel gokken'], answer: 0, explain: 'Een controle die lokaal draait en leesbaar is, kun je terugredeneren — dat is reverse engineering.' },
+      ],
+    },
+
+    {
+      title: 'Station 5 — Het buitgemaakte toegangstoken (JWT)',
+      content: `
+        <p>Bijna binnen als volwaardig beheerder. In de dump zit een <strong>sessietoken</strong>: een
+        <strong>JSON Web Token (JWT)</strong>. Zo'n token gebruikt een webapp om een ingelogde gebruiker te herkennen, en
+        bestaat uit drie delen, gescheiden door punten: <code>header.payload.handtekening</code>. De eerste twee delen zijn
+        gewoon <strong>Base64</strong> — dus leesbaar voor iedereen die het token in handen krijgt.</p>
+
+        <p>Het buitgemaakte token is:</p>
+        <pre><code>eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJtLmRla2tlciIsIm5hbWUiOiJNYXggRGVra2VyIiwicm9sZSI6ImFkbWluIiwiZGVwdCI6ImJlaGVlciIsImZsYWciOiJKVlR7dG9rZW5fZ2VsZXplbn0ifQ.</code></pre>
+
+        <p>Plak dit token in het JWT-lab hieronder. Het decodeert de header en de payload voor je. Lees de
+        <strong>payload</strong>: welke <code>role</code>-claim staat erin? En kijk naar de <strong>header</strong>: welk
+        algoritme (<code>alg</code>) gebruikt dit token? Het lab zet er waarschuwingen bij voor zwakke configuraties.</p>
+
+        <p>Je ziet twee problemen. Ten eerste staat er <code>alg: none</code> in de header: het token heeft <strong>geen
+        handtekening</strong>. Ten tweede ontbreekt een <code>exp</code> (verloopdatum), dus het token blijft eeuwig geldig.
+        In de payload staat bovendien een vlag-claim — bewijs dat je de inhoud echt gelezen hebt. Omdat die vlag in Base64 in
+        het token zit (en niet kant-en-klaar in de tekst), markeer je de vraag met <code>encoded</code>.</p>
+
+        <div class="callout danger"><strong>Puur inspecteren:</strong> hier lees en beoordeel je het token — meer niet. Een
+        token vervalsen en inzetten tegen een echt systeem waarvoor je geen toestemming hebt, is strafbaar. De les voor de
+        klant: onderteken tokens met een sterk geheim (HS256/RS256), weiger <code>alg: none</code>, en zet altijd een
+        <code>exp</code>.</div>
+      `,
+      lab: { type: 'jwt', token: JWT_SLEUTELBOS },
+      questions: [
+        { q: 'Welke rol (role-claim) staat in de payload van het token?', answer: ['admin'], hint: 'Lees het gedecodeerde payload-deel in het lab; zoek de sleutel "role".', explain: 'De payload bevat "role": "admin" — het token claimt beheerdersrechten.' },
+        { q: 'Wat is de belangrijkste zwakte in de header van dit token?', options: ['Het gebruikt alg: none, dus er is geen handtekening', 'De header is te lang', 'Het gebruikt HS256', 'Er zit een geldige handtekening op'], answer: 0, explain: 'alg: none betekent geen handtekening; iedereen kan de inhoud dan aanpassen. Ook ontbreekt een exp (verloopdatum).' },
+        { q: 'Welke vlag staat als claim in de payload?', answer: ['JVT{token_gelezen}'], encoded: true, hint: 'Decodeer de payload en zoek de claim "flag".', explain: 'De payload bevat "flag": "JVT{token_gelezen}" — leesbaar omdat JWT-payloads niet versleuteld zijn.' },
+      ],
+    },
+
+    {
+      title: 'Station 6 — De domeincontroller (NTLM)',
+      content: `
+        <p>Laatste station. Via het beheeraccount kon je doorstoten naar de <strong>domeincontroller</strong> van Sleutelbos
+        en daar de wachtwoord-hashes uit de Windows <strong>SAM/NTDS</strong> dumpen. Eén daarvan hoort bij een
+        domeinbeheerder. Kraak je die, dan heb je in feite het hele domein overgenomen — het hoogste doel van deze opdracht.</p>
+
+        <p>De hash luidt:</p>
+        <pre><code>9b86ae4b912e6eea59a695d12670990c</code></pre>
+
+        <p>Het zijn <strong>32 hex-tekens</strong>. Een hash-id-tool zou nu twee opties noemen: dit kan <strong>MD5</strong>
+        zijn, maar ook <strong>NTLM</strong> — beide zijn 128 bits. De lengte alleen beslist het niet; de
+        <strong>context</strong> wel. Deze hash komt uit een <strong>Windows-domeincontroller</strong>, en Windows slaat
+        lokale/domein-wachtwoorden op als NTLM (dat is MD4 van het wachtwoord in UTF-16LE). Kies dus <strong>NTLM</strong>,
+        niet MD5.</p>
+
+        <p>De hash-kraker hieronder staat al op <strong>NTLM</strong> (zie "Doel-hash (NTLM)" bovenaan). Start de
+        woordenlijstaanval. Het wachtwoord is een bekende Nederlandse stad. Kraak het en je ontgrendelt de laatste
+        stationsvlag: <strong>JVT{domein_overgenomen}</strong>.</p>
+
+        <div class="callout warn"><strong>Onthoud:</strong> MD5 en NTLM zijn aan de hash niet te onderscheiden — beide 32 hex.
+        De herkomst (een <code>/etc/shadow</code>, een database-dump of een Windows-SAM) vertelt je welke je moet kiezen.</div>
+      `,
+      lab: {
+        type: 'hashcrack',
+        algo: 'ntlm',
+        hash: '9b86ae4b912e6eea59a695d12670990c',
+        wordlist: ['rotterdam', 'utrecht', 'amsterdam', 'denhaag', 'eindhoven', 'welkom', 'admin', 'computer'],
+      },
+      questions: [
+        { q: 'Welk hashtype kies je voor een 32 hex-teken-hash uit een Windows-domeincontroller?', options: ['SHA-256', 'bcrypt', 'NTLM', 'SHA-1'], answer: 2, explain: 'Windows slaat wachtwoorden op als NTLM. Bij 32 hex uit een Windows-bron kies je NTLM, niet MD5.' },
+        { q: 'Wat is het gekraakte wachtwoord van de domeinbeheerder?', answer: ['amsterdam'], hint: 'Kies NTLM en start de aanval; het is een bekende Nederlandse stad.', explain: 'De NTLM-hash 9b86ae4b... hoort bij het wachtwoord "amsterdam".' },
+        { q: 'Welke vlag verdien je met het overnemen van het domein?', answer: ['JVT{domein_overgenomen}'], hint: 'Staat in de uitleg van deze taak, als beloning.', explain: 'Het kraken van de domeinbeheerder levert JVT{domein_overgenomen} op.' },
+      ],
+    },
+
+    {
+      title: 'Slotstation — De buit opmaken en netjes afronden',
+      content: `
+        <p>Gefeliciteerd, red-teamer. 🗝️ Je hebt de hele sleutelbos verzameld: zeven vlaggen, van de eerste gekraakte hash tot
+        de overname van het domein. Je doorliep in het klein een complete keten: <strong>herkennen → kraken → ontcijferen →
+        afpellen → reverse-engineeren → inspecteren → doorstoten</strong>.</p>
+
+        <h3>Wat je liet zien</h3>
+        <ul>
+          <li>Een hash eerst <strong>herkennen</strong> en dan pas de juiste aanval kiezen (SHA-256, NTLM).</li>
+          <li>Codering onderscheiden van encryptie: een Caesarcijfer en een gelaagde hex/Base64-blob zijn zonder sleutel om te draaien.</li>
+          <li>Software <strong>reverse-engineeren</strong>: uit de controle de enige geldige licentiesleutel afleiden.</li>
+          <li>Een JWT lezen en de zwaktes benoemen: <code>alg: none</code>, geen <code>exp</code>, en gevoelige data leesbaar in de payload.</li>
+        </ul>
+
+        <h3>De eindvlag</h3>
+        <p>Als bewijs dat je de hele operatie hebt afgerond, krijg je de eindvlag: <strong>JVT{operatie_sleutelbos_voltooid}</strong>.
+        Zet die bovenaan je write-up.</p>
+
+        <h3>Hoe je nu rapporteert — en verder groeit</h3>
+        <ul>
+          <li><strong>Scheid feiten van advies.</strong> Feit: "wachtwoorden stonden als ongesalte SHA-256/NTLM opgeslagen".
+          Advies: "stap over op bcrypt/Argon2 met een unieke salt per wachtwoord".</li>
+          <li><strong>Maak het reproduceerbaar.</strong> Noteer per station je stappen, zodat de klant je bevindingen kan nalopen.</li>
+          <li><strong>Blijf oefenen</strong> op veilige platforms (zie de bronnen) en bouw een eigen thuislab.</li>
+        </ul>
+
+        <div class="callout danger"><strong>Ethische afsluiting:</strong> alles in deze CTF was fictief en geautoriseerd. Je
+        vaardigheden zijn krachtig en dus gevoelig. Gebruik ze uitsluitend op je eigen systemen of met schriftelijke
+        toestemming, meld kwetsbaarheden netjes (coordinated vulnerability disclosure, bijvoorbeeld via het NCSC), en blijf aan
+        de goede kant van art. 138ab Sr. Daar word je een professional van — geen verdachte.</div>
+      `,
+      questions: [
+        { q: 'Wat is de eindvlag van Operatie Sleutelbos?', answer: ['JVT{operatie_sleutelbos_voltooid}'], hint: 'Staat in deze slottaak, als beloning voor het afronden.', explain: 'De eindvlag is JVT{operatie_sleutelbos_voltooid} — alle zeven vlaggen binnen.' },
+        { q: 'Wat is de belangrijkste aanbeveling tegen het kraken van de wachtwoordhashes die je vond?', options: ['Langere gebruikersnamen eisen', 'Opslag met een traag, gesalt algoritme (bcrypt/scrypt/Argon2)', 'De hashes dubbel MD5-en', 'De hashes geheimhouden'], answer: 1, explain: 'Een traag, gesalt algoritme maakt massaal kraken onbetaalbaar traag en breekt rainbow tables.' },
+        { q: 'Ik heb alle zeven vlaggen verzameld en rond de opdracht ethisch en reproduceerbaar af. 🏆', noAnswer: true },
       ],
     },
   ],

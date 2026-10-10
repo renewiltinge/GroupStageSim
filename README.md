@@ -47,6 +47,7 @@ De bouwstenen van beveiliging.
 3. **Social engineering & phishing** — de menselijke factor, met een phishing-inbox om te oefenen.
 4. **Kwetsbaarheden & CVSS** — van CVE tot patch, met een interactieve CVSS-calculator, EPSS en de KEV-catalogus.
 5. **Klassieke cijfers kraken** — Caesar, Vigenère en XOR ontcijferen met een cijfer-kraker.
+6. **Rainbow tables & waarom salt wint** — precomputatie, salt, peper en trage hashes.
 
 ### ⚔️ Offensief (red team)
 Denken als een aanvaller — altijd in een veilig lab.
@@ -55,6 +56,8 @@ Denken als een aanvaller — altijd in een veilig lab.
 3. **Webhacking: SQL-injectie** — kwetsbaarheden zelf uitbuiten.
 4. **Wachtwoorden kraken** — woordenlijst, regels (mangling) en brute-force (maskers) op MD5/SHA/NTLM.
 5. **Crack the Hash — de uitdaging** — een oplopende reeks hashes om zelf te herkennen en te kraken.
+6. **Reverse engineering: crackmes kraken** — lees de controle en vind de sleutel (met een echte crackme-lab).
+7. **Decoderen & multi-decode (CTF)** — gelaagde codering afpellen met de multi-decoder en CyberChef.
 
 ### 🛡️ Defensief (blue team)
 Denken als een verdediger.
@@ -81,6 +84,7 @@ De weg naar digitaal rechercheur — sporen vinden, veiligstellen en duiden.
 
 ### 🏁 Eindopdracht
 1. **Mini-CTF: Operatie KoffieKlap** — breng alles samen in een afsluitende Capture The Flag met zes vlaggen.
+2. **Grote kraak-CTF: Operatie Sleutelbos** — een uitgebreide kraak-CTF langs hashes, cijfers, codering, een crackme, een JWT en NTLM (zeven vlaggen).
 
 ---
 
@@ -112,6 +116,9 @@ Alle labs draaien **volledig in je browser** — veilig, offline, zonder dat er 
 | 🧬 **YARA-lab** | Detectieregels schrijven en op voorbeeldbestanden testen. |
 | ⏳ **Super-timeline** | Gebeurtenissen uit vele bronnen op één tijdlijn filteren en markeren. |
 | 🔐 **chmod & getallen** | Linux-rechten en getalstelsels (hex/binair/octaal) omrekenen. |
+| 🔃 **Crackme** | Reverse-engineering puzzel: lees de controlefunctie en vind de sleutel. |
+| ✨ **Multi-decoder** | Herkent en pelt lagen codering af (Base64/32, hex, binair, Morse, ROT13, URL…) en zoekt automatisch de vlag. |
+| 🌈 **Rainbow table** | Zie waarom onvergezouten hashes direct op te zoeken zijn — en hoe salt dat breekt. |
 
 Alle tools zijn ook los te gebruiken via de **🧰 Gereedschapskist** (knop op de startpagina, of `#/tools`) — handig voor je eigen, ethische oefeningen.
 
