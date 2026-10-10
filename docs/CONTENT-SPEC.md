@@ -406,3 +406,45 @@ lab: { type: 'numconv', value: '0x4D5A' }  // getal omzetten: decimaal, hex, bin
 - Gebruik Nederlandse context waar het past: NCSC, Politie, Autoriteit Persoonsgegevens, Cyberbeveiligingswet (NIS2), art. 138ab Sr.
 - Benadruk ethiek: aanvalstechnieken oefen je alleen in je eigen lab of met schriftelijke toestemming.
 - Een taak telt zo'n 250-700 woorden, met minstens één concreet voorbeeld en 2-4 vragen.
+
+### `crackme`: reverse-engineering puzzel (crackme/keygenme)
+
+```js
+lab: {
+  type: 'crackme',
+  title: 'Sleutelcontrole v1',
+  intro: 'Een programma vraagt om een sleutel. Lees de controle en leid de juiste sleutel af.',
+  source: `function check(key) {\n  return key.split('').reverse().join('') === '62oziuj';\n}`, // wat de leerling leest
+  check: (key) => key.split('').reverse().join('') === '62oziuj',                               // de ECHTE controle (functie!)
+  flag: 'JVT{...}',          // getoond bij succes (optioneel)
+  reveal: 'Mooi — ...',       // extra tekst bij succes (optioneel)
+  hint: 'Draai de doelstring om.', // getoond na 3 pogingen (optioneel)
+}
+```
+De leerling leest `source`, typt een sleutel; het lab draait de echte `check(key)` en meldt toegang + `flag` bij succes.
+**`check` is een JS-functie in het roombestand** (rooms zijn JS) — maak hem deterministisch en zorg dat het door jou als
+antwoord opgegeven wachtwoord écht slaagt (controleer met Node). Gebruikersinvoer wordt alleen als argument doorgegeven
+(geen eval). Houd `source` leesbaar maar laat de leerling nog iets te puzzelen over.
+
+### `multidecode`: automatische multi-decoder (CyberChef "Magic"-light)
+
+```js
+lab: { type: 'multidecode', input: '536c5a55653231316248527058327868655756795832397266513d3d' }
+```
+Herkent en pelt lagen codering af: Base64, Base32, hex, binair, URL, ROT13, Atbash, decimaal (code points), Morse en
+omkeren. Toont een automatisch gevonden "ketting" (bijv. Hex → Base64 → tekst) én per laag alle kandidaten (klikbaar om
+verder te ontleden). Scoort op leesbaarheid en herkent `JVT{...}`. **Bereken je gelaagde invoer met Node** en controleer
+dat de ketting op de bedoelde tekst uitkomt; zet `encoded: true` op een vlag-vraag waarvan de vlag pas na decoderen verschijnt.
+
+### `rainbow`: rainbow table (precomputatie) vs. salt
+
+```js
+lab: {
+  type: 'rainbow', algo: 'md5',
+  wordlist: ['welkom', 'zomer2024', ...],   // de voorberekende tabel
+  target: '<een md5 om op te zoeken>',       // optioneel (startwaarde)
+  saltExample: { word: 'welkom', salt: 'Xy7' }, // toont plain-hash vs gesalte hash (optioneel)
+}
+```
+Toont een voorberekende tabel (hash → woord) en een opzoekveld: een onvergezouten hash wordt direct gevonden, een gesalte
+hash niet — zo zie je waarom salt precomputatie breekt. Hashes worden met de echte lab-hashfunctie berekend.

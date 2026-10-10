@@ -1230,6 +1230,9 @@ kbd {
     { type: 'hashcrack', icon: '🔓', name: 'Hash-kraker', desc: 'Woordenlijst, regels (mangling) of brute-force (masker) — op MD5/SHA/NTLM.', cfg: { algo: 'md5', hash: '5f4dcc3b5aa765d61d8327deb882cf99', wordlist: ['123456', 'welkom', 'password', 'qwerty', 'geheim', 'letmein'] } },
     { type: 'hashid', icon: '🧭', name: 'Hash-herkenner', desc: 'Welk hashtype is dit? Herkent MD5, NTLM, SHA, bcrypt en meer.', cfg: { value: '$2y$10$N9qo8uLOickgx2ZMRZoMy.MH/rq8qjHjhHj' } },
     { type: 'cipher', icon: '🗝️', name: 'Cijfer-kraker', desc: 'Caesar/ROT, XOR, Vigenère en Atbash ontcijferen.', cfg: { text: 'Kl nlolptl cshn pz QCA{jhlzhy_pz_thrrlspqr}' } },
+    { type: 'multidecode', icon: '✨', name: 'Multi-decoder', desc: 'Herkent en pelt lagen codering af (Base64/32, hex, binair, morse, ROT13, URL…).', cfg: { input: '536c5a55653231316248527058327868655756795832397266513d3d' } },
+    { type: 'crackme', icon: '🔃', name: 'Crackme', desc: 'Reverse-engineering puzzel: lees de controle en vind de sleutel.', cfg: { title: 'demo', source: 'function check(key) {\n  // toegang als key, achterstevoren gelezen, "62oziuj" oplevert\n  return key.split("").reverse().join("") === "62oziuj";\n}', check: (k) => k.split('').reverse().join('') === '62oziuj', flag: 'JVT{reverse_engineered}', hint: 'Draai de doelstring om: wat moet key dan zijn?' } },
+    { type: 'rainbow', icon: '🌈', name: 'Rainbow table', desc: 'Zie waarom onvergezouten hashes direct op te zoeken zijn — en salt dat breekt.', cfg: { algo: 'md5', wordlist: ['welkom', 'zomer2024', 'admin', 'geheim', 'voetbal', 'wachtwoord', 'qwerty', 'liefde'], target: '371620aa75830b1388b63305b0d42f06', saltExample: { word: 'welkom', salt: 'Xy7' } } },
     { type: 'password', icon: '🔑', name: 'Wachtwoord-analyse', desc: 'Live de sterkte en kraaktijd van een wachtwoord zien.', cfg: {} },
     { type: 'subnet', icon: '🧮', name: 'Subnet-calculator', desc: 'Subnetten uitrekenen en oefenvragen genereren.', cfg: {} },
     { type: 'hexviewer', icon: '🔢', name: 'Hex-viewer', desc: 'Rauwe bytes lezen: magic bytes en verstopte strings.', cfg: { filename: 'voorbeeld.bin', hex: '89 50 4E 47 0D 0A 1A 0A 4A 56 54 7B 68 65 78 5F 6B 69 6A 6B 65 72 7D' } },
@@ -3213,6 +3216,176 @@ kbd {
     inp.addEventListener('input', render);
     render();
     container.append(shell('<b>Getallen-omzetter</b> — decimaal · hex · binair · octaal · ASCII', wrap, false));
+  });
+
+
+  // =====================================================================
+  //  CRACKME — reverse-engineering puzzel (keygen/crackme)
+  // =====================================================================
+  CS.registerLab('crackme', function (container, cfg) {
+    const wrap = el('div', { class: 'lab-pad' });
+    if (cfg.intro) wrap.append(el('div', { class: 'found-note', text: cfg.intro }));
+    wrap.append(el('label', { text: 'Het controlemechanisme (lees de code en leid het juiste wachtwoord af)' }));
+    wrap.append(el('pre', { style: 'white-space:pre-wrap;margin:4px 0 10px' }, el('code', { text: cfg.source || '// (geen broncode meegegeven)' })));
+    wrap.append(el('label', { text: 'Jouw poging' }));
+    const row = el('div', { class: 'ans-row' });
+    const inp = el('input', { type: 'text', placeholder: 'wachtwoord / sleutel…', style: 'flex:1', autocomplete: 'off', spellcheck: 'false' });
+    const btn = el('button', { class: 'btn small primary', text: '🔓 Probeer' });
+    row.append(inp, btn);
+    wrap.append(row);
+    const out = el('div', { class: 'lab-out', style: 'margin-top:10px' });
+    const stat = el('div', { class: 'found-note' });
+    wrap.append(stat, out);
+    let tries = 0;
+    function attempt() {
+      const pw = inp.value;
+      if (!pw) return;
+      tries++;
+      let ok = false;
+      try { ok = !!cfg.check(pw); } catch (e) { ok = false; }
+      stat.textContent = tries + ' poging' + (tries === 1 ? '' : 'en');
+      out.innerHTML = '';
+      if (ok) {
+        out.append(el('div', { html: '<strong style="color:var(--good)">✓ TOEGANG VERLEEND</strong>' + (cfg.flag ? ' — vlag: <code>' + esc(cfg.flag) + '</code>' : '') }));
+        if (cfg.reveal) out.append(el('div', { style: 'margin-top:4px', text: cfg.reveal }));
+        inp.classList.add('ok');
+      } else {
+        out.append(el('div', { style: 'color:var(--bad)', text: '✗ Geweigerd. Lees de controle nog eens — welke invoer zou slagen?' }));
+        if (cfg.hint && tries >= 3) out.append(el('div', { class: 'found-note', text: '💡 ' + cfg.hint }));
+      }
+    }
+    btn.addEventListener('click', attempt);
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') attempt(); });
+    container.append(shell('<b>Crackme</b> — ' + esc(cfg.title || 'kraak de controle'), wrap, false));
+  });
+
+  // =====================================================================
+  //  MULTIDECODE — automatische decoder (CyberChef "Magic"-light)
+  // =====================================================================
+  CS.registerLab('multidecode', function (container, cfg) {
+    const MORSE = { '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E', '..-.': 'F', '--.': 'G', '....': 'H', '..': 'I', '.---': 'J', '-.-': 'K', '.-..': 'L', '--': 'M', '-.': 'N', '---': 'O', '.--.': 'P', '--.-': 'Q', '.-.': 'R', '...': 'S', '-': 'T', '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X', '-.--': 'Y', '--..': 'Z', '-----': '0', '.----': '1', '..---': '2', '...--': '3', '....-': '4', '.....': '5', '-....': '6', '--...': '7', '---..': '8', '----.': '9' };
+    const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    function tryB64(s) { if (!/^[A-Za-z0-9+/=\s]+$/.test(s) || s.replace(/\s/g, '').length < 4 || s.replace(/\s/g, '').length % 4 !== 0) return null; try { return b64decode(s); } catch (e) { return null; } }
+    function tryB32(s) { const t = s.replace(/\s/g, '').toUpperCase().replace(/=+$/, ''); if (!t || !/^[A-Z2-7]+$/.test(t)) return null; let bits = '', out = ''; for (const c of t) { const v = B32.indexOf(c); if (v < 0) return null; bits += v.toString(2).padStart(5, '0'); } for (let i = 0; i + 8 <= bits.length; i += 8) out += String.fromCharCode(parseInt(bits.slice(i, i + 8), 2)); return out || null; }
+    function tryHex(s) { const t = s.replace(/[\s:]/g, ''); if (t.length < 4 || t.length % 2 !== 0 || !/^[0-9a-fA-F]+$/.test(t)) return null; let o = ''; for (let i = 0; i < t.length; i += 2) o += String.fromCharCode(parseInt(t.substr(i, 2), 16)); return o; }
+    function tryBin(s) { const t = s.trim(); if (!/^[01\s]+$/.test(t)) return null; const groups = t.split(/\s+/); let o = ''; if (groups.every((g) => g.length === 8)) { groups.forEach((g) => o += String.fromCharCode(parseInt(g, 2))); return o; } const bits = t.replace(/\s/g, ''); if (bits.length % 8 !== 0) return null; for (let i = 0; i < bits.length; i += 8) o += String.fromCharCode(parseInt(bits.slice(i, i + 8), 2)); return o; }
+    function tryUrl(s) { if (!/%[0-9a-fA-F]{2}/.test(s)) return null; try { return decodeURIComponent(s); } catch (e) { return null; } }
+    function tryRot13(s) { if (!/[a-zA-Z]/.test(s)) return null; return s.replace(/[a-z]/gi, (c) => { const b = c <= 'Z' ? 65 : 97; return String.fromCharCode((c.charCodeAt(0) - b + 13) % 26 + b); }); }
+    function tryAtbash(s) { if (!/[a-zA-Z]/.test(s)) return null; return s.replace(/[a-z]/gi, (c) => { const b = c <= 'Z' ? 65 : 97; return String.fromCharCode(b + 25 - (c.charCodeAt(0) - b)); }); }
+    function tryReverse(s) { return s.split('').reverse().join(''); }
+    function tryMorse(s) { if (!/^[.\-\s/]+$/.test(s.trim()) || !/[.\-]/.test(s)) return null; return s.trim().split(/\s*\/\s*|\s+/).map((c) => MORSE[c] || (c === '' ? ' ' : '?')).join(''); }
+    function tryDec(s) { const t = s.trim(); if (!/^[0-9\s]+$/.test(t) || !/\s/.test(t)) return null; const ns = t.split(/\s+/).map(Number); if (ns.some((n) => n < 1 || n > 1114111)) return null; return ns.map((n) => String.fromCharCode(n)).join(''); }
+    const DECODERS = [['Base64', tryB64], ['Base32', tryB32], ['Hex', tryHex], ['Binair', tryBin], ['URL', tryUrl], ['ROT13', tryRot13], ['Atbash', tryAtbash], ['Decimaal', tryDec], ['Morse', tryMorse], ['Omgekeerd', tryReverse]];
+
+    function printable(s) { if (!s) return 0; let p = 0; for (const c of s) { const n = c.charCodeAt(0); if (n >= 32 && n <= 126) p++; else if (n === 9 || n === 10) p++; } return p / s.length; }
+    function score(s) { if (!s) return -1; let sc = printable(s) * 10; const low = s.toLowerCase(); for (const ch of low) { if (' etaoinshrd'.includes(ch)) sc += 0.4; } if (/jvt\{[a-z0-9_]*\}?/i.test(s)) sc += 100; [' de ', ' het ', ' een ', ' the ', 'flag', 'vlag', 'geheim'].forEach((w) => { if (low.includes(w)) sc += 8; }); if (printable(s) < 0.85) sc -= 20; return sc; }
+
+    const wrap = el('div', { class: 'lab-pad' });
+    wrap.append(el('label', { text: 'Invoer (gecodeerde tekst — ook meerlaags)' }));
+    const ta = el('textarea', { rows: '3', spellcheck: 'false' }); ta.value = cfg.input || '';
+    wrap.append(ta);
+    const btnRow = el('div', { class: 'chip-row' });
+    const magic = el('span', { class: 'chip on', text: '✨ Auto-ontleed (ketting)' });
+    btnRow.append(magic);
+    wrap.append(btnRow);
+    const out = el('div', {});
+    wrap.append(out);
+
+    function oneLayer(s) {
+      const res = [];
+      DECODERS.forEach(([name, fn]) => { let r = null; try { r = fn(s); } catch (e) { r = null; } if (r != null && r !== s) res.push({ name, out: r, sc: score(r) }); });
+      res.sort((a, b) => b.sc - a.sc);
+      return res;
+    }
+    // Begrensde breedte-zoektocht: verken decodeer-lagen (dedup op resultaat) en
+    // kies het beste eindresultaat — een vlag, anders de best leesbare tekst. Greedy
+    // op score faalt als tussenlagen allemaal leesbaar-ASCII zijn (gelijke scores).
+    const hasFlag = (s) => /JVT\{[a-z0-9_]+\}/.test(s);
+    function searchChain(input) {
+      const visited = new Set([input]);
+      let best = null;
+      const q = [{ s: input, path: [] }];
+      let expanded = 0;
+      while (q.length && expanded < 600) {
+        const node = q.shift();
+        expanded++;
+        for (const [name, fn] of DECODERS) {
+          let r = null; try { r = fn(node.s); } catch (e) { r = null; }
+          if (r == null || visited.has(r)) continue;
+          visited.add(r);
+          const path = node.path.concat(name);
+          const sc = score(r);
+          const eligible = hasFlag(r) || printable(r) > 0.9;
+          if (eligible && (!best || sc > best.sc)) best = { s: r, path, sc };
+          if (hasFlag(r)) return best; // vlag gevonden: klaar
+          if (path.length < 6) q.push({ s: r, path });
+        }
+      }
+      return best;
+    }
+    function render() {
+      out.innerHTML = '';
+      const input = ta.value;
+      if (!input.trim()) return;
+      const best = searchChain(input);
+      if (best && best.path.length && (hasFlag(best.s) || best.sc > score(input) + 1)) {
+        out.append(el('div', { class: 'callout tip', html: '✨ <strong>Waarschijnlijke ketting:</strong> ' + best.path.map((n) => esc(n)).join(' → ') + '<br><code>' + esc(best.s.slice(0, 200)) + '</code>' }));
+      } else {
+        out.append(el('div', { class: 'found-note', text: 'Geen duidelijke ketting gevonden — pel hieronder handmatig af (klik een kandidaat) of gebruik CyberChef.' }));
+      }
+      out.append(el('label', { text: 'Eén laag — alle kandidaten (klik om verder te ontleden)' }));
+      const box = el('div', { class: 'logview', style: 'max-height:240px' });
+      const layer = oneLayer(input);
+      if (!layer.length) box.append(el('div', { text: '(geen enkele decoder gaf iets zinnigs)' }));
+      layer.forEach((r) => {
+        const ln = el('div', { class: 'ln', style: 'cursor:pointer', onclick: () => { ta.value = r.out; render(); } });
+        ln.append(el('span', { class: 'n', style: 'width:64px', text: r.name }), el('span', { text: r.out.slice(0, 120), style: /JVT\{/.test(r.out) ? 'color:#8ec7ab' : '' }));
+        box.append(ln);
+      });
+      out.append(box);
+    }
+    ta.addEventListener('input', render);
+    magic.addEventListener('click', render);
+    render();
+    container.append(shell('<b>Multi-decoder</b> — herken en pel lagen codering af', wrap, false));
+  });
+
+  // =====================================================================
+  //  RAINBOW — precomputatie (rainbow table) vs salt
+  // =====================================================================
+  CS.registerLab('rainbow', function (container, cfg) {
+    const algo = (cfg.algo || 'md5').toLowerCase();
+    const hashFn = Hash[algo] || Hash.md5;
+    const words = (cfg.wordlist || ['welkom', 'zomer2024', 'admin', 'geheim', 'voetbal', 'wachtwoord', 'qwerty', 'liefde']).slice();
+    const table = words.map((w) => ({ w, h: hashFn(w) }));
+    const wrap = el('div', { class: 'lab-pad' });
+    wrap.append(el('div', { class: 'found-note', text: 'Een "rainbow table" is een vooraf uitgerekende lijst van hash → wachtwoord. Opzoeken is dan onmiddellijk — geen kraakwerk meer. Hieronder een mini-tabel (' + algo.toUpperCase() + ').' }));
+    const tbl = el('table', { style: 'width:100%;font-size:.8rem;font-family:var(--mono)' }, el('tbody', {}, table.map((r) => el('tr', {}, [el('td', { style: 'color:var(--muted);word-break:break-all', text: r.h }), el('td', { style: 'width:120px', text: r.w })]))));
+    wrap.append(el('label', { text: 'Voorberekende tabel' }), tbl);
+    wrap.append(el('label', { text: 'Zoek een hash op (plak een ' + algo.toUpperCase() + '-hash)' }));
+    const row = el('div', { class: 'ans-row' });
+    const inp = el('input', { type: 'text', placeholder: 'hash…', style: 'flex:1' }); inp.value = cfg.target || '';
+    const btn = el('button', { class: 'btn small primary', text: 'Opzoeken' });
+    row.append(inp, btn);
+    wrap.append(row);
+    const out = el('div', { class: 'lab-out', style: 'margin-top:8px' });
+    wrap.append(out);
+    function lookup() {
+      const h = inp.value.trim().toLowerCase();
+      const hit = table.find((r) => r.h === h);
+      out.innerHTML = '';
+      if (hit) out.append(el('div', { html: '<strong style="color:var(--good)">⚡ Direct gevonden:</strong> <code>' + esc(hit.w) + '</code> — geen kraakwerk, puur opzoeken.' }));
+      else out.append(el('div', { style: 'color:var(--bad)', text: '✗ Niet in de tabel. (Onbekend wachtwoord, ander algoritme, of … gesalt.)' }));
+    }
+    btn.addEventListener('click', lookup);
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') lookup(); });
+    if (cfg.saltExample && cfg.saltExample.word) {
+      const se = cfg.saltExample; const salt = se.salt || 's4lt';
+      const plainH = hashFn(se.word); const saltedH = hashFn(salt + se.word);
+      wrap.append(el('div', { class: 'callout info', html: '<strong>Waarom salt wint.</strong> "' + esc(se.word) + '" zonder salt → <code>' + esc(plainH) + '</code> (staat mogelijk in elke tabel). Mét salt "' + esc(salt) + '" → <code>' + esc(saltedH) + '</code>: een totaal andere hash die in géén kant-en-klare tabel staat. Elke gebruiker een eigen salt = de aanvaller moet alles opnieuw uitrekenen.' }));
+    }
+    lookup();
+    container.append(shell('<b>Rainbow table</b> — opzoeken vs. salt', wrap, false));
   });
 
   // =====================================================================

@@ -14,7 +14,7 @@ const PATHS = ['fundamenten', 'security-kern', 'offensief', 'defensief', 'forens
 const DIFFS = ['Makkelijk', 'Gemiddeld', 'Moeilijk'];
 const LABS = ['terminal', 'cyberchef', 'hashcrack', 'password', 'phishing', 'logs', 'http', 'sqli', 'subnet', 'hexviewer', 'pcap',
   'jwt', 'regex', 'cvss', 'timestamp', 'ioc', 'url', 'yara', 'timeline', 'chmod', 'numconv',
-  'hashid', 'cipher'];
+  'hashid', 'cipher', 'crackme', 'multidecode', 'rainbow'];
 
 const args = process.argv.slice(2);
 const files = args.length
