@@ -12,7 +12,9 @@ const crypto = require('crypto');
 const ROOT = path.join(__dirname, '..');
 const PATHS = ['fundamenten', 'security-kern', 'offensief', 'defensief', 'forensie', 'eindopdracht'];
 const DIFFS = ['Makkelijk', 'Gemiddeld', 'Moeilijk'];
-const LABS = ['terminal', 'cyberchef', 'hashcrack', 'password', 'phishing', 'logs', 'http', 'sqli', 'subnet', 'hexviewer', 'pcap'];
+const LABS = ['terminal', 'cyberchef', 'hashcrack', 'password', 'phishing', 'logs', 'http', 'sqli', 'subnet', 'hexviewer', 'pcap',
+  'jwt', 'regex', 'cvss', 'timestamp', 'ioc', 'url', 'yara', 'timeline', 'chmod', 'numconv',
+  'hashid', 'cipher', 'crackme', 'multidecode', 'rainbow'];
 
 const args = process.argv.slice(2);
 const files = args.length
@@ -52,7 +54,37 @@ function labText(lab) {
   return JSON.stringify(lab);
 }
 
+// Zelfstandige MD4 (Node-crypto heeft md4 niet altijd) voor NTLM-controle.
+function md4Bytes(bytes) {
+  const add = (a, b) => (a + b) & 0xffffffff;
+  const rol = (x, s) => ((x << s) | (x >>> (32 - s))) & 0xffffffff;
+  const F = (x, y, z) => (x & y) | (~x & z);
+  const G = (x, y, z) => (x & y) | (x & z) | (y & z);
+  const H = (x, y, z) => x ^ y ^ z;
+  const msg = bytes.slice(); const bitLen = msg.length * 8;
+  msg.push(0x80); while (msg.length % 64 !== 56) msg.push(0);
+  for (let i = 0; i < 8; i++) msg.push((Math.floor(bitLen / Math.pow(2, 8 * i))) & 0xff);
+  let A = 0x67452301, B = 0xefcdab89, C = 0x98badcfe, D = 0x10325476;
+  for (let off = 0; off < msg.length; off += 64) {
+    const X = [];
+    for (let i = 0; i < 16; i++) X[i] = (msg[off + i * 4] | (msg[off + i * 4 + 1] << 8) | (msg[off + i * 4 + 2] << 16) | (msg[off + i * 4 + 3] << 24)) >>> 0;
+    let a = A, b = B, c = C, d = D;
+    const ff = (a, b, c, d, k, s) => rol(add(add(a, F(b, c, d)), X[k]), s);
+    const gg = (a, b, c, d, k, s) => rol(add(add(add(a, G(b, c, d)), X[k]), 0x5a827999), s);
+    const hh = (a, b, c, d, k, s) => rol(add(add(add(a, H(b, c, d)), X[k]), 0x6ed9eba1), s);
+    for (let k = 0; k < 16; k += 4) { a = ff(a, b, c, d, k, 3); d = ff(d, a, b, c, k + 1, 7); c = ff(c, d, a, b, k + 2, 11); b = ff(b, c, d, a, k + 3, 19); }
+    for (let j = 0; j < 4; j++) { a = gg(a, b, c, d, j, 3); d = gg(d, a, b, c, j + 4, 5); c = gg(c, d, a, b, j + 8, 9); b = gg(b, c, d, a, j + 12, 13); }
+    const r3 = [0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15];
+    for (let i = 0; i < 16; i += 4) { a = hh(a, b, c, d, r3[i], 3); d = hh(d, a, b, c, r3[i + 1], 9); c = hh(c, d, a, b, r3[i + 2], 11); b = hh(b, c, d, a, r3[i + 3], 15); }
+    A = add(A, a); B = add(B, b); C = add(C, c); D = add(D, d);
+  }
+  const le = (n) => { let s = ''; for (let i = 0; i < 4; i++) s += ((n >>> (i * 8)) & 0xff).toString(16).padStart(2, '0'); return s; };
+  return le(A) + le(B) + le(C) + le(D);
+}
 function hashOf(algo, s) {
+  algo = String(algo).toLowerCase();
+  if (algo === 'ntlm') { const bytes = []; for (let i = 0; i < s.length; i++) { const code = s.charCodeAt(i); bytes.push(code & 0xff, (code >>> 8) & 0xff); } return md4Bytes(bytes); }
+  if (algo === 'md4') return md4Bytes(Array.from(Buffer.from(s, 'utf8')));
   return crypto.createHash(algo).update(s, 'utf8').digest('hex');
 }
 
@@ -105,8 +137,10 @@ for (const file of files) {
       }
       if (t.lab.type === 'hashcrack') {
         const algo = t.lab.algo || 'md5';
-        const hit = (t.lab.wordlist || []).find((w) => hashOf(algo, (t.lab.salt || '') + w) === String(t.lab.hash).toLowerCase());
-        if (!hit) warn(rel, `${where}: hash wordt door geen enkel woord uit de wordlist gekraakt`);
+        const salt = t.lab.salt || '';
+        const withSalt = (w) => (t.lab.saltPos === 'suffix' ? w + salt : salt + w);
+        const hit = (t.lab.wordlist || []).find((w) => hashOf(algo, withSalt(w)) === String(t.lab.hash).toLowerCase());
+        if (!hit) warn(rel, `${where}: hash wordt door geen enkel woord uit de wordlist gekraakt (controleer algo/salt/saltPos, of zet een crackbaar woord in de wordlist)`);
         else console.log(`    (hashcrack: wachtwoord = "${hit}")`);
       }
       if (t.lab.type === 'phishing') {

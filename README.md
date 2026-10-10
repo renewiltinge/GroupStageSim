@@ -45,21 +45,46 @@ De bouwstenen van beveiliging.
 1. **Cryptografie** — coderen vs. versleutelen vs. hashen (met CyberChef).
 2. **Wachtwoorden en authenticatie** — sterke wachtwoorden, hashes kraken, MFA & passkeys.
 3. **Social engineering & phishing** — de menselijke factor, met een phishing-inbox om te oefenen.
+4. **Kwetsbaarheden & CVSS** — van CVE tot patch, met een interactieve CVSS-calculator, EPSS en de KEV-catalogus.
+5. **Klassieke cijfers kraken** — Caesar, Vigenère en XOR ontcijferen met een cijfer-kraker.
+6. **Rainbow tables & waarom salt wint** — precomputatie, salt, peper en trage hashes.
 
 ### ⚔️ Offensief (red team)
 Denken als een aanvaller — altijd in een veilig lab.
 1. **OWASP Top 10** — de tien grootste webrisico's (editie 2025).
 2. **Verkenning & scannen** — reconnaissance en nmap.
 3. **Webhacking: SQL-injectie** — kwetsbaarheden zelf uitbuiten.
+4. **Wachtwoorden kraken** — woordenlijst, regels (mangling) en brute-force (maskers) op MD5/SHA/NTLM.
+5. **Crack the Hash — de uitdaging** — een oplopende reeks hashes om zelf te herkennen en te kraken.
+6. **Reverse engineering: crackmes kraken** — lees de controle en vind de sleutel (met een echte crackme-lab).
+7. **Decoderen & multi-decode (CTF)** — gelaagde codering afpellen met de multi-decoder en CyberChef.
 
 ### 🛡️ Defensief (blue team)
 Denken als een verdediger.
 1. **Logs & detectie** — aanvallen terugvinden in logbestanden.
 2. **Incident response** — reageren volgens het NIST-framework (CSF 2.0).
 3. **Veilig thuis & op het werk** — updates, back-ups, hardening.
+4. **Threat intelligence & MITRE ATT&CK** — IOC's, de Pyramid of Pain, TLP en het ATT&CK-model.
+5. **Detectie-engineering** — detectieregels bouwen met regex, Sigma en YARA.
+
+### 🕵️ Digitale forensie & opsporing
+De weg naar digitaal rechercheur — sporen vinden, veiligstellen en duiden.
+1. **Digitaal rechercheur worden** — wat forensie is, de rollen en de wet.
+2. **Bewijs veiligstellen** — chain of custody, imaging en hashing.
+3. **Schijf- en bestandssysteemforensie** — verwijderde bestanden, file carving.
+4. **Geheugenforensie** — wat het RAM verraadt.
+5. **Netwerkforensie** — het verhaal in het verkeer (met pcap-lab).
+6. **Forensische Windows-artefacten** — prefetch, registry, event logs.
+7. **Mobiele en cloud-forensie** — telefoons en clouddiensten.
+8. **OSINT: opsporen met open bronnen** — veilig en gestructureerd zoeken.
+9. **Malware-analyse: de basis** — statisch en dynamisch, altijd in een lab.
+10. **Tijdlijnanalyse** — van tijdstempel tot super-timeline.
+11. **Forensie-CTF: Zaak Zilverlab** — een volledig onderzoek als oefening.
+12. **Verder leren** — boeken, tools en platforms.
 
 ### 🏁 Eindopdracht
 1. **Mini-CTF: Operatie KoffieKlap** — breng alles samen in een afsluitende Capture The Flag met zes vlaggen.
+2. **Grote kraak-CTF: Operatie Sleutelbos** — een uitgebreide kraak-CTF langs hashes, cijfers, codering, een crackme, een JWT en NTLM (zeven vlaggen).
 
 ---
 
@@ -71,13 +96,31 @@ Alle labs draaien **volledig in je browser** — veilig, offline, zonder dat er 
 |-----|---------------------|
 | 🖥️ **Terminal** | Een nagebootste Linux-shell (en PowerShell) met een echt bestandssysteem, `ls/cat/grep/find/base64/...` en pipes. |
 | 🧪 **CyberChef** | Coderen, decoderen en hashen (Base64, hex, ROT13, XOR, MD5/SHA-…), met een recept dat je zelf opbouwt. |
-| 🔓 **Hash-kraker** | Een woordenlijstaanval nabootsen op een echte hash. |
+| 🔓 **Hash-kraker** | Hashes kraken met een woordenlijst, **regels (mangling)** of **brute-force (maskers)** — op MD5, SHA-1/256 en **NTLM**, met en zonder salt. Toont live snelheid. |
+| 🧭 **Hash-herkenner** | Het hashtype herkennen (MD5, NTLM, SHA, bcrypt, sha512crypt, …) vóór je gaat kraken. |
+| 🗝️ **Cijfer-kraker** | Klassieke versleuteling ontcijferen: Caesar/ROT (auto), single-byte XOR (brute-force), Vigenère en Atbash. |
 | 🔑 **Wachtwoord-analyse** | Live de sterkte en kraaktijd van een wachtwoord zien. |
 | 🎣 **Phishing-inbox** | Rode vlaggen zoeken in nep-e-mails. |
 | 📊 **Logviewer** | Logbestanden filteren (tekst én regex) om een aanval te vinden. |
 | 🌐 **HTTP-client** | Verzoeken sturen naar een nepserver en kwetsbaarheden vinden. |
 | 💉 **SQL-injectie** | Een kwetsbaar loginformulier echt uitbuiten — en de fix zien werken. |
 | 🧮 **Subnet-calculator** | Subnetten uitrekenen en oefenvragen genereren. |
+| 🔢 **Hex-viewer** | Rauwe bytes lezen: magic bytes herkennen en verstopte strings vinden. |
+| 📡 **Pakketanalyse** | Netwerkverkeer lezen (Wireshark-light) en een spoor volgen in de stream. |
+| 🎫 **JWT-inspecteur** | JSON Web Tokens decoderen, de claims lezen en een HS256-handtekening controleren. |
+| 🔤 **Regex-tester** | Reguliere expressies live testen met markering en capture-groepen. |
+| 🩹 **CVSS-calculator** | De basisscore (v3.1) van een kwetsbaarheid uitrekenen uit de vector. |
+| 🕰️ **Tijdstempel-omrekenaar** | Unix, FILETIME, WebKit en Cocoa-tijd omzetten naar een leesbare datum. |
+| 🧾 **IOC-extractor** | Indicatoren (IP's, domeinen, hashes, CVE's) uit vrije tekst halen en defangen. |
+| 🔗 **URL-ontleder** | Een link ontleden en phishing-rode-vlaggen zichtbaar maken. |
+| 🧬 **YARA-lab** | Detectieregels schrijven en op voorbeeldbestanden testen. |
+| ⏳ **Super-timeline** | Gebeurtenissen uit vele bronnen op één tijdlijn filteren en markeren. |
+| 🔐 **chmod & getallen** | Linux-rechten en getalstelsels (hex/binair/octaal) omrekenen. |
+| 🔃 **Crackme** | Reverse-engineering puzzel: lees de controlefunctie en vind de sleutel. |
+| ✨ **Multi-decoder** | Herkent en pelt lagen codering af (Base64/32, hex, binair, Morse, ROT13, URL…) en zoekt automatisch de vlag. |
+| 🌈 **Rainbow table** | Zie waarom onvergezouten hashes direct op te zoeken zijn — en hoe salt dat breekt. |
+
+Alle tools zijn ook los te gebruiken via de **🧰 Gereedschapskist** (knop op de startpagina, of `#/tools`) — handig voor je eigen, ethische oefeningen.
 
 Je verdient **XP** en **badges**, en je voortgang wordt per vraag bewaard (lokaal, in `localStorage`).
 
